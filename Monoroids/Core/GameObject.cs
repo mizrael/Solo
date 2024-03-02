@@ -60,16 +60,16 @@ public class GameObject
         _children.Remove(child);
     }
 
-    public void Update(Game game)
+    public void Update(GameTime gameTime)
     {
         if (!Enabled)
             return;
 
         foreach (var component in Components)
-            component.Update(game);
+            component.Update(gameTime);
 
         foreach (var child in _children)
-            child.Update(game);
+            child.Update(gameTime);
     }
 
     public override int GetHashCode() => Id;

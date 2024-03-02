@@ -8,8 +8,6 @@ namespace Monoroids.GameStuff
 {
     internal class GameScene : Scene
     {
-        private Texture2D _shipTexture;
-
         public GameScene(Game game) : base(game)
         {
         }
@@ -18,7 +16,7 @@ namespace Monoroids.GameStuff
         {
             var ship = new GameObject();
             ship.Components.Add<TransformComponent>();
-            ship.Components.Add(new SpriteRenderComponent(ship, "sheet"));
+            ship.Components.Add(new SpriteRenderComponent(ship, this.Game.Content.Load<Texture2D>("sheet")));
 
             base.Root.AddChild(ship);
 

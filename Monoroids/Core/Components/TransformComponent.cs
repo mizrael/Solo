@@ -1,4 +1,6 @@
-﻿namespace Monoroids.Core.Components;
+﻿using Microsoft.Xna.Framework;
+
+namespace Monoroids.Core.Components;
 
 public class TransformComponent : Component
 {
@@ -9,7 +11,7 @@ public class TransformComponent : Component
     {
     }
 
-    protected override void UpdateCore()
+    protected override void UpdateCore(GameTime gameTime)
     {
         _world.Clone(_local);
 

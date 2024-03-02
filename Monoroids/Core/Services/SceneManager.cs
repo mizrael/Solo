@@ -36,7 +36,7 @@ public class SceneManager : IGameService
     public void Step(GameTime gameTime)
     {
         if (this.Current is not null)
-            this.Current.Step();
+            this.Current.Step(gameTime);
     }
 
     public Scene Current { get; private set; }

@@ -12,10 +12,10 @@ public abstract class Scene
         this.Game = game ?? throw new ArgumentNullException(nameof(game));
     }
 
-    public void Step()
+    public void Step(GameTime gameTime)
     {
         if (null != Root)
-            Root.Update(this.Game);
+            Root.Update(gameTime);
         this.Update();
     }
 

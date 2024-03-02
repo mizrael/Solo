@@ -1,5 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace Monoroids.Core.Components;
 
@@ -12,21 +14,27 @@ public abstract class Component
         Owner = owner ?? throw new ArgumentNullException(nameof(owner));
     }
 
-    protected virtual void Init(Game game) { }
+    public void Init()
+    {
+        if (_initialized)
+            return;
 
-    protected virtual void UpdateCore() { }
+        InitCore();
+        _initialized = true;
+    }
 
-    public virtual void Update(Game game)
+    protected virtual void InitCore() { }
+
+    public void Update(GameTime gameTime)
     {
         if (!Owner.Enabled)
             return;
 
-        if (!_initialized)
-        {
-            Init(game);
-            _initialized = true;
-        }
+        Init();
+
+        UpdateCore(gameTime);
     }
+    protected virtual void UpdateCore(GameTime gameTime) { }
 
     public GameObject Owner { get; }
     public bool Initialized => _initialized;

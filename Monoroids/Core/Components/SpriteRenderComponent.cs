@@ -7,12 +7,11 @@ namespace Monoroids.Core.Components;
 public class SpriteRenderComponent : Component, IRenderable
 {
     private TransformComponent _transform;
-    private Texture2D _texture;
-    private readonly string _assetName;
-
-    public SpriteRenderComponent(GameObject owner, string assetName) : base(owner)
+    private readonly Texture2D _texture;
+    
+    public SpriteRenderComponent(GameObject owner, Texture2D texture) : base(owner)
     {
-        _assetName = assetName;
+        _texture = texture;
     }
 
     public void Render(SpriteBatch spriteBatch)
@@ -28,9 +27,8 @@ public class SpriteRenderComponent : Component, IRenderable
             layerDepth: 0f);
     }
 
-    protected override void Init(Game game)
+    protected override void InitCore()
     {
-        _texture = game.Content.Load<Texture2D>(_assetName);
         _transform = Owner.Components.Get<TransformComponent>();
     }
 
