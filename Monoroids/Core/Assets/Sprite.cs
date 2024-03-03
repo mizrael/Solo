@@ -9,13 +9,13 @@ namespace Monoroids.Core.Assets
         {
             Name = name;
             Bounds = bounds;
-            Origin = new Point(bounds.Width / 2, bounds.Height / 2);
+            Center = new Vector2(bounds.Width / 2, bounds.Height / 2);
             Texture = texture;
         }
 
         public string Name { get; }
         public Rectangle Bounds { get; }
-        public Point Origin { get; }
+        public Vector2 Center { get; }
         public Texture2D Texture { get; }
     }
 }

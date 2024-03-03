@@ -6,7 +6,8 @@ namespace Monoroids.Core.Services;
 
 public class RenderService : IGameService
 {
-    private readonly GraphicsDeviceManager _graphics;
+    public readonly GraphicsDeviceManager Graphics;
+
     private readonly SpriteBatch _spriteBatch;
     private SceneManager _sceneManager;
     private SortedList<int, IList<IRenderable>> _layers = new();
@@ -15,7 +16,7 @@ public class RenderService : IGameService
         GraphicsDeviceManager graphics, 
         SpriteBatch spriteBatch)
     {
-        _graphics = graphics ?? throw new System.ArgumentNullException(nameof(graphics));
+        Graphics = graphics ?? throw new System.ArgumentNullException(nameof(graphics));
         _spriteBatch = spriteBatch ?? throw new System.ArgumentNullException(nameof(spriteBatch));
     }
 
@@ -31,7 +32,7 @@ public class RenderService : IGameService
 
     public void Render()
     {
-        _graphics.GraphicsDevice.Clear(Color.CornflowerBlue);
+        Graphics.GraphicsDevice.Clear(Color.CornflowerBlue);
 
         foreach (var layer in _layers.Values)
         { 

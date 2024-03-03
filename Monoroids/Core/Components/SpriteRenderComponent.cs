@@ -8,21 +8,20 @@ namespace Monoroids.Core.Components;
 public class SpriteRenderComponent : Component, IRenderable
 {
     private TransformComponent _transform;
-    private readonly Sprite _sprite;
     
     public SpriteRenderComponent(GameObject owner, Sprite sprite) : base(owner)
     {
-        _sprite = sprite;
+        Sprite = sprite;
     }
 
     public void Render(SpriteBatch spriteBatch)
     {
-        spriteBatch.Draw(_sprite.Texture, 
+        spriteBatch.Draw(Sprite.Texture, 
             position: _transform.World.Position,
-            sourceRectangle: _sprite.Bounds, 
+            sourceRectangle: Sprite.Bounds, 
             color: Color.White, 
             rotation: _transform.World.Rotation,
-            origin: Vector2.Zero,
+            origin: Sprite.Center,
             scale: _transform.World.Scale,
             SpriteEffects.None,
             layerDepth: 0f);
@@ -33,6 +32,7 @@ public class SpriteRenderComponent : Component, IRenderable
         _transform = Owner.Components.Get<TransformComponent>();
     }
 
+    public readonly Sprite Sprite;
     public int LayerIndex { get; set; }
     public bool Hidden { get; set; }
 }
