@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Monoroids.Core.Assets;
 using Monoroids.Core.Services;
 
 namespace Monoroids.Core.Components;
@@ -7,18 +8,18 @@ namespace Monoroids.Core.Components;
 public class SpriteRenderComponent : Component, IRenderable
 {
     private TransformComponent _transform;
-    private readonly Texture2D _texture;
+    private readonly Sprite _sprite;
     
-    public SpriteRenderComponent(GameObject owner, Texture2D texture) : base(owner)
+    public SpriteRenderComponent(GameObject owner, Sprite sprite) : base(owner)
     {
-        _texture = texture;
+        _sprite = sprite;
     }
 
     public void Render(SpriteBatch spriteBatch)
     {
-        spriteBatch.Draw(_texture, 
+        spriteBatch.Draw(_sprite.Texture, 
             position: _transform.World.Position,
-            sourceRectangle: null, 
+            sourceRectangle: _sprite.Bounds, 
             color: Color.White, 
             rotation: _transform.World.Rotation,
             origin: Vector2.Zero,
