@@ -19,6 +19,12 @@ public class TransformComponent : Component
             _world.Position = _local.Position + parentTransform.World.Position;
     }
 
+    public void Reset()
+    {
+        Local.Reset();
+        World.Reset();
+    }
+
     public Transform Local => _local;
     public Transform World => _world;
 }

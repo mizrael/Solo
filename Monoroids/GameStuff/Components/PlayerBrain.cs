@@ -13,6 +13,8 @@ namespace Monoroids.GameStuff.Components
         private SpriteRenderComponent _spriteRender;
         private RenderService _renderService;
 
+        private Weapon _weapon;
+
         public readonly PlayerStats Stats = PlayerStats.Default();
 
         public PlayerBrain(GameObject owner) : base(owner)
@@ -24,6 +26,7 @@ namespace Monoroids.GameStuff.Components
             _movingBody = Owner.Components.Get<MovingBody>();
             _transform = Owner.Components.Get<TransformComponent>();
             _spriteRender = Owner.Components.Get<SpriteRenderComponent>();
+            _weapon = Owner.Components.Get<Weapon>();
 
             _renderService = GameServicesManager.Instance.GetService<RenderService>();
         }
@@ -33,10 +36,16 @@ namespace Monoroids.GameStuff.Components
 
         protected override void UpdateCore(GameTime gameTime)
         {
-            HandleMovement();
+            var keyboard = Keyboard.GetState();
+            
+            HandleMovement(keyboard);
+
+            var isShooting = keyboard.IsKeyDown(Keys.Space);
+            if(isShooting)
+                _weapon.Shoot(gameTime);
         }
 
-        private void HandleMovement()
+        private void HandleMovement(KeyboardState keyboard)
         {
             if (_transform.World.Position.X < -_spriteRender.Sprite.Bounds.Width)
                 _transform.Local.Position.X = _renderService.Graphics.PreferredBackBufferWidth + _spriteRender.Sprite.Center.X;
@@ -47,8 +56,6 @@ namespace Monoroids.GameStuff.Components
                 _transform.Local.Position.Y = _renderService.Graphics.PreferredBackBufferHeight + _spriteRender.Sprite.Center.Y;
             else if (_transform.World.Position.Y > _renderService.Graphics.PreferredBackBufferHeight + _spriteRender.Sprite.Bounds.Height)
                 _transform.Local.Position.Y = -_spriteRender.Sprite.Center.Y;
-
-            var keyboard = Keyboard.GetState();
 
             if (keyboard.IsKeyDown(Keys.Right))
                 _movingBody.RotationSpeed = Stats.RotationSpeed;
