@@ -16,18 +16,6 @@ public class ComponentsCollection : IEnumerable<Component>
         _items = new Dictionary<Type, Component>();
     }
 
-    public void Add(Component component)
-    {
-        if (component is null)
-            throw new ArgumentNullException(nameof(component));
-        
-        var type = component.GetType();
-        if (_items.ContainsKey(type))
-            throw new ComponentAlreadyAddedException(_owner, component);
-
-        _items.Add(type, component);
-    }
-
     public TC Add<TC>() where TC : Component
     {
         var type = typeof(TC);

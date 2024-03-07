@@ -9,9 +9,8 @@ public class SpriteRenderComponent : Component, IRenderable
 {
     private TransformComponent _transform;
     
-    public SpriteRenderComponent(GameObject owner, Sprite sprite) : base(owner)
+    public SpriteRenderComponent(GameObject owner) : base(owner)
     {
-        Sprite = sprite;
     }
 
     public void Render(SpriteBatch spriteBatch)
@@ -32,7 +31,8 @@ public class SpriteRenderComponent : Component, IRenderable
         _transform = Owner.Components.Get<TransformComponent>();
     }
 
-    public readonly Sprite Sprite;
+    public Sprite Sprite;
+
     public int LayerIndex { get; set; }
     public bool Hidden { get; set; }
 }

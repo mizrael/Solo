@@ -16,7 +16,7 @@ public abstract class Scene
     {
         if (null != Root)
             Root.Update(gameTime);
-        this.Update();
+        this.Update(gameTime);
     }
 
     public void Enter()
@@ -33,7 +33,7 @@ public abstract class Scene
     }
 
     protected virtual void ExitCore() { }
-    protected virtual void Update() { }
+    protected virtual void Update(GameTime gameTime) { }
 
     public GameObject Root { get; private set; }
 }
