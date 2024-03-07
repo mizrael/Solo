@@ -10,10 +10,11 @@ public class BoundingBoxComponent : Component
     private TransformComponent _transform;
     private Rectangle _bounds;
     private Vector2 _halfSize;
+    private readonly int _hashCode;
 
     private BoundingBoxComponent(GameObject owner) : base(owner)
     {
-
+        _hashCode = System.HashCode.Combine(owner.GetHashCode(), nameof(BoundingBoxComponent));
     }
 
     protected override void InitCore()
@@ -68,4 +69,7 @@ public class BoundingBoxComponent : Component
 
     public event OnCollisionHandler OnCollision;
     public delegate void OnCollisionHandler(BoundingBoxComponent sender, BoundingBoxComponent collidedWith);
+
+    public override int GetHashCode()
+        => _hashCode;
 }

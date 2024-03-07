@@ -12,12 +12,10 @@ public class RenderService : IGameService
     private SceneManager _sceneManager;
     private SortedList<int, IList<IRenderable>> _layers = new();
 
-    public RenderService(
-        GraphicsDeviceManager graphics, 
-        SpriteBatch spriteBatch)
+    public RenderService(GraphicsDeviceManager graphics)
     {
         Graphics = graphics ?? throw new System.ArgumentNullException(nameof(graphics));
-        _spriteBatch = spriteBatch ?? throw new System.ArgumentNullException(nameof(spriteBatch));
+        _spriteBatch = new SpriteBatch(Graphics.GraphicsDevice);
     }
 
     public void Initialize()

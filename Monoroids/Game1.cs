@@ -8,8 +8,7 @@ namespace Monoroids
     public class Game1 : Game
     {
         private GraphicsDeviceManager _graphics;
-        private SpriteBatch _spriteBatch;
-
+        
         private SceneManager _sceneManager;
         private RenderService _renderService;
 
@@ -18,6 +17,7 @@ namespace Monoroids
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
+            Window.AllowUserResizing = true;            
         }
 
         protected override void Initialize()
@@ -27,21 +27,21 @@ namespace Monoroids
             _graphics.PreferredBackBufferHeight = 768;
             _graphics.ApplyChanges();
 
-            base.Initialize();
-        }
-
-        protected override void LoadContent()
-        {
-            _spriteBatch = new SpriteBatch(GraphicsDevice);
-
-            _renderService = new RenderService(_graphics, _spriteBatch);
+            _renderService = new RenderService(_graphics);
             GameServicesManager.Instance.AddService(_renderService);
 
             _sceneManager = new SceneManager();
             GameServicesManager.Instance.AddService(_sceneManager);
 
+            GameServicesManager.Instance.AddService(new CollisionService(new Point(64, 64)));
+
             GameServicesManager.Instance.Initialize();
 
+            base.Initialize();
+        }
+
+        protected override void LoadContent()
+        {
             _sceneManager.AddScene("main", new GameStuff.GameScene(this));
             _sceneManager.SetCurrentScene("main");
         }

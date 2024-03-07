@@ -5,6 +5,7 @@ using Monoroids.Core.Components;
 using Monoroids.Core.Loaders;
 using Monoroids.Core.Services;
 using Monoroids.GameStuff.Components;
+using SharpDX.Direct3D9;
 
 namespace Monoroids.GameStuff
 {
@@ -18,15 +19,19 @@ namespace Monoroids.GameStuff
         {
             var spritesheetLoader = new SpriteSheetLoader();
             var spriteSheet = spritesheetLoader.Load("meta/sheet.json", this.Game);
-            
-            var bulletSpawner = BuildBulletSpawner(spriteSheet);
 
-            BuildPlayer(spriteSheet, bulletSpawner);
+            var collisionService = GameServicesManager.Instance.GetService<CollisionService>();
+
+            var bulletSpawner = BuildBulletSpawner(spriteSheet, collisionService);
+
+            BuildPlayer(spriteSheet, bulletSpawner, collisionService);
 
             base.EnterCore();
         }
 
-        private Spawner BuildBulletSpawner(SpriteSheet spriteSheet)
+        private Spawner BuildBulletSpawner(
+            SpriteSheet spriteSheet,
+            CollisionService collisionService)
         {
             var spawner = new Spawner(() =>
             {
@@ -40,6 +45,7 @@ namespace Monoroids.GameStuff
 
                 var bulletBBox = bullet.Components.Add<BoundingBoxComponent>();
                 bulletBBox.SetSize(bulletSpriteRenderer.Sprite.Bounds.Size);
+                collisionService.Add(bulletBBox);
 
                 var speed = 7000f;
 
@@ -47,7 +53,7 @@ namespace Monoroids.GameStuff
                 bulletRigidBody.MaxSpeed = speed;
 
                 var brain = bullet.Components.Add<BulletBrain>();
-                brain.Speed = speed;
+                brain.Speed = speed;                
 
                 return bullet;
             }, bullet =>
@@ -63,7 +69,7 @@ namespace Monoroids.GameStuff
             return spawner;
         }
 
-        private void BuildPlayer(SpriteSheet spriteSheet, Spawner bulletSpawner)
+        private void BuildPlayer(SpriteSheet spriteSheet, Spawner bulletSpawner, CollisionService collisionService)
         {
             var shipTexture = spriteSheet.Get("playerShip2_green");
 
@@ -76,6 +82,10 @@ namespace Monoroids.GameStuff
 
             var rigidBody = player.Components.Add<MovingBody>();
             rigidBody.MaxSpeed = brain.Stats.EnginePower;
+
+            var bbox = player.Components.Add<BoundingBoxComponent>();
+            bbox.SetSize(shipTexture.Bounds.Size);
+            collisionService.Add(bbox);
 
             var weapon = player.Components.Add<Weapon>();
             weapon.Spawner = bulletSpawner;
