@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Input;
 using Monoroids.Core;
 using Monoroids.Core.Components;
 using Monoroids.Core.Services;
+using SharpDX;
 
 namespace Monoroids.GameStuff.Components;
 
@@ -15,7 +16,7 @@ public class PlayerBrain : Component
 
     private Weapon _weapon;
 
-    public readonly PlayerStats Stats = PlayerStats.Default();
+    public PlayerStats Stats = PlayerStats.Default();
 
     public PlayerBrain(GameObject owner) : base(owner)
     {
@@ -23,12 +24,30 @@ public class PlayerBrain : Component
 
     protected override void InitCore()
     {
+        _renderService = GameServicesManager.Instance.GetService<RenderService>();
+
         _movingBody = Owner.Components.Get<MovingBody>();
         _transform = Owner.Components.Get<TransformComponent>();
         _spriteRender = Owner.Components.Get<SpriteRenderComponent>();
         _weapon = Owner.Components.Get<Weapon>();
 
-        _renderService = GameServicesManager.Instance.GetService<RenderService>();
+        var boundingBox = Owner.Components.Get<BoundingBoxComponent>();
+        boundingBox.OnCollision += (sender, collidedWith) =>
+        {
+            if (collidedWith.Owner.Components.TryGet<AsteroidBrain>(out var _))
+            {
+                if (this.Stats.ShieldHealth > 0)
+                    this.Stats.ShieldHealth--;
+                else
+                    this.Stats.Health--;
+
+                if (0 == this.Stats.Health)
+                {
+                    this.Owner.Enabled = false;
+                    this.OnDeath?.Invoke(this.Owner);
+                }
+            }
+        };
     }
 
     public event OnDeathHandler OnDeath;

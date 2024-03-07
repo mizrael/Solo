@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Monoroids.Core;
 using Monoroids.Core.Assets;
 using Monoroids.Core.Components;
@@ -11,12 +12,12 @@ namespace Monoroids.GameStuff;
 
 internal class GameScene : Scene
 {
-    private int _killedAsteroids = 0;
     private double _lastAsteroidSpawnTime = 0;
-    private long _startAsteroidSpawnRate = 2000;
     private long _maxAsteroidSpawnRate = 500;
     private long _asteroidSpawnRate = 2000;
     private Spawner _asteroidsSpawner;
+
+    private GameStatsUIComponent _gameStats;
 
     public GameScene(Game game) : base(game)
     {
@@ -26,7 +27,7 @@ internal class GameScene : Scene
     {
         var spritesheetLoader = new SpriteSheetLoader();
         var spriteSheet = spritesheetLoader.Load("meta/sheet.json", this.Game);
-
+        
         var collisionService = GameServicesManager.Instance.GetService<CollisionService>();
         var renderService = GameServicesManager.Instance.GetService<RenderService>();
 
@@ -35,6 +36,8 @@ internal class GameScene : Scene
         var player = BuildPlayer(spriteSheet, bulletSpawner, collisionService);
 
         _asteroidsSpawner = BuildAsteroidsSpawner(spriteSheet, collisionService, renderService, player);
+        
+        BuidUI(bulletSpawner, player);
 
         base.EnterCore();
     }
@@ -161,8 +164,7 @@ internal class GameScene : Scene
             
             brain.OnDeath += o =>
             {
-                _killedAsteroids++;
-               // _gameStats.IncreaseScore();
+                _gameStats.IncreaseScore();
 
                 //var explosion = _explosionsSpawner.Spawn();
                 //var explosionTransform = explosion.Components.Get<TransformComponent>();
@@ -193,17 +195,7 @@ internal class GameScene : Scene
 
             var brain = asteroid.Components.Get<AsteroidBrain>();
             var dir = player.Components.Get<TransformComponent>().Local.Position - transform.Local.Position;
-            brain.Direction = Microsoft.Xna.Framework.Vector2.Normalize(dir);
-            
-            //var w = (double)this.Game.Display.Size.Width;
-            //var rx = MathUtils.Random.NextDouble(0, .4, .6, 1);
-            //var tx = MathUtils.Normalize(rx, 0, 1, -1, 1);
-            //transform.Local.Position.X = (float)(tx * w / 2.5 + w / 2);
-
-            //var h = (double)this.Game.Display.Size.Height;
-            //var ry = MathUtils.Random.NextDouble(0, .35, .65, 1);
-            //var ty = MathUtils.Normalize(ry, 0, 1, -1, 1);
-            //transform.Local.Position.Y = (float)(ty * h / 2.5 + h / 2);
+            brain.Direction = Microsoft.Xna.Framework.Vector2.Normalize(dir);            
         });
 
         spawner.Components.Add<TransformComponent>();
@@ -213,4 +205,19 @@ internal class GameScene : Scene
         return spawner;
     }
 
+    private GameObject BuidUI(Spawner bulletSpawner, GameObject player)
+    {
+        var ui = new GameObject();
+        _gameStats = ui.Components.Add<GameStatsUIComponent>();
+        _gameStats.LayerIndex = (int)RenderLayers.UI;
+        _gameStats.Font = this.Game.Content.Load<SpriteFont>("Fonts/UI");
+
+        var playerStats = ui.Components.Add<PlayerStatsUIComponent>();
+        playerStats.PlayerBrain = player.Components.Get<PlayerBrain>();
+        playerStats.LayerIndex = (int)RenderLayers.UI;
+
+        this.Root.AddChild(ui);
+
+        return ui;
+    }
 }
