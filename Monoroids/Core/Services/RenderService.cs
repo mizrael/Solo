@@ -25,25 +25,31 @@ public class RenderService : IGameService
 
     public void Step(GameTime gameTime)
     {
-        BuildLayers(_sceneManager.Current.Root, _layers);
+        foreach(var layerIndex in _layers.Keys)
+        {
+            var layer = _layers[layerIndex];
+            layer.Clear();
+        }
+
+        RebuildLayers(_sceneManager.Current.Root, _layers);
     }
 
     public void Render()
     {
         Graphics.GraphicsDevice.Clear(Color.CornflowerBlue);
-
-        foreach (var layer in _layers.Values)
-        { 
+        foreach(var layerIndex in _layers.Keys)
+        {
+            var layer = _layers[layerIndex];
             _spriteBatch.Begin();
 
             foreach (var renderable in layer)
                 renderable.Render(_spriteBatch);
 
             _spriteBatch.End();
-        }            
+        }                 
     }
 
-    private static void BuildLayers(GameObject node, SortedList<int, IList<IRenderable>> layers)
+    private static void RebuildLayers(GameObject node, SortedList<int, IList<IRenderable>> layers)
     {
         if (null == node || !node.Enabled)
             return;
@@ -59,6 +65,6 @@ public class RenderService : IGameService
             }
 
         foreach (var child in node.Children)
-            BuildLayers(child, layers);
+            RebuildLayers(child, layers);
     }
 }
