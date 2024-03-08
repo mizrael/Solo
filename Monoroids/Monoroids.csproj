@@ -17,6 +17,9 @@
     <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.1.303" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="meta\animations\explosion1.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="meta\sheet.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

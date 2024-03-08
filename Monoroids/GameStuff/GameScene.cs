@@ -2,8 +2,8 @@
 using Microsoft.Xna.Framework.Graphics;
 using Monoroids.Core;
 using Monoroids.Core.Assets;
+using Monoroids.Core.Assets.Loaders;
 using Monoroids.Core.Components;
-using Monoroids.Core.Loaders;
 using Monoroids.Core.Services;
 using Monoroids.GameStuff.Components;
 using System;
@@ -25,19 +25,17 @@ internal class GameScene : Scene
 
     protected override void EnterCore()
     {
-        var spritesheetLoader = new SpriteSheetLoader();
-        var spriteSheet = spritesheetLoader.Load("meta/sheet.json", this.Game);
+        var spriteSheet = new SpriteSheetLoader().Load("meta/sheet.json", this.Game);
         
         var collisionService = GameServicesManager.Instance.GetService<CollisionService>();
         var renderService = GameServicesManager.Instance.GetService<RenderService>();
 
-
-
+        var explosionSpawner = BuildExplosionsSpawner();
         var bulletSpawner = BuildBulletSpawner(spriteSheet, collisionService);
 
         var player = BuildPlayer(spriteSheet, bulletSpawner, collisionService);
 
-        _asteroidsSpawner = BuildAsteroidsSpawner(spriteSheet, collisionService, renderService, player);
+        _asteroidsSpawner = BuildAsteroidsSpawner(spriteSheet, collisionService, renderService, player, explosionSpawner);
         
         BuidUI(player);
         BuildBackground(renderService);
@@ -54,6 +52,34 @@ internal class GameScene : Scene
             _lastAsteroidSpawnTime = gameTime.TotalGameTime.TotalMilliseconds;
             _asteroidsSpawner.Spawn();
         }
+    }
+
+    private Spawner BuildExplosionsSpawner()
+    {
+        var explosionAnim = new AnimationLoader().Load("meta/animations/explosion1.json", this.Game);
+
+        var spawner = new Spawner(() =>
+        {
+            var explosion = new GameObject();
+            explosion.Components.Add<TransformComponent>();
+
+            var renderer = explosion.Components.Add<AnimationRenderComponent>();
+            renderer.Animation = explosionAnim;
+            renderer.LayerIndex = (int)RenderLayers.Items;
+            renderer.OnAnimationComplete += _ => explosion.Enabled = false;
+
+            return explosion;
+        }, explosion =>
+        {
+            var renderer = explosion.Components.Add<AnimationRenderComponent>();
+            renderer.Reset();
+        });
+
+        spawner.Components.Add<TransformComponent>();
+
+        this.Root.AddChild(spawner);
+
+        return spawner;
     }
 
     private Spawner BuildBulletSpawner(
@@ -130,7 +156,8 @@ internal class GameScene : Scene
         SpriteSheet spriteSheet, 
         CollisionService collisionService,
         RenderService renderService,
-        GameObject player)
+        GameObject player,
+        Spawner explosionSpawner)
     {
         var spriteNames = new[]
         {
@@ -169,10 +196,10 @@ internal class GameScene : Scene
             {
                 _gameStats.IncreaseScore();
 
-                //var explosion = _explosionsSpawner.Spawn();
-                //var explosionTransform = explosion.Components.Get<TransformComponent>();
-                //explosionTransform.Local.Clone(transform.Local);
-                //explosionTransform.World.Clone(transform.Local);
+                var explosion = explosionSpawner.Spawn();
+                var explosionTransform = explosion.Components.Get<TransformComponent>();
+                explosionTransform.Local.Clone(transform.Local);
+                explosionTransform.World.Clone(transform.Local);
 
                 var canSpawnPowerup = Random.Shared.Next(10) < 2;
                 if (canSpawnPowerup)

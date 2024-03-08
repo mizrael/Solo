@@ -1,11 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Monoroids.Core.Assets;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 
-namespace Monoroids.Core.Loaders;
+namespace Monoroids.Core.Assets.Loaders;
 
 public class SpriteSheetLoader
 {
@@ -17,7 +16,7 @@ public class SpriteSheetLoader
             NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
         });
 
-        var texture = game.Content.Load<Texture2D>(dto.spriteSheetName);
+        var texture = game.Content.Load<Texture2D>(dto!.spriteSheetName);
 
         var sprites = dto.sprites
             .Select(s => new Sprite(s.name, texture, new Rectangle(s.x, s.y, s.width, s.height)))
