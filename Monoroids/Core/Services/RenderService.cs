@@ -11,6 +11,7 @@ public class RenderService : IGameService
     private readonly SpriteBatch _spriteBatch;
     private SceneManager _sceneManager;
     private SortedList<int, IList<IRenderable>> _layers = new();
+    private Dictionary<int, RenderLayerConfig> _layerConfigs = new();
 
     public RenderService(GraphicsDeviceManager graphics)
     {
@@ -21,6 +22,18 @@ public class RenderService : IGameService
     public void Initialize()
     {
         _sceneManager = GameServicesManager.Instance.GetService<SceneManager>();
+    }
+
+    public void SetLayerConfig(int index, RenderLayerConfig? layerConfig)
+    {
+        if (layerConfig is null)
+        {
+            if(_layerConfigs.ContainsKey(index))
+                _layerConfigs.Remove(index);
+            return;
+        }
+
+        _layerConfigs[index] = layerConfig!.Value;
     }
 
     public void Step(GameTime gameTime)
@@ -41,8 +54,11 @@ public class RenderService : IGameService
         foreach(var layerIndex in _layers.Keys)
         {
             var layer = _layers[layerIndex];
-
-            _spriteBatch.Begin(samplerState: SamplerState.LinearWrap);            
+            
+            if(!_layerConfigs.TryGetValue(layerIndex, out var layerConfig))                
+                _spriteBatch.Begin();            
+            else
+                _spriteBatch.Begin(samplerState: layerConfig.SamplerState);
 
             foreach (var renderable in layer)
                 renderable.Render(_spriteBatch);

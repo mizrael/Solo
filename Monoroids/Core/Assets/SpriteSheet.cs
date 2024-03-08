@@ -2,37 +2,36 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Monoroids.Core.Assets
+namespace Monoroids.Core.Assets;
+
+public record SpriteSheet
 {
-    public record SpriteSheet
+    private readonly Dictionary<string, Sprite> _sprites = new();
+
+    public SpriteSheet(string name, string spriteSheetName, IEnumerable<Sprite> sprites)
     {
-        private readonly Dictionary<string, Sprite> _sprites = new();
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentNullException(nameof(name));
+        if (string.IsNullOrWhiteSpace(spriteSheetName))
+            throw new ArgumentNullException(nameof(spriteSheetName));
 
-        public SpriteSheet(string name, string spriteSheetName, IEnumerable<Sprite> sprites)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentNullException(nameof(name));
-            if (string.IsNullOrWhiteSpace(spriteSheetName))
-                throw new ArgumentNullException(nameof(spriteSheetName));
+        if (sprites is null || !sprites.Any())
+            throw new ArgumentNullException(nameof(sprites));
 
-            if (sprites is null || !sprites.Any())
-                throw new ArgumentNullException(nameof(sprites));
+        this.Name = name;
+        this.ImagePath = spriteSheetName;
 
-            this.Name = name;
-            this.ImagePath = spriteSheetName;
-
-            foreach (var sprite in sprites)
-                _sprites.Add(sprite.Name, sprite);
-        }
-
-        public Sprite Get(string name)
-        {
-            if (!_sprites.TryGetValue(name, out var sprite) || sprite is null)
-                throw new ArgumentException($"invalid sprite name: '{name}'");
-            return sprite;
-        }
-
-        public string Name { get; }
-        public string ImagePath { get; }
+        foreach (var sprite in sprites)
+            _sprites.Add(sprite.Name, sprite);
     }
+
+    public Sprite Get(string name)
+    {
+        if (!_sprites.TryGetValue(name, out var sprite) || sprite is null)
+            throw new ArgumentException($"invalid sprite name: '{name}'");
+        return sprite;
+    }
+
+    public string Name { get; }
+    public string ImagePath { get; }
 }

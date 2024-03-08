@@ -3,64 +3,67 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Monoroids.Core.Services;
 
-namespace Monoroids
+namespace Monoroids;
+
+public class Game1 : Game
 {
-    public class Game1 : Game
+    private GraphicsDeviceManager _graphics;
+    
+    private SceneManager _sceneManager;
+    private RenderService _renderService;
+
+    public Game1()
     {
-        private GraphicsDeviceManager _graphics;
-        
-        private SceneManager _sceneManager;
-        private RenderService _renderService;
+        _graphics = new GraphicsDeviceManager(this);
+        Content.RootDirectory = "Content";
+        IsMouseVisible = true;
+        Window.AllowUserResizing = true;            
+    }
 
-        public Game1()
+    protected override void Initialize()
+    {
+        _graphics.IsFullScreen = false;
+        _graphics.PreferredBackBufferWidth = 1024;
+        _graphics.PreferredBackBufferHeight = 768;
+        _graphics.ApplyChanges();
+
+        _renderService = new RenderService(_graphics);
+        _renderService.SetLayerConfig((int)RenderLayers.Background, new RenderLayerConfig
         {
-            _graphics = new GraphicsDeviceManager(this);
-            Content.RootDirectory = "Content";
-            IsMouseVisible = true;
-            Window.AllowUserResizing = true;            
-        }
+            SamplerState = SamplerState.LinearWrap
+        });
+        GameServicesManager.Instance.AddService(_renderService);
 
-        protected override void Initialize()
-        {
-            _graphics.IsFullScreen = false;
-            _graphics.PreferredBackBufferWidth = 1024;
-            _graphics.PreferredBackBufferHeight = 768;
-            _graphics.ApplyChanges();
+        _sceneManager = new SceneManager();
+        GameServicesManager.Instance.AddService(_sceneManager);
 
-            _renderService = new RenderService(_graphics);
-            GameServicesManager.Instance.AddService(_renderService);
+        GameServicesManager.Instance.AddService(new CollisionService(new Point(64, 64)));
 
-            _sceneManager = new SceneManager();
-            GameServicesManager.Instance.AddService(_sceneManager);
+        GameServicesManager.Instance.Initialize();
 
-            GameServicesManager.Instance.AddService(new CollisionService(new Point(64, 64)));
+        base.Initialize();
+    }
 
-            GameServicesManager.Instance.Initialize();
+    protected override void LoadContent()
+    {
+        _sceneManager.AddScene("main", new GameStuff.GameScene(this));
+        _sceneManager.SetCurrentScene("main");
+    }
 
-            base.Initialize();
-        }
+    protected override void Update(GameTime gameTime)
+    {
+        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            Exit();
 
-        protected override void LoadContent()
-        {
-            _sceneManager.AddScene("main", new GameStuff.GameScene(this));
-            _sceneManager.SetCurrentScene("main");
-        }
+        GameServicesManager.Instance.Step(gameTime);
 
-        protected override void Update(GameTime gameTime)
-        {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
+        base.Update(gameTime);
+    }
 
-            GameServicesManager.Instance.Step(gameTime);
+    protected override void Draw(GameTime gameTime)
+    {
+        _renderService.Render();
 
-            base.Update(gameTime);
-        }
-
-        protected override void Draw(GameTime gameTime)
-        {
-            _renderService.Render();
-
-            base.Draw(gameTime);
-        }
+        base.Draw(gameTime);
     }
 }
