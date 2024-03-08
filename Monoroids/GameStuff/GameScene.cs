@@ -147,6 +147,27 @@ internal class GameScene : Scene
         var weapon = player.Components.Add<Weapon>();
         weapon.Spawner = bulletSpawner;
 
+        var shieldSprites = new[]{
+                "shield3",
+                "shield2",
+                "shield1"
+            };
+        var shield = new GameObject();
+        player.AddChild(shield);
+        var shieldTransform = shield.Components.Add<TransformComponent>();
+        var shieldRenderer = shield.Components.Add<SpriteRenderComponent>();
+        shieldRenderer.Sprite = spriteSheet.Get(shieldSprites[0]);
+        shieldRenderer.LayerIndex = (int)RenderLayers.Items;
+        var shieldBrain = shield.Components.Add<LambdaComponent>();
+        shieldBrain.OnUpdate = (_, _) =>
+        {
+            shieldRenderer.Hidden = (brain.Stats.ShieldHealth < 1);
+            int index = 2 - (int)(2 * ((float)brain.Stats.ShieldHealth / brain.Stats.ShieldMaxHealth));
+            shieldRenderer.Sprite = spriteSheet.Get(shieldSprites[index]);
+
+            shieldTransform.Local.Rotation = playerTransform.Local.Rotation;
+        };
+
         base.Root.AddChild(player);
 
         return player;

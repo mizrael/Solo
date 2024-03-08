@@ -133,5 +133,16 @@ public class CollisionService : IGameService
         collider.OnPositionChanged += CheckCollisions;
         RefreshColliderBuckets(collider);
     }
+
+    public void Remove(BoundingBoxComponent collider)
+    {
+        collider.OnPositionChanged -= CheckCollisions;
+        if (_bucketsByCollider.ContainsKey(collider.Owner.Id))
+        {
+            foreach (var bucket in _bucketsByCollider[collider.Owner.Id])
+                bucket.Remove(collider);
+            _bucketsByCollider.Remove(collider.Owner.Id);
+        }
+    }
 }
 
