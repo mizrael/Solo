@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Monoroids.Core;
 using Monoroids.Core.Components;
-using System.Threading.Tasks;
 
 namespace Monoroids.GameStuff.Components;
 

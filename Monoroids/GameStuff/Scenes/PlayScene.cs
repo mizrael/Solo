@@ -8,9 +8,9 @@ using Monoroids.Core.Services;
 using Monoroids.GameStuff.Components;
 using System;
 
-namespace Monoroids.GameStuff;
+namespace Monoroids.GameStuff.Scenes;
 
-internal class GameScene : Scene
+internal class PlayScene : Scene
 {
     private double _lastAsteroidSpawnTime = 0;
     private long _maxAsteroidSpawnRate = 500;
@@ -19,14 +19,14 @@ internal class GameScene : Scene
 
     private GameStatsUIComponent _gameStats;
 
-    public GameScene(Game game) : base(game)
+    public PlayScene(Game game) : base(game)
     {
     }
 
     protected override void EnterCore()
     {
-        var spriteSheet = new SpriteSheetLoader().Load("meta/sheet.json", this.Game);
-        
+        var spriteSheet = new SpriteSheetLoader().Load("meta/sheet.json", Game);
+
         var collisionService = GameServicesManager.Instance.GetService<CollisionService>();
         var renderService = GameServicesManager.Instance.GetService<RenderService>();
 
@@ -36,7 +36,7 @@ internal class GameScene : Scene
         var player = BuildPlayer(spriteSheet, bulletSpawner, collisionService);
 
         _asteroidsSpawner = BuildAsteroidsSpawner(spriteSheet, collisionService, renderService, player, explosionSpawner);
-        
+
         BuidUI(player);
         BuildBackground(renderService);
         base.EnterCore();
@@ -56,7 +56,7 @@ internal class GameScene : Scene
 
     private Spawner BuildExplosionsSpawner()
     {
-        var explosionAnim = new AnimationLoader().Load("meta/animations/explosion1.json", this.Game);
+        var explosionAnim = new AnimationLoader().Load("meta/animations/explosion1.json", Game);
 
         var spawner = new Spawner(() =>
         {
@@ -77,7 +77,7 @@ internal class GameScene : Scene
 
         spawner.Components.Add<TransformComponent>();
 
-        this.Root.AddChild(spawner);
+        Root.AddChild(spawner);
 
         return spawner;
     }
@@ -89,10 +89,10 @@ internal class GameScene : Scene
         var spawner = new Spawner(() =>
         {
             var bullet = new GameObject();
-            
+
             bullet.Components.Add<TransformComponent>();
 
-            var bulletSpriteRenderer = bullet.Components.Add<SpriteRenderComponent>();                                  
+            var bulletSpriteRenderer = bullet.Components.Add<SpriteRenderComponent>();
             bulletSpriteRenderer.LayerIndex = (int)RenderLayers.Items;
             bulletSpriteRenderer.Sprite = spriteSheet.Get("fire01");
 
@@ -106,7 +106,7 @@ internal class GameScene : Scene
             bulletRigidBody.MaxSpeed = speed;
 
             var brain = bullet.Components.Add<BulletBrain>();
-            brain.Speed = speed;                
+            brain.Speed = speed;
 
             return bullet;
         }, bullet =>
@@ -117,7 +117,7 @@ internal class GameScene : Scene
 
         spawner.Components.Add<TransformComponent>();
 
-        this.Root.AddChild(spawner);
+        Root.AddChild(spawner);
 
         return spawner;
     }
@@ -129,13 +129,18 @@ internal class GameScene : Scene
         var player = new GameObject();
 
         var playerTransform = player.Components.Add<TransformComponent>();
-        playerTransform.Local.Position = this.Game.GraphicsDevice.Viewport.Bounds.Center.ToVector2() - shipTexture.Center;
+        playerTransform.Local.Position = Game.GraphicsDevice.Viewport.Bounds.Center.ToVector2() - shipTexture.Center;
 
-        var renderer = player.Components.Add<SpriteRenderComponent>(); 
+        var renderer = player.Components.Add<SpriteRenderComponent>();
         renderer.Sprite = shipTexture;
         renderer.LayerIndex = (int)RenderLayers.Player;
 
         var brain = player.Components.Add<PlayerBrain>();
+        brain.OnDeath += player =>
+        {
+            GameServicesManager.Instance.GetService<SceneManager>()
+                .SetCurrentScene(SceneNames.GameOver);
+        };
 
         var rigidBody = player.Components.Add<MovingBody>();
         rigidBody.MaxSpeed = brain.Stats.EnginePower;
@@ -161,20 +166,20 @@ internal class GameScene : Scene
         var shieldBrain = shield.Components.Add<LambdaComponent>();
         shieldBrain.OnUpdate = (_, _) =>
         {
-            shieldRenderer.Hidden = (brain.Stats.ShieldHealth < 1);
+            shieldRenderer.Hidden = brain.Stats.ShieldHealth < 1;
             int index = 2 - (int)(2 * ((float)brain.Stats.ShieldHealth / brain.Stats.ShieldMaxHealth));
             shieldRenderer.Sprite = spriteSheet.Get(shieldSprites[index]);
 
             shieldTransform.Local.Rotation = playerTransform.Local.Rotation;
         };
 
-        base.Root.AddChild(player);
+        Root.AddChild(player);
 
         return player;
     }
 
     private Spawner BuildAsteroidsSpawner(
-        SpriteSheet spriteSheet, 
+        SpriteSheet spriteSheet,
         CollisionService collisionService,
         RenderService renderService,
         GameObject player,
@@ -212,7 +217,7 @@ internal class GameScene : Scene
             collisionService.Add(bbox);
 
             var brain = asteroid.Components.Add<AsteroidBrain>();
-            
+
             brain.OnDeath += o =>
             {
                 _gameStats.IncreaseScore();
@@ -229,7 +234,7 @@ internal class GameScene : Scene
                     var powerupTransform = powerup.Components.Get<TransformComponent>();
                     powerupTransform.Local.Clone(transform.Local);
                     powerupTransform.Local.Rotation = 0;
-                    this.Root.AddChild(powerup);
+                    Root.AddChild(powerup);
                 }
             };
 
@@ -246,12 +251,12 @@ internal class GameScene : Scene
 
             var brain = asteroid.Components.Get<AsteroidBrain>();
             var dir = player.Components.Get<TransformComponent>().Local.Position - transform.Local.Position;
-            brain.Direction = Microsoft.Xna.Framework.Vector2.Normalize(dir);            
+            brain.Direction = Vector2.Normalize(dir);
         });
 
         spawner.Components.Add<TransformComponent>();
 
-        this.Root.AddChild(spawner);
+        Root.AddChild(spawner);
 
         return spawner;
     }
@@ -261,13 +266,13 @@ internal class GameScene : Scene
         var ui = new GameObject();
         _gameStats = ui.Components.Add<GameStatsUIComponent>();
         _gameStats.LayerIndex = (int)RenderLayers.UI;
-        _gameStats.Font = this.Game.Content.Load<SpriteFont>("Fonts/UI");
+        _gameStats.Font = Game.Content.Load<SpriteFont>("Fonts/UI");
 
         var playerStats = ui.Components.Add<PlayerStatsUIComponent>();
         playerStats.PlayerBrain = player.Components.Get<PlayerBrain>();
         playerStats.LayerIndex = (int)RenderLayers.UI;
 
-        this.Root.AddChild(ui);
+        Root.AddChild(ui);
 
         return ui;
     }
@@ -276,9 +281,9 @@ internal class GameScene : Scene
     {
         var background = new GameObject();
 
-        var sprite = Sprite.FromTexture("Backgrounds/blue", this.Game.Content);
-        sprite.Bounds = new Rectangle(0, 0, 
-            (int)(renderService.Graphics.PreferredBackBufferWidth * 1.5), 
+        var sprite = Sprite.FromTexture("Backgrounds/blue", Game.Content);
+        sprite.Bounds = new Rectangle(0, 0,
+            (int)(renderService.Graphics.PreferredBackBufferWidth * 1.5),
             (int)(renderService.Graphics.PreferredBackBufferHeight * 1.5));
 
         background.Components.Add<TransformComponent>();
@@ -287,7 +292,7 @@ internal class GameScene : Scene
         renderer.Sprite = sprite;
         renderer.LayerIndex = (int)RenderLayers.Background;
 
-        this.Root.AddChild(background);
+        Root.AddChild(background);
 
         return background;
     }
