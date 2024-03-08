@@ -2,7 +2,6 @@
 using Monoroids.Core;
 using Monoroids.Core.Components;
 using Monoroids.Core.Services;
-using SharpDX;
 using System;
 
 namespace Monoroids.GameStuff.Components;

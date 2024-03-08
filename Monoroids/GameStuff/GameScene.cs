@@ -31,14 +31,16 @@ internal class GameScene : Scene
         var collisionService = GameServicesManager.Instance.GetService<CollisionService>();
         var renderService = GameServicesManager.Instance.GetService<RenderService>();
 
+
+
         var bulletSpawner = BuildBulletSpawner(spriteSheet, collisionService);
 
         var player = BuildPlayer(spriteSheet, bulletSpawner, collisionService);
 
         _asteroidsSpawner = BuildAsteroidsSpawner(spriteSheet, collisionService, renderService, player);
         
-        BuidUI(bulletSpawner, player);
-
+        BuidUI(player);
+        BuildBackground(renderService);
         base.EnterCore();
     }
 
@@ -105,6 +107,7 @@ internal class GameScene : Scene
 
         var renderer = player.Components.Add<SpriteRenderComponent>(); 
         renderer.Sprite = shipTexture;
+        renderer.LayerIndex = (int)RenderLayers.Player;
 
         var brain = player.Components.Add<PlayerBrain>();
 
@@ -142,7 +145,7 @@ internal class GameScene : Scene
         };
         int spriteIndex = 0;
 
-       // var powerupsFactory = new PowerupFactory(spriteSheet, collisionService);
+        var powerupsFactory = new PowerupFactory(spriteSheet, collisionService);
 
         var spawner = new Spawner(() =>
         {
@@ -171,15 +174,15 @@ internal class GameScene : Scene
                 //explosionTransform.Local.Clone(transform.Local);
                 //explosionTransform.World.Clone(transform.Local);
 
-                //var canSpawnPowerup = MathUtils.Random.Next(10) < 2;
-                //if (canSpawnPowerup)
-                //{
-                //    var powerup = powerupsFactory.Create();
-                //    var powerupTransform = powerup.Components.Get<TransformComponent>();
-                //    powerupTransform.Local.Clone(transform.Local);
-                //    powerupTransform.Local.Rotation = 0;
-                //    this.Root.AddChild(powerup);
-                //}
+                var canSpawnPowerup = Random.Shared.Next(10) < 2;
+                if (canSpawnPowerup)
+                {
+                    var powerup = powerupsFactory.Create();
+                    var powerupTransform = powerup.Components.Get<TransformComponent>();
+                    powerupTransform.Local.Clone(transform.Local);
+                    powerupTransform.Local.Rotation = 0;
+                    this.Root.AddChild(powerup);
+                }
             };
 
             return asteroid;
@@ -190,8 +193,8 @@ internal class GameScene : Scene
             transform.World.Reset();
             transform.Local.Reset();
 
-            transform.Local.Position.X = Random.Shared.Next(2) == 0 ? 0 : renderService.Graphics.PreferredBackBufferWidth;
-            transform.Local.Position.Y = Random.Shared.Next(2) == 0 ? 0 : renderService.Graphics.PreferredBackBufferHeight;
+            transform.Local.Position.X = Random.Shared.NextBool() ? 0 : renderService.Graphics.PreferredBackBufferWidth;
+            transform.Local.Position.Y = Random.Shared.NextBool() ? 0 : renderService.Graphics.PreferredBackBufferHeight;
 
             var brain = asteroid.Components.Get<AsteroidBrain>();
             var dir = player.Components.Get<TransformComponent>().Local.Position - transform.Local.Position;
@@ -205,7 +208,7 @@ internal class GameScene : Scene
         return spawner;
     }
 
-    private GameObject BuidUI(Spawner bulletSpawner, GameObject player)
+    private GameObject BuidUI(GameObject player)
     {
         var ui = new GameObject();
         _gameStats = ui.Components.Add<GameStatsUIComponent>();
@@ -219,5 +222,25 @@ internal class GameScene : Scene
         this.Root.AddChild(ui);
 
         return ui;
+    }
+
+    private GameObject BuildBackground(RenderService renderService)
+    {
+        var background = new GameObject();
+
+        var sprite = Sprite.FromTexture("Backgrounds/blue", this.Game.Content);
+        sprite.Bounds = new Rectangle(0, 0, 
+            (int)(renderService.Graphics.PreferredBackBufferWidth * 1.5), 
+            (int)(renderService.Graphics.PreferredBackBufferHeight * 1.5));
+
+        background.Components.Add<TransformComponent>();
+
+        var renderer = background.Components.Add<SpriteRenderComponent>();
+        renderer.Sprite = sprite;
+        renderer.LayerIndex = (int)RenderLayers.Background;
+
+        this.Root.AddChild(background);
+
+        return background;
     }
 }

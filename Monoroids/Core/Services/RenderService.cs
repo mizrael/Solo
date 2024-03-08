@@ -37,10 +37,12 @@ public class RenderService : IGameService
     public void Render()
     {
         Graphics.GraphicsDevice.Clear(Color.CornflowerBlue);
+
         foreach(var layerIndex in _layers.Keys)
         {
             var layer = _layers[layerIndex];
-            _spriteBatch.Begin();
+
+            _spriteBatch.Begin(samplerState: SamplerState.LinearWrap);            
 
             foreach (var renderable in layer)
                 renderable.Render(_spriteBatch);

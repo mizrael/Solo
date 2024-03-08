@@ -9,6 +9,8 @@ public class GameObject
     private static int _lastId = 0;
 
     private readonly IList<GameObject> _children;
+    private readonly Queue<GameObject> _childrenToRemove = new();
+    private readonly Queue<GameObject> _childrenToAdd = new();
 
     public GameObject()
     {
@@ -24,7 +26,7 @@ public class GameObject
     public ComponentsCollection Components { get; }
 
     public IEnumerable<GameObject> Children => _children;
-    public GameObject Parent { get; private set; }
+    public GameObject? Parent { get; private set; }
 
     public OnDisabledHandler OnDisabled;
     public delegate void OnDisabledHandler(GameObject gameObject);
@@ -42,28 +44,44 @@ public class GameObject
         }
     }
 
+    private void ApplyPendingChanges()
+    {
+        while (_childrenToRemove.Count > 0)
+        {
+            var child = _childrenToRemove.Dequeue();
+            child.Parent = null;
+            _children.Remove(child);
+        }
+
+        while (_childrenToAdd.Count > 0)
+        {
+            var child = _childrenToAdd.Dequeue();
+            child.Parent?._children.Remove(child);
+            child.Parent = this;
+            _children.Add(child);
+        }
+    }
+
     public void AddChild(GameObject child)
     {
-        if (Equals(child.Parent))
+        if (child.Parent is not null && Equals(child.Parent))
             return;
-
-        child.Parent?._children.Remove(child);
-        child.Parent = this;
-        _children.Add(child);
+        _childrenToAdd.Enqueue(child);        
     }
 
     public void RemoveChild(GameObject child)
     {
-        if (!Equals(child.Parent))
+        if (child.Parent is not null && Equals(child.Parent))
             return;
-        child.Parent = null;
-        _children.Remove(child);
+        _childrenToRemove.Enqueue(child);
     }
 
     public void Update(GameTime gameTime)
     {
         if (!Enabled)
             return;
+
+        ApplyPendingChanges();
 
         foreach (var component in Components)
             component.Update(gameTime);

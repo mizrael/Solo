@@ -20,7 +20,7 @@ namespace Monoroids.Core.Loaders
             var texture = game.Content.Load<Texture2D>(dto.spriteSheetName);
 
             var sprites = dto.sprites
-                .Select(s => new Sprite(s.name, new Rectangle(s.x, s.y, s.width, s.height), texture))
+                .Select(s => new Sprite(s.name, texture, new Rectangle(s.x, s.y, s.width, s.height)))
                 .ToArray();
 
             return new SpriteSheet(assetPath, dto.spriteSheetName, sprites);
