@@ -32,7 +32,7 @@ public class PowerupFactory
     private GameObject CreateShield()
         => CreateBase("powerupBlue_shield", playerBrain =>
         {
-            playerBrain.Stats.ShieldHealth = playerBrain.Stats.ShieldMaxHealth;
+            playerBrain.Stats.ShieldPower = playerBrain.Stats.ShieldMaxPower;
         });
 
     private GameObject CreateBase(string spriteName, Action<PlayerBrain> onPlayerCollision)

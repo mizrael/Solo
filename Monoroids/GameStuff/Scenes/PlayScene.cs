@@ -9,6 +9,7 @@ using Monoroids.Core.Components;
 using Monoroids.Core.Services;
 using Monoroids.GameStuff.Components;
 using System;
+using System.Linq;
 
 namespace Monoroids.GameStuff.Scenes;
 
@@ -174,8 +175,8 @@ internal class PlayScene : Scene
         var shieldBrain = shield.Components.Add<LambdaComponent>();
         shieldBrain.OnUpdate = (_, _) =>
         {
-            shieldRenderer.Hidden = brain.Stats.ShieldHealth < 1;
-            int index = 2 - (int)(2 * ((float)brain.Stats.ShieldHealth / brain.Stats.ShieldMaxHealth));
+            shieldRenderer.Hidden = brain.Stats.ShieldPower < 1;
+            int index = 2 - (int)(2 * ((float)brain.Stats.ShieldPower / brain.Stats.ShieldMaxPower));
             shieldRenderer.Sprite = spriteSheet.Get(shieldSprites[index]);
 
             shieldTransform.Local.Rotation = playerTransform.Local.Rotation;
@@ -209,6 +210,9 @@ internal class PlayScene : Scene
         var powerupsFactory = new PowerupFactory(spriteSheet, collisionService);
         var explosionSound = Game.Content.Load<SoundEffect>("Sounds/explosion");
 
+        var powerUpsContainer = new GameObject();
+        this.Root.AddChild(powerUpsContainer);
+
         var spawner = new Spawner(() =>
         {
             var asteroid = new GameObject();
@@ -240,14 +244,16 @@ internal class PlayScene : Scene
                 explosionTransform.World.Clone(transform.Local);
 
                 var isPlayerAlive = player.Enabled && player.Components.Get<PlayerBrain>().Stats.IsAlive;               
-                var canSpawnPowerup = isPlayerAlive && Random.Shared.Next(10) < 2;                
+                var canSpawnPowerup = isPlayerAlive &&
+                                      powerUpsContainer.Children.Count(c=> c.Enabled) < 3 &&
+                                      Random.Shared.Next(10) < 2;                
                 if (canSpawnPowerup)
                 {
                     var powerup = powerupsFactory.Create();
                     var powerupTransform = powerup.Components.Get<TransformComponent>();
                     powerupTransform.Local.Clone(transform.Local);
                     powerupTransform.Local.Rotation = 0;
-                    Root.AddChild(powerup);
+                    powerUpsContainer.AddChild(powerup);
                 }
             };
 

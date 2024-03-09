@@ -36,7 +36,7 @@ public class PlayerStatsUIComponent : Component, IRenderable
 
     private void RenderShield(SpriteBatch spriteBatch)
     {
-        float ratio = (float)this.PlayerBrain.Stats.ShieldHealth / this.PlayerBrain.Stats.ShieldMaxHealth;
+        float ratio = (float)this.PlayerBrain.Stats.ShieldPower / this.PlayerBrain.Stats.ShieldMaxPower;
         int width = (int)(ratio * _maxWidth);
         
         int x = _renderService.Graphics.PreferredBackBufferWidth - width - _rightOffset;
