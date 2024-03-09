@@ -66,12 +66,12 @@ public class GameObject
     {
         if (child.Parent is not null && Equals(child.Parent))
             return;
-        _childrenToAdd.Enqueue(child);        
+        _childrenToAdd.Enqueue(child);
     }
 
     public void RemoveChild(GameObject child)
     {
-        if (child.Parent is not null && Equals(child.Parent))
+        if (child.Parent is null || !Equals(child.Parent))
             return;
         _childrenToRemove.Enqueue(child);
     }
