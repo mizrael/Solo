@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Monoroids.Core;
 using Monoroids.Core.Components;
 
@@ -31,12 +32,15 @@ public class Weapon : Component
 
         bulletTransform.Local.Rotation = _ownerTransform.Local.Rotation;
         bulletTransform.Local.Position = GetBulletStartPosition();
+        
+        ShotSound?.Play();
     }
 
     private Vector2 GetBulletStartPosition() => _ownerTransform.World.Position +
                                                 _ownerTransform.Local.GetDirection() * Offset;
 
     public Spawner Spawner;
+    public SoundEffect ShotSound;
 
     public float Offset = -50f;
     private long FireRate = 150;

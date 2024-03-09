@@ -92,3 +92,21 @@
 /processorParam:TextureFormat=Color
 /build:sheet.png
 
+#begin Sounds/explosion.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/explosion.ogg
+
+#begin Sounds/laser.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/laser.ogg
+
+#begin Sounds/main-theme.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/main-theme.ogg
+

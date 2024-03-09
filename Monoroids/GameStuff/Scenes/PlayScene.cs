@@ -1,5 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Media;
 using Monoroids.Core;
 using Monoroids.Core.Assets;
 using Monoroids.Core.Assets.Loaders;
@@ -39,6 +41,11 @@ internal class PlayScene : Scene
 
         BuidUI(player);
         BuildBackground(renderService);
+
+        var mainTheme = Game.Content.Load<Song>("Sounds/main-theme");        
+        MediaPlayer.Play(mainTheme);
+        MediaPlayer.IsRepeating = true;
+
         base.EnterCore();
     }
 
@@ -151,6 +158,7 @@ internal class PlayScene : Scene
 
         var weapon = player.Components.Add<Weapon>();
         weapon.Spawner = bulletSpawner;
+        weapon.ShotSound = Game.Content.Load<SoundEffect>("Sounds/laser");
 
         var shieldSprites = new[]{
                 "shield3",
@@ -199,6 +207,7 @@ internal class PlayScene : Scene
         int spriteIndex = 0;
 
         var powerupsFactory = new PowerupFactory(spriteSheet, collisionService);
+        var explosionSound = Game.Content.Load<SoundEffect>("Sounds/explosion");
 
         var spawner = new Spawner(() =>
         {
@@ -220,6 +229,8 @@ internal class PlayScene : Scene
 
             brain.OnDeath += o =>
             {
+                explosionSound.Play();
+
                 _gameStats.IncreaseScore();
 
                 var explosion = explosionSpawner.Spawn();
