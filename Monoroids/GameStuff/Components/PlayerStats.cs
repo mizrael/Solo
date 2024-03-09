@@ -8,6 +8,8 @@
     public int ShieldMaxHealth;
     public int ShieldHealth;
 
+    public bool IsAlive => Health > 0;
+
     public static PlayerStats Default() => new()
     {
         EnginePower = 2000f,

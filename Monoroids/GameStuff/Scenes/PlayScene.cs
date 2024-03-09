@@ -239,7 +239,8 @@ internal class PlayScene : Scene
                 explosionTransform.Local.Clone(transform.Local);
                 explosionTransform.World.Clone(transform.Local);
 
-                var canSpawnPowerup = Random.Shared.Next(10) < 2;
+                var isPlayerAlive = player.Enabled && player.Components.Get<PlayerBrain>().Stats.IsAlive;               
+                var canSpawnPowerup = isPlayerAlive && Random.Shared.Next(10) < 2;                
                 if (canSpawnPowerup)
                 {
                     var powerup = powerupsFactory.Create();

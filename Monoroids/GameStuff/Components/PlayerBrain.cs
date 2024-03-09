@@ -3,7 +3,6 @@ using Microsoft.Xna.Framework.Input;
 using Monoroids.Core;
 using Monoroids.Core.Components;
 using Monoroids.Core.Services;
-using SharpDX;
 
 namespace Monoroids.GameStuff.Components;
 
