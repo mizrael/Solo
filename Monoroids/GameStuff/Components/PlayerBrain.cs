@@ -35,12 +35,12 @@ public class PlayerBrain : Component
         {
             if (collidedWith.Owner.Components.TryGet<AsteroidBrain>(out var _))
             {
-                if (this.Stats.ShieldHealth > 0)
-                    this.Stats.ShieldHealth--;
+                if (this.Stats.HasShield)
+                    this.Stats.ShieldPower--;
                 else
                     this.Stats.Health--;
 
-                if (0 == this.Stats.Health)
+                if (!this.Stats.IsAlive)
                 {
                     this.Owner.Enabled = false;
                     this.OnDeath?.Invoke(this.Owner);
@@ -61,6 +61,8 @@ public class PlayerBrain : Component
         var isShooting = keyboard.IsKeyDown(Keys.Space);
         if (isShooting)
             _weapon.Shoot(gameTime);
+
+        this.Stats.Update(gameTime);
     }
 
     private void HandleMovement(KeyboardState keyboard)
