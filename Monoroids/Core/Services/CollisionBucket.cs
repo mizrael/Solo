@@ -7,20 +7,37 @@ namespace Monoroids.Core.Services;
 internal class CollisionBucket
 {
     private readonly HashSet<BoundingBoxComponent> _colliders = new();
+    private readonly HashSet<BoundingBoxComponent> _collidersToRemove = new();
+    private readonly Queue<BoundingBoxComponent> _collidersToAdd = new();
 
     public CollisionBucket(Rectangle bounds)
     {
         Bounds = bounds;
     }
 
-    public Rectangle Bounds { get; }
+    private void ApplyPendingChanges()
+    {
+        foreach(var collider in _collidersToRemove)
+        {
+            _colliders.Remove(collider);
+        }
+        _collidersToRemove.Clear();
 
-    public void Add(BoundingBoxComponent bbox) => _colliders.Add(bbox);
+        while (_collidersToAdd.Count > 0)
+        {
+            var collider = _collidersToAdd.Dequeue();
+            _colliders.Add(collider);
+        }
+    }
 
-    public void Remove(BoundingBoxComponent bbox) => _colliders.Remove(bbox);
+    public void Add(BoundingBoxComponent bbox) => _collidersToAdd.Enqueue(bbox);
+
+    public void Remove(BoundingBoxComponent bbox) => _collidersToRemove.Remove(bbox);
 
     public void CheckCollisions(BoundingBoxComponent bbox)
     {
+        ApplyPendingChanges();
+
         foreach (var collider in _colliders)
         {
             if (collider.Owner == bbox.Owner ||
@@ -32,5 +49,7 @@ internal class CollisionBucket
             bbox.CollideWith(collider);
         }
     }
+
+    public Rectangle Bounds { get; }
 }
 
