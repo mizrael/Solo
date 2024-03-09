@@ -227,11 +227,12 @@ internal class PlayScene : Scene
 
             var brain = asteroid.Components.Add<AsteroidBrain>();
 
-            brain.OnDeath += o =>
+            brain.OnDeath += (_, hasCollidedWithPlayer) =>
             {
                 explosionSound.Play();
 
-                _gameStats.IncreaseScore();
+                var points = hasCollidedWithPlayer ? 10 : 25;
+                _gameStats.IncreaseScore(points);
 
                 var explosion = explosionSpawner.Spawn();
                 var explosionTransform = explosion.Components.Get<TransformComponent>();

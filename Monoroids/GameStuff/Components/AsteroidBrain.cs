@@ -17,7 +17,7 @@ public class AsteroidBrain : Component
     public float Speed = Random.Shared.NextFloat(0.15f, 0.5f);
     
     public event OnDeathHandler OnDeath;
-    public delegate void OnDeathHandler(GameObject asteroid);
+    public delegate void OnDeathHandler(GameObject asteroid, bool HasCollidedWithPlayer);
 
     private AsteroidBrain(GameObject owner) : base(owner)
     {
@@ -29,12 +29,12 @@ public class AsteroidBrain : Component
         _boundingBox = Owner.Components.Get<BoundingBoxComponent>();
         _boundingBox.OnCollision += (sender, collidedWith) =>
         {
-            if (!collidedWith.Owner.Components.TryGet<PlayerBrain>(out var _) &&
+            if (!collidedWith.Owner.Components.TryGet<PlayerBrain>(out var playerBrain) &&
                 !collidedWith.Owner.Components.TryGet<BulletBrain>(out var _))
                 return;
 
             this.Owner.Enabled = false;
-            this.OnDeath?.Invoke(this.Owner);
+            this.OnDeath?.Invoke(this.Owner, playerBrain is not null);
         };
 
         _renderService = GameServicesManager.Instance.GetService<RenderService>();

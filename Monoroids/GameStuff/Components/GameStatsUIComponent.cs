@@ -34,9 +34,9 @@ public class GameStatsUIComponent : Component, IRenderable
         spriteBatch.DrawString(this.Font, _text, _position, Color.White);
     }
 
-    public void IncreaseScore()
+    public void IncreaseScore(int points)
     {
-        _score += 25;
+        _score += points;
         UpdateText();
     }
 
