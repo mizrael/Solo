@@ -217,7 +217,7 @@ internal class PlayScene : Scene
 
             var spriteRenderer = asteroid.Components.Add<SpriteRenderComponent>();
             var sprite = spriteSheet.Get(spriteNames[spriteIndex]);
-            spriteIndex = spriteIndex + 1 % spriteNames.Length;
+            spriteIndex = ++spriteIndex % spriteNames.Length;
             spriteRenderer.Sprite = sprite;
             spriteRenderer.LayerIndex = (int)RenderLayers.Enemies;
 
@@ -294,9 +294,15 @@ internal class PlayScene : Scene
         var background = new GameObject();
 
         var sprite = Sprite.FromTexture("Backgrounds/blue", Game.Content);
-        sprite.Bounds = new Rectangle(0, 0,
-            (int)(renderService.Graphics.PreferredBackBufferWidth * 1.5),
-            (int)(renderService.Graphics.PreferredBackBufferHeight * 1.5));
+        var setBackgroundSize = new Action(() =>
+        {
+            sprite.Bounds = new Rectangle(0, 0,
+                               (int)(renderService.Graphics.PreferredBackBufferWidth * 1.5),
+                                (int)(renderService.Graphics.PreferredBackBufferHeight * 1.5));
+        });
+        setBackgroundSize();
+        
+        renderService.Graphics.DeviceReset += (s, e) => setBackgroundSize();
 
         background.Components.Add<TransformComponent>();
 

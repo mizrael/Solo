@@ -5,6 +5,7 @@ using Monoroids.Core.Assets;
 using Monoroids.Core.Components;
 using Monoroids.Core.Services;
 using Monoroids.GameStuff.Components;
+using System;
 
 namespace Monoroids.GameStuff.Scenes;
 
@@ -46,10 +47,15 @@ internal class PreGameScene : Scene
         background.Components.Add<TransformComponent>();
 
         var sprite = Sprite.FromTexture("Backgrounds/blue", Game.Content);
-                
-        sprite.Bounds = new Rectangle(0, 0,
-            (int)(renderService.Graphics.PreferredBackBufferWidth * 1.5),
-            (int)(renderService.Graphics.PreferredBackBufferHeight * 1.5));
+        var setBackgroundSize = new Action(() =>
+        {
+            sprite.Bounds = new Rectangle(0, 0,
+                               (int)(renderService.Graphics.PreferredBackBufferWidth * 1.5),
+                                (int)(renderService.Graphics.PreferredBackBufferHeight * 1.5));
+        });
+        setBackgroundSize();
+
+        renderService.Graphics.DeviceReset += (s, e) => setBackgroundSize();
 
         var renderer = background.Components.Add<SpriteRenderComponent>();
         renderer.Sprite = sprite;
