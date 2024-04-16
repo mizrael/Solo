@@ -47,7 +47,7 @@ public class PreGameUIComponent : Component, IRenderable
         var keyboardState = Keyboard.GetState();
         var canStart = keyboardState.IsKeyDown(Keys.Enter);
         if (canStart)
-            GameServicesManager.Instance.GetService<SceneManager>().SetCurrentScene(SceneNames.Play);
+            GameServicesManager.Instance.GetService<SceneManager>().SetCurrentScene(SceneNames.ShipSelection);
     }
 
     public int LayerIndex { get; set; }
