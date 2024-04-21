@@ -12,17 +12,18 @@ using System.Linq;
 
 namespace Monoroids.GameStuff.Scenes;
 
+public record struct ShipTemplate(string Name, string Asset, PlayerStats Stats);
+
 public class ShipSelectionScene : Scene
 {
-    record ShipMeta(string Asset);
-
-    private static readonly ShipMeta[] _shipsMeta =
+    private static readonly ShipTemplate[] _shipTemplates =
     [
-        new ShipMeta("playerShip2_red"),
-        new ShipMeta("playerShip2_green"),
-        new ShipMeta("playerShip2_blue"),
+        new ShipTemplate("Red", "playerShip2_red", PlayerStats.Default()),
+        new ShipTemplate("Green", "playerShip2_green", PlayerStats.Default()),
+        new ShipTemplate("Blue", "playerShip2_blue", PlayerStats.Default()),
     ];
 
+    private GameObject _ui;
     private GameObject[] _ships;
     private int _selectedShipIndex = 0;
 
@@ -46,14 +47,14 @@ public class ShipSelectionScene : Scene
 
     private void BuildUI()
     {
-        var ui = new GameObject();
+        _ui = new GameObject();
 
-        var textComponent = ui.Components.Add<ShipSelectionUIComponent>();
+        var textComponent = _ui.Components.Add<ShipSelectionUIComponent>();
         textComponent.LayerIndex = (int)RenderLayers.UI;        
         textComponent.Font = Game.Content.Load<SpriteFont>("Fonts/UI");
 
         KeyboardState prevKeyState = new();
-        var brain = ui.Components.Add<LambdaComponent>();
+        var brain = _ui.Components.Add<LambdaComponent>();
         brain.OnUpdate = (owner, gameTime) =>
         {
             var keyboardState = Keyboard.GetState();
@@ -74,7 +75,7 @@ public class ShipSelectionScene : Scene
             prevKeyState = keyboardState;
         };
 
-        this.Root.AddChild(ui);
+        this.Root.AddChild(_ui);
     }
 
     private void SelectShip(int index)
@@ -84,6 +85,8 @@ public class ShipSelectionScene : Scene
         _ships[_selectedShipIndex].Enabled = false;
         _selectedShipIndex = index;
         _ships[_selectedShipIndex].Enabled = true;
+
+        _ui.Components.Get<ShipSelectionUIComponent>().SelectedShip = _shipTemplates[_selectedShipIndex];
     }
 
     private void BuildShips(SpriteSheet spriteSheet)
@@ -103,7 +106,7 @@ public class ShipSelectionScene : Scene
                                     renderService.Graphics.PreferredBackBufferHeight / 2);
         };
 
-        _ships = _shipsMeta.Select(s =>
+        _ships = _shipTemplates.Select(s =>
         {
             var shipObj = new GameObject();
 
