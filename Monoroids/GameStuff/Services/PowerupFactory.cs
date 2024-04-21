@@ -5,7 +5,7 @@ using Monoroids.Core.Services;
 using Monoroids.GameStuff.Components;
 using System;
 
-namespace Monoroids.GameStuff;
+namespace Monoroids.GameStuff.Services;
 
 public class PowerupFactory
 {
