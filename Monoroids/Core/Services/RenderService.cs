@@ -75,6 +75,7 @@ public class RenderService : IGameService
         foreach (var component in node.Components)
             if (component is IRenderable renderable &&
                 component.Initialized &&
+                component.Owner.Enabled &&
                 !renderable.Hidden)
             {
                 if (!layers.ContainsKey(renderable.LayerIndex))
