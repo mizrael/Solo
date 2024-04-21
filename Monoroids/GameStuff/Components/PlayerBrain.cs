@@ -15,7 +15,7 @@ public class PlayerBrain : Component
 
     private Weapon _weapon;
 
-    public PlayerStats Stats = PlayerStats.Default();
+    public PlayerStats Stats;
 
     public PlayerBrain(GameObject owner) : base(owner)
     {

@@ -12,8 +12,6 @@ using System.Linq;
 
 namespace Monoroids.GameStuff.Scenes;
 
-public record struct ShipTemplate(string Name, string Asset, PlayerStats Stats);
-
 public class ShipSelectionScene : Scene
 {
     private static readonly ShipTemplate[] _shipTemplates =
@@ -69,6 +67,8 @@ public class ShipSelectionScene : Scene
             }
             else if (prevKeyState.IsKeyDown(Keys.Enter) && keyboardState.IsKeyUp(Keys.Enter))
             {
+                GameState.Instance.ShipTemplate = _shipTemplates[_selectedShipIndex];
+                
                 GameServicesManager.Instance.GetService<SceneManager>().SetCurrentScene(SceneNames.Play);
             }
 
