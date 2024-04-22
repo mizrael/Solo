@@ -3,7 +3,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Monoroids.Core;
 using Monoroids.Core.Components;
 using Monoroids.Core.Services;
-using Monoroids.GameStuff.Scenes;
+using Monoroids.Core.GUI;
+using System.Linq;
 
 namespace Monoroids.GameStuff.Components;
 
@@ -11,10 +12,10 @@ public class ShipSelectionUIComponent : Component, IRenderable
 {
     private RenderService? _renderService;
 
-    private static string[] _text = [
+    private static readonly GUILine[] _textLines = new[]{
         "Select your ship",
         "Press ENTER to start"
-    ];
+    }.Select(line => new GUILine(line)).ToArray();
 
     private ShipSelectionUIComponent(GameObject owner) : base(owner)
     {
@@ -28,33 +29,40 @@ public class ShipSelectionUIComponent : Component, IRenderable
     public void Render(SpriteBatch spriteBatch)
     {
         var scale = 2f;
-        var prevLineHeight = 0f;
-        Vector2 lineSize, pos;
+        var prevHeight = 0f;
+        var lineSpacing = 30f;
+        Vector2 halfScreen = new(
+                            _renderService!.Graphics.PreferredBackBufferWidth * .5f,
+                            _renderService!.Graphics.PreferredBackBufferHeight * .5f),
+            pos = Vector2.Zero;
 
-        foreach(var line in _text)
+        foreach(var line in _textLines)
         {
-            lineSize = Font!.MeasureString(line) * scale * .5f;
+            pos = new Vector2(
+                            halfScreen.X - line.Size.X,
+                            line.Size.Y + prevHeight + lineSpacing);
+            line.Render(spriteBatch, pos, scale);
 
-            pos = new Vector2(_renderService!.Graphics.PreferredBackBufferWidth * .5f - lineSize.X,
-                             (lineSize.Y + prevLineHeight) * scale);
-
-            spriteBatch.DrawString(Font, line, pos, Color.White,
-                                   0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
-
-            prevLineHeight = lineSize.Y;
+            prevHeight = pos.Y;
         }   
 
-        lineSize = Font!.MeasureString(this.SelectedShip.Name) * scale * .5f;
-
-        pos = new Vector2(_renderService!.Graphics.PreferredBackBufferWidth * .5f - lineSize.X,
-                          _renderService!.Graphics.PreferredBackBufferHeight - lineSize.Y * 4f);
-                          
-        spriteBatch.DrawString(Font, this.SelectedShip.Name, pos, Color.White,
-                                0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
-        
+        var nameLine = new GUILine(this.SelectedShip.Name, Font);
+        pos = new Vector2(halfScreen.X - nameLine.Size.X,
+                          _renderService!.Graphics.PreferredBackBufferHeight - nameLine.Size.Y * 4f);
+        nameLine.Render(spriteBatch, pos, scale);
     }
 
-    public SpriteFont? Font;
+    private SpriteFont? _font;
+    public SpriteFont? Font
+    {
+        get => _font;
+        set{
+            _font = value;
+            for(int i = 0; i < _textLines.Length; i++)
+                _textLines[i].Font = value;
+        }
+    }
+
     public ShipTemplate SelectedShip;
 
     public int LayerIndex { get; set; }
