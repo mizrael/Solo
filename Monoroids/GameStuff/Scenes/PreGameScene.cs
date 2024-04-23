@@ -63,5 +63,4 @@ internal class PreGameScene : Scene
 
         return background;
     }
-
 }

@@ -8,6 +8,7 @@ using Monoroids.Core.Assets.Loaders;
 using Monoroids.Core.Components;
 using Monoroids.Core.Services;
 using Monoroids.GameStuff.Components;
+using Monoroids.GameStuff.Services;
 using System;
 using System.Linq;
 
@@ -132,7 +133,8 @@ internal class PlayScene : Scene
 
     private GameObject BuildPlayer(SpriteSheet spriteSheet, Spawner bulletSpawner, CollisionService collisionService)
     {
-        var shipTexture = spriteSheet.Get("playerShip2_green");
+        var shipTemplate = GameState.Instance.ShipTemplate;
+        var shipTexture = spriteSheet.Get(shipTemplate.Asset);
 
         var player = new GameObject();
 
@@ -144,6 +146,7 @@ internal class PlayScene : Scene
         renderer.LayerIndex = (int)RenderLayers.Player;
 
         var brain = player.Components.Add<PlayerBrain>();
+        brain.Stats = shipTemplate.Stats;
         brain.OnDeath += player =>
         {
             GameServicesManager.Instance.GetService<SceneManager>()
@@ -162,10 +165,10 @@ internal class PlayScene : Scene
         weapon.ShotSound = Game.Content.Load<SoundEffect>("Sounds/laser");
 
         var shieldSprites = new[]{
-                "shield3",
-                "shield2",
-                "shield1"
-            };
+            "shield3",
+            "shield2",
+            "shield1"
+        };
         var shield = new GameObject();
         player.AddChild(shield);
         var shieldTransform = shield.Components.Add<TransformComponent>();
