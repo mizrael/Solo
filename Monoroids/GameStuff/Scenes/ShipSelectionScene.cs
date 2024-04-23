@@ -16,9 +16,9 @@ public class ShipSelectionScene : Scene
 {
     private static readonly ShipTemplate[] _shipTemplates =
     [
-        new ShipTemplate("Red", "playerShip2_red", PlayerStats.Default()),
-        new ShipTemplate("Green", "playerShip2_green", PlayerStats.Default()),
-        new ShipTemplate("Blue", "playerShip2_blue", PlayerStats.Default()),
+        new ShipTemplate("Red", "playerShip2_red", PlayerStats.Create(10, 10, 2000)),
+        new ShipTemplate("Green", "playerShip2_green", PlayerStats.Create(13, 13, 1000)),
+        new ShipTemplate("Blue", "playerShip2_blue", PlayerStats.Create(7, 7, 4000)),
     ];
 
     private GameObject _ui;
@@ -86,7 +86,7 @@ public class ShipSelectionScene : Scene
         _selectedShipIndex = index;
         _ships[_selectedShipIndex].Enabled = true;
 
-        _ui.Components.Get<ShipSelectionUIComponent>().SelectedShip = _shipTemplates[_selectedShipIndex];
+        _ui.Components.Get<ShipSelectionUIComponent>().SetSelectedShip(_ships[_selectedShipIndex], _shipTemplates[_selectedShipIndex]);
     }
 
     private void BuildShips(SpriteSheet spriteSheet)
@@ -95,15 +95,15 @@ public class ShipSelectionScene : Scene
 
         var renderService = GameServicesManager.Instance.GetService<RenderService>();
 
-        var halfSize = new Vector2(renderService.Graphics.PreferredBackBufferWidth / 2,
-                                    renderService.Graphics.PreferredBackBufferHeight / 2);
+        var shipPosition = new Vector2((float)renderService.Graphics.PreferredBackBufferWidth * .75f,
+                                       renderService.Graphics.PreferredBackBufferHeight * .5f);
         var radius = 25f;
         var speed = 0.005f;
 
         renderService.Graphics.DeviceReset += (s, e) =>
         {
-            halfSize = new Vector2(renderService.Graphics.PreferredBackBufferWidth / 2,
-                                    renderService.Graphics.PreferredBackBufferHeight / 2);
+            shipPosition = new Vector2((float)renderService.Graphics.PreferredBackBufferWidth * .75f,
+                                       renderService.Graphics.PreferredBackBufferHeight * .5f);
         };
 
         _ships = _shipTemplates.Select(s =>
@@ -120,7 +120,7 @@ public class ShipSelectionScene : Scene
             brain.OnUpdate = (owner, gameTime) =>
             {
                 var dt = (float)gameTime.TotalGameTime.TotalMilliseconds * speed;
-                playerTransform.Local.Position = halfSize + new Vector2(MathF.Sin(dt), MathF.Cos(dt)) * radius;
+                playerTransform.Local.Position = shipPosition + new Vector2(MathF.Sin(dt), MathF.Cos(dt)) * radius;
             };
 
             shipObj.Enabled = false;

@@ -35,14 +35,14 @@ public struct PlayerStats
         }
     }
 
-    public static PlayerStats Default() => new()
+    public static PlayerStats Create(int maxHealth = 10, int maxShields = 10, float enginePower = 2000f) => new()
     {
-        EnginePower = 2000f,
+        EnginePower = enginePower,
         RotationSpeed = 25f,
-        Health = 5,
-        MaxHealth = 10,
-        ShieldMaxPower = 10,
-        ShieldPower = 5,
+        Health = maxHealth,
+        MaxHealth = maxHealth,
+        ShieldMaxPower = maxShields,
+        ShieldPower = maxShields,
         HealthRegenRate = 20,
         ShieldRechargeRate = 10
     };
