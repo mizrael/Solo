@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34601.278
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Monoroids", "games\Monoroids\Monoroids.csproj", "{941A73B6-477E-4950-9359-CB10EE0294C7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Solo", "Solo\Solo.csproj", "{E4C1137D-A974-4243-80AF-7EF8402C8C17}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{941A73B6-477E-4950-9359-CB10EE0294C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{941A73B6-477E-4950-9359-CB10EE0294C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{941A73B6-477E-4950-9359-CB10EE0294C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{941A73B6-477E-4950-9359-CB10EE0294C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4C1137D-A974-4243-80AF-7EF8402C8C17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4C1137D-A974-4243-80AF-7EF8402C8C17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4C1137D-A974-4243-80AF-7EF8402C8C17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4C1137D-A974-4243-80AF-7EF8402C8C17}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A8DB24BE-C2CD-4FA8-B4F5-9FEECB8B62BE}
+	EndGlobalSection
+EndGlobal
