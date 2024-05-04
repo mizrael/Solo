@@ -1,4 +1,4 @@
-﻿namespace Monoroids.GameStuff.Scenes;
+﻿namespace Monoroids.Scenes;
 
 public sealed class SceneNames
 {

@@ -1,4 +1,6 @@
-﻿public enum RenderLayers
+﻿namespace Monoroids;
+
+public enum RenderLayers
 {
     Background = 0,
     Enemies,

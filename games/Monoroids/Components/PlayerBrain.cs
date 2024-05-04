@@ -4,7 +4,7 @@ using Solo;
 using Solo.Components;
 using Solo.Services;
 
-namespace Monoroids.GameStuff.Components;
+namespace Monoroids.Components;
 
 public class PlayerBrain : Component
 {

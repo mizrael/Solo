@@ -4,7 +4,7 @@ using Solo.Components;
 using Solo.Services;
 using System;
 
-namespace Monoroids.GameStuff.Components;
+namespace Monoroids.Components;
 
 public class AsteroidBrain : Component
 {

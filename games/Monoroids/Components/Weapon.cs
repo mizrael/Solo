@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Audio;
 using Solo;
 using Solo.Components;
 
-namespace Monoroids.GameStuff.Components;
+namespace Monoroids.Components;
 
 public class Weapon : Component
 {

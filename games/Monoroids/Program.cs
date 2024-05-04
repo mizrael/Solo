@@ -1,3 +1,3 @@
 ﻿
-using var game = new Monoroids.Game1();
+using var game = new Monoroids.MonoroidsGame();
 game.Run();

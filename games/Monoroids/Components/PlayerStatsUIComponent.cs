@@ -4,7 +4,7 @@ using Solo.Services;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 
-namespace Monoroids.GameStuff.Components;
+namespace Monoroids.Components;
 
 public class PlayerStatsUIComponent : Component, IRenderable
 {

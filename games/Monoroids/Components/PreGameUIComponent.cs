@@ -4,9 +4,9 @@ using Microsoft.Xna.Framework.Input;
 using Solo;
 using Solo.Components;
 using Solo.Services;
-using Monoroids.GameStuff.Scenes;
+using Monoroids.Scenes;
 
-namespace Monoroids.GameStuff.Components;
+namespace Monoroids.Components;
 
 public class PreGameUIComponent : Component, IRenderable
 {

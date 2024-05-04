@@ -5,14 +5,14 @@ using Solo.Services;
 
 namespace Monoroids;
 
-public class Game1 : Game
+public class MonoroidsGame : Game
 {
     private GraphicsDeviceManager _graphics;
     
     private SceneManager _sceneManager;
     private RenderService _renderService;
 
-    public Game1()
+    public MonoroidsGame()
     {
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
@@ -46,12 +46,12 @@ public class Game1 : Game
 
     protected override void LoadContent()
     {
-        _sceneManager.AddScene(GameStuff.Scenes.SceneNames.Welcome, new GameStuff.Scenes.PreGameScene(this, "Monoroids!"));
-        _sceneManager.AddScene(GameStuff.Scenes.SceneNames.ShipSelection, new GameStuff.Scenes.ShipSelectionScene(this));
-        _sceneManager.AddScene(GameStuff.Scenes.SceneNames.Play, new GameStuff.Scenes.PlayScene(this));
-        _sceneManager.AddScene(GameStuff.Scenes.SceneNames.GameOver, new GameStuff.Scenes.PreGameScene(this, "Game Over!"));
+        _sceneManager.AddScene(Scenes.SceneNames.Welcome, new Scenes.PreGameScene(this, "Monoroids!"));
+        _sceneManager.AddScene(Scenes.SceneNames.ShipSelection, new Scenes.ShipSelectionScene(this));
+        _sceneManager.AddScene(Scenes.SceneNames.Play, new Scenes.PlayScene(this));
+        _sceneManager.AddScene(Scenes.SceneNames.GameOver, new Scenes.PreGameScene(this, "Game Over!"));
         
-        _sceneManager.SetCurrentScene(GameStuff.Scenes.SceneNames.Welcome);
+        _sceneManager.SetCurrentScene(Scenes.SceneNames.Welcome);
     }
 
     protected override void Update(GameTime gameTime)

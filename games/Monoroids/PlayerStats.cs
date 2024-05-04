@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 
+namespace Monoroids;
+
 public struct PlayerStats
 {
     public float EnginePower;

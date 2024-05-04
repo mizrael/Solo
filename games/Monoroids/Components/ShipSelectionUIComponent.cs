@@ -7,7 +7,7 @@ using Solo.GUI;
 using System.Linq;
 using Solo.Assets;
 
-namespace Monoroids.GameStuff.Components;
+namespace Monoroids.Components;
 
 public class ShipSelectionUIComponent : Component, IRenderable
 {

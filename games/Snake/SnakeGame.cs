@@ -2,14 +2,17 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
+using Solo.Services;
+
 namespace Snake;
 
-public class Game1 : Game
+public class SnakeGame : Game
 {
     private GraphicsDeviceManager _graphics;
-    private SpriteBatch _spriteBatch;
+    private SceneManager _sceneManager;
+    private RenderService _renderService;
 
-    public Game1()
+    public SnakeGame()
     {
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
@@ -18,7 +21,22 @@ public class Game1 : Game
 
     protected override void Initialize()
     {
-        // TODO: Add your initialization logic here
+        _graphics.IsFullScreen = false;
+        _graphics.PreferredBackBufferWidth = 1024;
+        _graphics.PreferredBackBufferHeight = 768;
+        _graphics.ApplyChanges();
+
+        _renderService = new RenderService(_graphics);
+        _renderService.SetLayerConfig((int)RenderLayers.Background, new RenderLayerConfig
+        {
+            SamplerState = SamplerState.LinearWrap
+        });
+        GameServicesManager.Instance.AddService(_renderService);
+
+        _sceneManager = new SceneManager();
+        GameServicesManager.Instance.AddService(_sceneManager);
+
+        GameServicesManager.Instance.Initialize();
 
         base.Initialize();
     }

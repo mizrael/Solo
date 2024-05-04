@@ -2,10 +2,10 @@
 using Solo.Assets;
 using Solo.Components;
 using Solo.Services;
-using Monoroids.GameStuff.Components;
+using Monoroids.Components;
 using System;
 
-namespace Monoroids.GameStuff.Services;
+namespace Monoroids.Services;
 
 public class PowerupFactory
 {

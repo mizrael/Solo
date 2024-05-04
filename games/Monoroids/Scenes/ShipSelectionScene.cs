@@ -6,11 +6,11 @@ using Solo.Assets;
 using Solo.Assets.Loaders;
 using Solo.Components;
 using Solo.Services;
-using Monoroids.GameStuff.Components;
+using Monoroids.Components;
 using System;
 using System.Linq;
 
-namespace Monoroids.GameStuff.Scenes;
+namespace Monoroids.Scenes;
 
 public class ShipSelectionScene : Scene
 {

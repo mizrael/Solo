@@ -4,10 +4,10 @@ using Solo;
 using Solo.Assets;
 using Solo.Components;
 using Solo.Services;
-using Monoroids.GameStuff.Components;
+using Monoroids.Components;
 using System;
 
-namespace Monoroids.GameStuff.Scenes;
+namespace Monoroids.Scenes;
 
 internal class PreGameScene : Scene
 {

@@ -7,12 +7,12 @@ using Solo.Assets;
 using Solo.Assets.Loaders;
 using Solo.Components;
 using Solo.Services;
-using Monoroids.GameStuff.Components;
-using Monoroids.GameStuff.Services;
+using Monoroids.Components;
+using Monoroids.Services;
 using System;
 using System.Linq;
 
-namespace Monoroids.GameStuff.Scenes;
+namespace Monoroids.Scenes;
 
 internal class PlayScene : Scene
 {

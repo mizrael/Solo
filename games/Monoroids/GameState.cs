@@ -1,6 +1,6 @@
 using System;
 
-namespace Monoroids.GameStuff;
+namespace Monoroids;
 
 public class GameState
 {
