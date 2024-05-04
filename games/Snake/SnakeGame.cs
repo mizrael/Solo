@@ -43,9 +43,7 @@ public class SnakeGame : Game
 
     protected override void LoadContent()
     {
-        _spriteBatch = new SpriteBatch(GraphicsDevice);
-
-        // TODO: use this.Content to load your game content here
+        _sceneManager.AddScene(Scenes.SceneNames.Play, new Scenes.PlayScene(this));
     }
 
     protected override void Update(GameTime gameTime)
@@ -53,16 +51,14 @@ public class SnakeGame : Game
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
 
-        // TODO: Add your update logic here
+        GameServicesManager.Instance.Step(gameTime);
 
         base.Update(gameTime);
     }
 
     protected override void Draw(GameTime gameTime)
     {
-        GraphicsDevice.Clear(Color.CornflowerBlue);
-
-        // TODO: Add your drawing code here
+        _renderService.Render();
 
         base.Draw(gameTime);
     }
