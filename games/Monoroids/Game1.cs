@@ -46,7 +46,7 @@ public class Game1 : Game
 
     protected override void LoadContent()
     {
-        _sceneManager.AddScene(GameStuff.Scenes.SceneNames.Welcome, new GameStuff.Scenes.PreGameScene(this, "Blazeroids!"));
+        _sceneManager.AddScene(GameStuff.Scenes.SceneNames.Welcome, new GameStuff.Scenes.PreGameScene(this, "Monoroids!"));
         _sceneManager.AddScene(GameStuff.Scenes.SceneNames.ShipSelection, new GameStuff.Scenes.ShipSelectionScene(this));
         _sceneManager.AddScene(GameStuff.Scenes.SceneNames.Play, new GameStuff.Scenes.PlayScene(this));
         _sceneManager.AddScene(GameStuff.Scenes.SceneNames.GameOver, new GameStuff.Scenes.PreGameScene(this, "Game Over!"));

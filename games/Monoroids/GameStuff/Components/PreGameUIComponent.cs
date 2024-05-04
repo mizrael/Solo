@@ -11,6 +11,7 @@ namespace Monoroids.GameStuff.Components;
 public class PreGameUIComponent : Component, IRenderable
 {
     private RenderService _renderService;
+    private KeyboardState _prevKeyState = new();
 
     private PreGameUIComponent(GameObject owner) : base(owner)
     {
@@ -29,8 +30,8 @@ public class PreGameUIComponent : Component, IRenderable
         var pos = new Vector2(
             (float)_renderService.Graphics.PreferredBackBufferWidth * .5f - size.X,
             (float)_renderService.Graphics.PreferredBackBufferHeight * .5f - size.Y);
-    
-        spriteBatch.DrawString(this.Font, this.Text, pos, Color.White, 
+
+        spriteBatch.DrawString(this.Font, this.Text, pos, Color.White,
                                0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
 
         var text = "press Enter to start";
@@ -45,14 +46,15 @@ public class PreGameUIComponent : Component, IRenderable
     protected override void UpdateCore(GameTime gameTime)
     {
         var keyboardState = Keyboard.GetState();
-        var canStart = keyboardState.IsKeyDown(Keys.Enter);
+        var canStart = _prevKeyState.IsKeyDown(Keys.Enter) && keyboardState.IsKeyUp(Keys.Enter);
         if (canStart)
             GameServicesManager.Instance.GetService<SceneManager>().SetCurrentScene(SceneNames.ShipSelection);
+        _prevKeyState = keyboardState;
     }
 
     public int LayerIndex { get; set; }
     public bool Hidden { get; set; }
 
-    public string Text = "Blazeroids!";
+    public string Text = "Monoroids!";
     public SpriteFont Font;
 }
