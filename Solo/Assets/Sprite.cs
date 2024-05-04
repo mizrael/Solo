@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Monoroids.Core.Assets;
+namespace Solo.Assets;
 
 public record Sprite
 {

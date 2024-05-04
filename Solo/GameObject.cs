@@ -1,8 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
-using Monoroids.Core.Components;
-using System.Collections.Generic;
+using Solo.Components;
 
-namespace Monoroids.Core;
+namespace Solo;
 
 public class GameObject
 {

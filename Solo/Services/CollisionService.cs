@@ -1,9 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
-using Monoroids.Core.Components;
-using System.Collections.Generic;
-using System.Linq;
+using Solo.Components;
 
-namespace Monoroids.Core.Services;
+namespace Solo.Services;
 
 public class CollisionService : IGameService
 {

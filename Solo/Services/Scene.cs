@@ -1,7 +1,6 @@
-﻿using System;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 
-namespace Monoroids.Core.Services;
+namespace Solo.Services;
 
 public abstract class Scene
 {

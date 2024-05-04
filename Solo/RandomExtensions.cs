@@ -1,6 +1,5 @@
-﻿using System;
-
-namespace Monoroids.Core;
+﻿
+namespace Solo;
 
 public static class RandomExtensions
 {

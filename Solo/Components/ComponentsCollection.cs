@@ -1,9 +1,7 @@
 ﻿using System.Collections;
-using System;
-using System.Collections.Generic;
-using Monoroids.Core.Exceptions;
+using Solo.Exceptions;
 
-namespace Monoroids.Core.Components;
+namespace Solo.Components;
 
 public class ComponentsCollection : IEnumerable<Component>
 {

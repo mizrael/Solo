@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Monoroids.Core.Services;
+﻿namespace Solo.Services;
 
 public sealed class GameServicesManager
 {

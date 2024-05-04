@@ -1,8 +1,6 @@
-﻿using System;
-using Microsoft.Xna.Framework;
-using System.Collections.Generic;
+﻿using Microsoft.Xna.Framework;
 
-namespace Monoroids.Core.Services;
+namespace Solo.Services;
 
 public class SceneManager : IGameService
 {

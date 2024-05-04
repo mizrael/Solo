@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 
-namespace Monoroids.Core;
+namespace Solo;
 
 public static class Texture2DUtils
 {

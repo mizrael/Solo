@@ -1,7 +1,6 @@
-﻿using System;
-using Monoroids.Core.Services;
+﻿using Solo.Services;
 
-namespace Monoroids.Core.Exceptions;
+namespace Solo.Exceptions;
 
 public class ServiceNotFoundException<TC> : Exception where TC : IGameService
 {

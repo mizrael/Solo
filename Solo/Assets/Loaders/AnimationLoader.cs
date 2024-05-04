@@ -1,9 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System.IO;
 using System.Text.Json;
 
-namespace Monoroids.Core.Assets.Loaders;
+namespace Solo.Assets.Loaders;
 
 public class AnimationLoader
 {

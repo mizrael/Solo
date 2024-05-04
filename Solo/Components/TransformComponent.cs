@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace Monoroids.Core.Components;
+namespace Solo.Components;
 
 public class TransformComponent : Component
 {

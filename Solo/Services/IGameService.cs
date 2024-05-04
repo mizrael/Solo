@@ -1,4 +1,4 @@
-﻿namespace Monoroids.Core.Services;
+﻿namespace Solo.Services;
 
 public interface IGameService
 {

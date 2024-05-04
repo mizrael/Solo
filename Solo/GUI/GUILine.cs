@@ -1,7 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Monoroids.Core.GUI;
+namespace Solo.GUI;
 
 public record struct GUILine
 {

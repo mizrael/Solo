@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
 
-namespace Monoroids.Core;
+namespace Solo;
 
 public static class Vector2Utils
 {

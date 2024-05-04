@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Reflection;
 
-namespace Monoroids.Core.Components;
+namespace Solo.Components;
 
 internal class ComponentsFactory
 {

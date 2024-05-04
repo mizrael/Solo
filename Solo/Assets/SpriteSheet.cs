@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace Monoroids.Core.Assets;
+﻿namespace Solo.Assets;
 
 public record SpriteSheet
 {

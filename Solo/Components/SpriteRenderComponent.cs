@@ -1,9 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Monoroids.Core.Assets;
-using Monoroids.Core.Services;
+using Solo.Assets;
+using Solo.Services;
 
-namespace Monoroids.Core.Components;
+namespace Solo.Components;
 
 public class SpriteRenderComponent : Component, IRenderable
 {

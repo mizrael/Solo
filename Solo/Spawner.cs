@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Monoroids.Core;
+﻿namespace Solo;
 
 public class Spawner : GameObject
 {

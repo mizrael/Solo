@@ -1,7 +1,6 @@
-﻿using System;
-using Monoroids.Core.Components;
+﻿using Solo.Components;
 
-namespace Monoroids.Core.Exceptions;
+namespace Solo.Exceptions;
 
 public class ComponentAlreadyAddedException : Exception
 {

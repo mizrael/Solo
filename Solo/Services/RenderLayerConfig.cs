@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 
-namespace Monoroids.Core.Services;
+namespace Solo.Services;
 
 public record struct RenderLayerConfig
 {

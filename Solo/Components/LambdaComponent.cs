@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
 
-namespace Monoroids.Core.Components;
+namespace Solo.Components;
 
 public class LambdaComponent : Component
 {
