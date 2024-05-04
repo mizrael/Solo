@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
-using Monoroids.Core;
-using Monoroids.Core.Components;
+using Solo;
+using Solo.Components;
 
 namespace Monoroids.GameStuff.Components;
 

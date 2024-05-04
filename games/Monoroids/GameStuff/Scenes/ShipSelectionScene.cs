@@ -1,11 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Monoroids.Core;
-using Monoroids.Core.Assets;
-using Monoroids.Core.Assets.Loaders;
-using Monoroids.Core.Components;
-using Monoroids.Core.Services;
+using Solo;
+using Solo.Assets;
+using Solo.Assets.Loaders;
+using Solo.Components;
+using Solo.Services;
 using Monoroids.GameStuff.Components;
 using System;
 using System.Linq;

@@ -1,8 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using Monoroids.Core;
-using Monoroids.Core.Components;
-using Monoroids.Core.Services;
+using Solo;
+using Solo.Components;
+using Solo.Services;
 
 namespace Monoroids.GameStuff.Components;
 

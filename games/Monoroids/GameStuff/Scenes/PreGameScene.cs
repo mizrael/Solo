@@ -1,9 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Monoroids.Core;
-using Monoroids.Core.Assets;
-using Monoroids.Core.Components;
-using Monoroids.Core.Services;
+using Solo;
+using Solo.Assets;
+using Solo.Components;
+using Solo.Services;
 using Monoroids.GameStuff.Components;
 using System;
 

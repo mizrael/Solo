@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
-using Monoroids.Core;
-using Monoroids.Core.Components;
-using Monoroids.Core.Services;
+using Solo;
+using Solo.Components;
+using Solo.Services;
 
 public class BulletBrain : Component
 {

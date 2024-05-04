@@ -1,6 +1,6 @@
-﻿using Monoroids.Core;
-using Monoroids.Core.Components;
-using Monoroids.Core.Services;
+﻿using Solo;
+using Solo.Components;
+using Solo.Services;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 

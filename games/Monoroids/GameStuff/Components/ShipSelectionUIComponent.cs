@@ -1,11 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Monoroids.Core;
-using Monoroids.Core.Components;
-using Monoroids.Core.Services;
-using Monoroids.Core.GUI;
+using Solo;
+using Solo.Components;
+using Solo.Services;
+using Solo.GUI;
 using System.Linq;
-using Monoroids.Core.Assets;
+using Solo.Assets;
 
 namespace Monoroids.GameStuff.Components;
 
