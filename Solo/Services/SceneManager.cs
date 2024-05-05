@@ -37,8 +37,8 @@ public class SceneManager : IGameService
             this.Current.Step(gameTime);
     }
 
-    public Scene Current { get; private set; }
+    public Scene? Current { get; private set; }
 
-    public event OnSceneChangedHandler OnSceneChanged;
+    public event OnSceneChangedHandler? OnSceneChanged;
     public delegate void OnSceneChangedHandler(Scene currentScene);
 }
