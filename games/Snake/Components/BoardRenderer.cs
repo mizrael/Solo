@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Solo;
 using Solo.Components;
 using Solo.Services;
+using Solo.Utils;
 
 namespace Snake.Components;
 
@@ -17,8 +18,8 @@ public class BoardRenderer : Component, IRenderable
     protected override void InitCore()
     {
         var renderService = GameServicesManager.Instance.GetService<RenderService>();
-        _texture = new Texture2D(renderService.Graphics.GraphicsDevice, 1, 1);
-        _texture.SetData(new Color[] { Color.White });
+        
+        _texture = renderService.CreateTexture(1, 1, Color.White);
 
         base.InitCore();
     }

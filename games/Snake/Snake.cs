@@ -13,10 +13,9 @@ public class Snake
 
     public readonly Segment Head;
 
-
     public record Segment
     {
-        public Point Position;
+        public Vector2 Position;
         public Direction Direction;
         public Segment? Next = null;
     }

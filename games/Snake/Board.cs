@@ -1,4 +1,6 @@
 using System;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.Xna.Framework;
 
 namespace Snake;
 
@@ -22,6 +24,12 @@ public class Board
 
     public void GenerateFood()
     {
+        var coords = GetRandomEmptyTile();
+        Tiles[coords.X, coords.Y] = TileType.Food;
+    }
+
+    public Point GetRandomEmptyTile()
+    {
         var x = 0;
         var y = 0;
         do
@@ -30,7 +38,7 @@ public class Board
             y = Random.Shared.Next(1, Height - 1);
         } while (Tiles[x, y] != TileType.Empty);
 
-        Tiles[x, y] = TileType.Food;
+        return new Point(x, y);
     }
 
     public int Width { get; }

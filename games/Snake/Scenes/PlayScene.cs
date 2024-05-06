@@ -2,6 +2,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Snake.Components;
 using Solo;
+using Solo.Components;
 using Solo.Services;
 
 namespace Snake.Scenes;
@@ -18,6 +19,14 @@ public class PlayScene : Scene
     {
         _renderService = GameServicesManager.Instance.GetService<RenderService>();
 
+        var snake = new Snake();
+        var snakeObject = new GameObject();
+        var snakeRenderer = snakeObject.Components.Add<SnakeRenderer>();
+        snakeRenderer.Snake = snake;
+        snakeRenderer.LayerIndex = (int)RenderLayers.Player;
+
+        this.Root.AddChild(snakeObject);
+
         var board = new Board(64, 64);
         var boardObject = new GameObject();
         var boardRenderer = boardObject.Components.Add<BoardRenderer>();
@@ -26,6 +35,7 @@ public class PlayScene : Scene
 
         var setTileSize = new Action(() =>
         {
+            snakeRenderer.TileSize = 
             boardRenderer.TileSize = new Vector2(
                 (float)_renderService.Graphics.PreferredBackBufferWidth / board.Width,
                 (float)_renderService.Graphics.PreferredBackBufferHeight / board.Height
@@ -35,5 +45,8 @@ public class PlayScene : Scene
         _renderService.Graphics.DeviceReset += (s, e) => setTileSize();
 
         this.Root.AddChild(boardObject);
+
+        var startTile = board.GetRandomEmptyTile();
+        snake.Head.Position = new Vector2(startTile.X, startTile.Y) * boardRenderer.TileSize;
     }
 }
