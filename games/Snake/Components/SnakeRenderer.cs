@@ -30,11 +30,12 @@ public class SnakeRenderer : Component, IRenderable
             return;
 
         var color = Color.Green;
-        
+
         var segment = Snake.Head;
         while (segment != null)
         {
-            spriteBatch.Draw(_texture, segment.Position, null, color, 0f, Vector2.Zero, TileSize, SpriteEffects.None, LayerIndex);
+            var pos = segment.Tile.ToVector2() * TileSize;
+            spriteBatch.Draw(_texture, pos, null, color, 0f, Vector2.Zero, TileSize, SpriteEffects.None, LayerIndex);
 
             segment = segment.Next;
         }

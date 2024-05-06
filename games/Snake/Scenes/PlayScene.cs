@@ -21,6 +21,8 @@ public class PlayScene : Scene
 
         var snake = new Snake();
         var snakeObject = new GameObject();
+        var snakeBrain = snakeObject.Components.Add<SnakeBrain>();
+        snakeBrain.Snake = snake;
         var snakeRenderer = snakeObject.Components.Add<SnakeRenderer>();
         snakeRenderer.Snake = snake;
         snakeRenderer.LayerIndex = (int)RenderLayers.Player;
@@ -46,7 +48,6 @@ public class PlayScene : Scene
 
         this.Root.AddChild(boardObject);
 
-        var startTile = board.GetRandomEmptyTile();
-        snake.Head.Position = new Vector2(startTile.X, startTile.Y) * boardRenderer.TileSize;
+        snake.Head.Tile = board.GetRandomEmptyTile();
     }
 }

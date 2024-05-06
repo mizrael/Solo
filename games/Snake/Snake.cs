@@ -6,17 +6,19 @@ public class Snake
 {
     public Snake()
     {
-        Head = new Segment();
+        Tail = Head = new Segment();
     }
 
     public Direction Direction;
 
     public readonly Segment Head;
+    public readonly Segment Tail;
 
     public record Segment
     {
-        public Vector2 Position;
+        public Point Tile;
         public Direction Direction;
         public Segment? Next = null;
+        public Segment? Prev = null;
     }
 }
