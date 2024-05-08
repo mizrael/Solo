@@ -62,6 +62,18 @@ public class Snake
         Tail = Tail.Next;
     }
 
+    public bool CheckSelfHit()
+    {
+        var current = Head.Next;
+        while (current is not null)
+        {
+            if (current.Tile == Head.Tile)
+                return true;
+            current = current.Next;
+        }
+        return false;
+    }
+
     public Direction Direction;
     public Segment Head { get; private set; }
     public Segment Tail { get; private set; }

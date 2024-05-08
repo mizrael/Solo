@@ -42,6 +42,12 @@ public class SnakeBrain : Component
             return;
         }
 
+        if(Snake.CheckSelfHit())
+        {
+            OnDeath?.Invoke();
+            return;
+        }
+
         var tile = Board.GetTileAt(Snake.Head.Tile);
         if (tile == TileType.Wall)
         {
