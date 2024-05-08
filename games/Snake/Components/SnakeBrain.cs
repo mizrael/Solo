@@ -36,10 +36,20 @@ public class SnakeBrain : Component
         Snake.Move();
 
         if (Snake.Head.Tile.X < 0 || Snake.Head.Tile.X >= Board.Width ||
-            Snake.Head.Tile.Y < 0 || Snake.Head.Tile.Y >= Board.Height ||
-            Board.Tiles[Snake.Head.Tile.X, Snake.Head.Tile.Y] == TileType.Wall)
+            Snake.Head.Tile.Y < 0 || Snake.Head.Tile.Y >= Board.Height)            
         {
             OnDeath?.Invoke();
+            return;
+        }
+
+        var tile = Board.GetTileAt(Snake.Head.Tile);
+        if (tile == TileType.Wall)
+        {
+            OnDeath?.Invoke();
+        }
+        else if(tile == TileType.Food)
+        {
+            Snake.Eat(Snake.Head.Tile, Board);
         }
     }
 

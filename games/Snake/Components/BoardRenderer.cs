@@ -35,7 +35,7 @@ public class BoardRenderer : Component, IRenderable
         {
             for (var x = 0; x < Board.Width; x++)
             {
-                var tile = Board.Tiles[x, y];
+                var tile = Board.GetTileAt(x, y);
 
                 var color = tile switch
                 {

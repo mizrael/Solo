@@ -49,6 +49,19 @@ public class Snake
         Head = Tail = new Segment();
     }
 
+    public void Eat(Point tile, Board board)
+    {
+        board.ClearTile(tile);
+
+        Tail.Next = new Segment
+        {
+            Tile = tile,
+            Direction = Tail.Direction,
+            Prev = Tail,
+        };
+        Tail = Tail.Next;
+    }
+
     public Direction Direction;
     public Segment Head { get; private set; }
     public Segment Tail { get; private set; }

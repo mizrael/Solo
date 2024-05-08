@@ -19,7 +19,7 @@ public class PlayScene : Scene
     {
         _renderService = GameServicesManager.Instance.GetService<RenderService>();
 
-        var board = new Board(64, 64);
+        var board = new Board(16, 16);
         var snake = new Snake();
 
         var snakeObject = new GameObject();
@@ -33,6 +33,8 @@ public class PlayScene : Scene
         this.Root.AddChild(snakeObject);
 
         var boardObject = new GameObject();
+        var boardBrain = boardObject.Components.Add<BoardBrain>();
+        boardBrain.Board = board;
         var boardRenderer = boardObject.Components.Add<BoardRenderer>();
         boardRenderer.Board = board;
         boardRenderer.LayerIndex = (int)RenderLayers.Background;
