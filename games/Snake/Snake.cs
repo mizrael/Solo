@@ -44,6 +44,11 @@ public class Snake
         Head = newHead;
     }
 
+    public void Reset()
+    {
+        Head = Tail = new Segment();
+    }
+
     public Direction Direction;
     public Segment Head { get; private set; }
     public Segment Tail { get; private set; }

@@ -19,17 +19,19 @@ public class PlayScene : Scene
     {
         _renderService = GameServicesManager.Instance.GetService<RenderService>();
 
+        var board = new Board(64, 64);
         var snake = new Snake();
+
         var snakeObject = new GameObject();
         var snakeBrain = snakeObject.Components.Add<SnakeBrain>();
         snakeBrain.Snake = snake;
+        snakeBrain.Board = board;
         var snakeRenderer = snakeObject.Components.Add<SnakeRenderer>();
         snakeRenderer.Snake = snake;
         snakeRenderer.LayerIndex = (int)RenderLayers.Player;
 
         this.Root.AddChild(snakeObject);
 
-        var board = new Board(64, 64);
         var boardObject = new GameObject();
         var boardRenderer = boardObject.Components.Add<BoardRenderer>();
         boardRenderer.Board = board;
@@ -37,7 +39,7 @@ public class PlayScene : Scene
 
         var setTileSize = new Action(() =>
         {
-            snakeRenderer.TileSize = 
+            snakeRenderer.TileSize =
             boardRenderer.TileSize = new Vector2(
                 (float)_renderService.Graphics.PreferredBackBufferWidth / board.Width,
                 (float)_renderService.Graphics.PreferredBackBufferHeight / board.Height
@@ -45,9 +47,14 @@ public class PlayScene : Scene
         });
         setTileSize();
         _renderService.Graphics.DeviceReset += (s, e) => setTileSize();
-
         this.Root.AddChild(boardObject);
 
         snake.Head.Tile = board.GetRandomEmptyTile();
+
+        snakeBrain.OnDeath += () =>
+        {
+            snake.Reset();
+            snake.Head.Tile = board.GetRandomEmptyTile();
+        };
     }
 }
