@@ -34,8 +34,8 @@ public class ShipSelectionUIComponent : Component, IRenderable
         var scale = 2f;
         var lineSpacing = 30f;
         Vector2 halfScreen = new(
-                            _renderService!.Graphics.PreferredBackBufferWidth * .5f,
-                            _renderService!.Graphics.PreferredBackBufferHeight * .5f),
+                            _renderService!.Graphics.GraphicsDevice.Viewport.Width * .5f,
+                            _renderService!.Graphics.GraphicsDevice.Viewport.Height * .5f),
             pos = Vector2.Zero;
 
         foreach (var line in _textLines)
@@ -48,11 +48,11 @@ public class ShipSelectionUIComponent : Component, IRenderable
         if (_selectedShipSprite == null)
             return;
 
-        var startX = (float)_renderService!.Graphics.PreferredBackBufferWidth * .125f;
+        var startX = (float)_renderService!.Graphics.GraphicsDevice.Viewport.Width * .125f;
 
         var tmpLine = new GUILine(_selectedShipTemplate.Name, Font);
         pos = new Vector2(startX,
-                          _renderService!.Graphics.PreferredBackBufferHeight * .35f);
+                          _renderService!.Graphics.GraphicsDevice.Viewport.Height * .35f);
         tmpLine.Render(spriteBatch, pos, scale);
 
         scale = 1f;        

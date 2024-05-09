@@ -95,15 +95,15 @@ public class ShipSelectionScene : Scene
 
         var renderService = GameServicesManager.Instance.GetService<RenderService>();
 
-        var shipPosition = new Vector2((float)renderService.Graphics.PreferredBackBufferWidth * .75f,
-                                       renderService.Graphics.PreferredBackBufferHeight * .5f);
+        var shipPosition = new Vector2((float)renderService.Graphics.GraphicsDevice.Viewport.Width * .75f,
+                                       renderService.Graphics.GraphicsDevice.Viewport.Height * .5f);
         var radius = 25f;
         var speed = 0.005f;
 
         renderService.Graphics.DeviceReset += (s, e) =>
         {
-            shipPosition = new Vector2((float)renderService.Graphics.PreferredBackBufferWidth * .75f,
-                                       renderService.Graphics.PreferredBackBufferHeight * .5f);
+            shipPosition = new Vector2((float)renderService.Graphics.GraphicsDevice.Viewport.Width * .75f,
+                                       renderService.Graphics.GraphicsDevice.Viewport.Height * .5f);
         };
 
         _ships = _shipTemplates.Select(s =>
@@ -144,8 +144,8 @@ public class ShipSelectionScene : Scene
         var setBackgroundSize = new Action(() =>
         {
             sprite.Bounds = new Rectangle(0, 0,
-                               (int)(renderService.Graphics.PreferredBackBufferWidth * 1.5),
-                                (int)(renderService.Graphics.PreferredBackBufferHeight * 1.5));
+                               (int)(renderService.Graphics.GraphicsDevice.Viewport.Width * 1.5),
+                                (int)(renderService.Graphics.GraphicsDevice.Viewport.Height * 1.5));
         });
         setBackgroundSize();
 

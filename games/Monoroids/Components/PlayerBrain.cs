@@ -68,13 +68,13 @@ public class PlayerBrain : Component
     private void HandleMovement(KeyboardState keyboard)
     {
         if (_transform.World.Position.X < -_spriteRender.Sprite.Bounds.Width)
-            _transform.Local.Position.X = _renderService.Graphics.PreferredBackBufferWidth + _spriteRender.Sprite.Center.X;
-        else if (_transform.World.Position.X > _renderService.Graphics.PreferredBackBufferWidth + _spriteRender.Sprite.Bounds.Width)
+            _transform.Local.Position.X = _renderService.Graphics.GraphicsDevice.Viewport.Width + _spriteRender.Sprite.Center.X;
+        else if (_transform.World.Position.X > _renderService.Graphics.GraphicsDevice.Viewport.Width + _spriteRender.Sprite.Bounds.Width)
             _transform.Local.Position.X = -_spriteRender.Sprite.Center.X;
 
         if (_transform.World.Position.Y < -_spriteRender.Sprite.Bounds.Height)
-            _transform.Local.Position.Y = _renderService.Graphics.PreferredBackBufferHeight + _spriteRender.Sprite.Center.Y;
-        else if (_transform.World.Position.Y > _renderService.Graphics.PreferredBackBufferHeight + _spriteRender.Sprite.Bounds.Height)
+            _transform.Local.Position.Y = _renderService.Graphics.GraphicsDevice.Viewport.Height + _spriteRender.Sprite.Center.Y;
+        else if (_transform.World.Position.Y > _renderService.Graphics.GraphicsDevice.Viewport.Height + _spriteRender.Sprite.Bounds.Height)
             _transform.Local.Position.Y = -_spriteRender.Sprite.Center.Y;
 
         if (keyboard.IsKeyDown(Keys.Right))

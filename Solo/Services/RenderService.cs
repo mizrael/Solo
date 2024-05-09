@@ -6,15 +6,25 @@ namespace Solo.Services;
 public class RenderService : IGameService
 {
     public readonly GraphicsDeviceManager Graphics;
+    public readonly GameWindow Window;
 
     private readonly SpriteBatch _spriteBatch;
     private SceneManager _sceneManager;
     private SortedList<int, IList<IRenderable>> _layers = new();
     private Dictionary<int, RenderLayerConfig> _layerConfigs = new();
 
-    public RenderService(GraphicsDeviceManager graphics)
+    public RenderService(GraphicsDeviceManager graphics, GameWindow window)
     {
         Graphics = graphics ?? throw new System.ArgumentNullException(nameof(graphics));
+        Window = window ?? throw new ArgumentNullException(nameof(window));
+
+        window.ClientSizeChanged += (sender, args) =>
+        {
+            Graphics.PreferredBackBufferWidth = window.ClientBounds.Width;
+            Graphics.PreferredBackBufferHeight = window.ClientBounds.Height;
+            Graphics.ApplyChanges();
+        };
+
         _spriteBatch = new SpriteBatch(Graphics.GraphicsDevice);
     }
 

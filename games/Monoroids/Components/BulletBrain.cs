@@ -34,8 +34,8 @@ public class BulletBrain : Component
 
         var isOutScreen = _transformComponent.World.Position.X < 0 ||
                           _transformComponent.World.Position.Y < 0 ||
-                          _transformComponent.World.Position.X > _renderService.Graphics.PreferredBackBufferWidth ||
-                          _transformComponent.World.Position.Y > _renderService.Graphics.PreferredBackBufferHeight;
+                          _transformComponent.World.Position.X > _renderService.Graphics.GraphicsDevice.Viewport.Width ||
+                          _transformComponent.World.Position.Y > _renderService.Graphics.GraphicsDevice.Viewport.Height;
         if (isOutScreen)
             this.Owner.Enabled = false;
     }

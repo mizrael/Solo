@@ -27,7 +27,7 @@ public class MonoroidsGame : Game
         _graphics.PreferredBackBufferHeight = 768;
         _graphics.ApplyChanges();
 
-        _renderService = new RenderService(_graphics);
+        _renderService = new RenderService(_graphics, Window);
         _renderService.SetLayerConfig((int)RenderLayers.Background, new RenderLayerConfig
         {
             SamplerState = SamplerState.LinearWrap

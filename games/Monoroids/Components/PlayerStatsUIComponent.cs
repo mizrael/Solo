@@ -39,8 +39,8 @@ public class PlayerStatsUIComponent : Component, IRenderable
         float ratio = (float)this.PlayerBrain.Stats.ShieldPower / this.PlayerBrain.Stats.ShieldMaxPower;
         int width = (int)(ratio * _maxWidth);
         
-        int x = _renderService.Graphics.PreferredBackBufferWidth - width - _rightOffset;
-        int y = _renderService.Graphics.PreferredBackBufferHeight - _maxHeight - _bottomOffset - _maxHeight - 5;
+        int x = _renderService.Graphics.GraphicsDevice.Viewport.Width - width - _rightOffset;
+        int y = _renderService.Graphics.GraphicsDevice.Viewport.Height - _maxHeight - _bottomOffset - _maxHeight - 5;
 
         spriteBatch.Draw(_texture, new Rectangle(x, y, width, _maxHeight), _shieldColor);
     }
@@ -50,8 +50,8 @@ public class PlayerStatsUIComponent : Component, IRenderable
         float ratio = (float)this.PlayerBrain.Stats.Health / this.PlayerBrain.Stats.MaxHealth;
         int width = (int)(ratio * _maxWidth);
 
-        int x = _renderService.Graphics.PreferredBackBufferWidth - width - _rightOffset;
-        int y = _renderService.Graphics.PreferredBackBufferHeight - _maxHeight - _bottomOffset;
+        int x = _renderService.Graphics.GraphicsDevice.Viewport.Width - width - _rightOffset;
+        int y = _renderService.Graphics.GraphicsDevice.Viewport.Height - _maxHeight - _bottomOffset;
 
         var color = ratio > .5 ? Color.Green : Color.Red;
         spriteBatch.Draw(_texture, new Rectangle(x, y, width, _maxHeight), color);

@@ -28,8 +28,8 @@ public class PreGameUIComponent : Component, IRenderable
         var size = this.Font.MeasureString(this.Text) * scale * .5f;
 
         var pos = new Vector2(
-            (float)_renderService.Graphics.PreferredBackBufferWidth * .5f - size.X,
-            (float)_renderService.Graphics.PreferredBackBufferHeight * .5f - size.Y);
+            (float)_renderService.Graphics.GraphicsDevice.Viewport.Width * .5f - size.X,
+            (float)_renderService.Graphics.GraphicsDevice.Viewport.Height * .5f - size.Y);
 
         spriteBatch.DrawString(this.Font, this.Text, pos, Color.White,
                                0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
@@ -38,7 +38,7 @@ public class PreGameUIComponent : Component, IRenderable
         pos.Y += size.Y * 2;
         scale = 1.5f;
         size = this.Font.MeasureString(text) * scale * .5f;
-        pos.X = (float)_renderService.Graphics.PreferredBackBufferWidth * .5f - size.X;
+        pos.X = (float)_renderService.Graphics.GraphicsDevice.Viewport.Width * .5f - size.X;
         spriteBatch.DrawString(this.Font, text, pos, Color.White,
                                0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
     }

@@ -268,8 +268,8 @@ internal class PlayScene : Scene
             transform.World.Reset();
             transform.Local.Reset();
 
-            transform.Local.Position.X = Random.Shared.NextBool() ? 0 : renderService.Graphics.PreferredBackBufferWidth;
-            transform.Local.Position.Y = Random.Shared.NextBool() ? 0 : renderService.Graphics.PreferredBackBufferHeight;
+            transform.Local.Position.X = Random.Shared.NextBool() ? 0 : renderService.Graphics.GraphicsDevice.Viewport.Width;
+            transform.Local.Position.Y = Random.Shared.NextBool() ? 0 : renderService.Graphics.GraphicsDevice.Viewport.Height;
 
             var brain = asteroid.Components.Get<AsteroidBrain>();
             var dir = player.Components.Get<TransformComponent>().Local.Position - transform.Local.Position;
@@ -307,12 +307,12 @@ internal class PlayScene : Scene
         var setBackgroundSize = new Action(() =>
         {
             sprite.Bounds = new Rectangle(0, 0,
-                               (int)(renderService.Graphics.PreferredBackBufferWidth * 1.5),
-                                (int)(renderService.Graphics.PreferredBackBufferHeight * 1.5));
+                               (int)(renderService.Graphics.GraphicsDevice.Viewport.Width * 1.5),
+                                (int)(renderService.Graphics.GraphicsDevice.Viewport.Height * 1.5));
         });
         setBackgroundSize();
-        
-        renderService.Graphics.DeviceReset += (s, e) => setBackgroundSize();
+
+        renderService.Window.ClientSizeChanged += (s, e) => setBackgroundSize();
 
         background.Components.Add<TransformComponent>();
 

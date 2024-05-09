@@ -48,8 +48,8 @@ public class AsteroidBrain : Component
 
         var isOutScreen = _transform.World.Position.X < 0 ||
                           _transform.World.Position.Y < 0 ||
-                          _transform.World.Position.X > _renderService.Graphics.PreferredBackBufferWidth ||
-                          _transform.World.Position.Y > _renderService.Graphics.PreferredBackBufferHeight;
+                          _transform.World.Position.X > _renderService.Graphics.GraphicsDevice.Viewport.Width ||
+                          _transform.World.Position.Y > _renderService.Graphics.GraphicsDevice.Viewport.Height;
         if (isOutScreen)
             this.Owner.Enabled = false;
     }

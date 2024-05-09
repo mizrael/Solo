@@ -32,8 +32,8 @@ public class CollisionService : IGameService
 
     private void BuildBuckets()
     {
-        var rows = _renderService.Graphics.PreferredBackBufferHeight / _bucketSize.Y;
-        var cols = _renderService.Graphics.PreferredBackBufferWidth / _bucketSize.X;
+        var rows = _renderService.Graphics.GraphicsDevice.Viewport.Height / _bucketSize.Y;
+        var cols = _renderService.Graphics.GraphicsDevice.Viewport.Width / _bucketSize.X;
         _buckets = new CollisionBucket[rows, cols];
 
         for (int row = 0; row < rows; row++)
@@ -71,11 +71,11 @@ public class CollisionService : IGameService
     {
         var rows = _buckets.GetLength(0);
         var cols = _buckets.GetLength(1);
-        var startX = (int)(cols * ((float)collider.Bounds.Left / _renderService.Graphics.PreferredBackBufferWidth));
-        var startY = (int)(rows * ((float)collider.Bounds.Top / _renderService.Graphics.PreferredBackBufferHeight));
+        var startX = (int)(cols * ((float)collider.Bounds.Left / _renderService.Graphics.GraphicsDevice.Viewport.Width));
+        var startY = (int)(rows * ((float)collider.Bounds.Top / _renderService.Graphics.GraphicsDevice.Viewport.Height));
 
-        var endX = (int)(cols * ((float)collider.Bounds.Right / _renderService.Graphics.PreferredBackBufferWidth));
-        var endY = (int)(rows * ((float)collider.Bounds.Bottom / _renderService.Graphics.PreferredBackBufferHeight));
+        var endX = (int)(cols * ((float)collider.Bounds.Right / _renderService.Graphics.GraphicsDevice.Viewport.Width));
+        var endY = (int)(rows * ((float)collider.Bounds.Bottom / _renderService.Graphics.GraphicsDevice.Viewport.Height));
 
         if (!_bucketsByCollider.ContainsKey(collider.Owner.Id))
             _bucketsByCollider[collider.Owner.Id] = new List<CollisionBucket>();

@@ -50,12 +50,12 @@ internal class PreGameScene : Scene
         var setBackgroundSize = new Action(() =>
         {
             sprite.Bounds = new Rectangle(0, 0,
-                               (int)(renderService.Graphics.PreferredBackBufferWidth * 1.5),
-                                (int)(renderService.Graphics.PreferredBackBufferHeight * 1.5));
+                               (int)(renderService.Graphics.GraphicsDevice.Viewport.Width * 1.5),
+                                (int)(renderService.Graphics.GraphicsDevice.Viewport.Height * 1.5));
         });
         setBackgroundSize();
 
-        renderService.Graphics.DeviceReset += (s, e) => setBackgroundSize();
+        renderService.Window.ClientSizeChanged += (s, e) => setBackgroundSize();
 
         var renderer = background.Components.Add<SpriteRenderComponent>();
         renderer.Sprite = sprite;

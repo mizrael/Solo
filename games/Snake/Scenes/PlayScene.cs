@@ -44,12 +44,12 @@ public class PlayScene : Scene
         {
             snakeRenderer.TileSize =
             boardRenderer.TileSize = new Vector2(
-                (float)renderService.Graphics.PreferredBackBufferWidth / board.Width,
-                (float)renderService.Graphics.PreferredBackBufferHeight / board.Height
+                (float)renderService.Graphics.GraphicsDevice.Viewport.Width / board.Width,
+                (float)renderService.Graphics.GraphicsDevice.Viewport.Height / board.Height
             );
         });
         setTileSize();
-        renderService.Graphics.DeviceReset += (s, e) => setTileSize();
+        renderService.Window.ClientSizeChanged += (s, e) => setTileSize();
         this.Root.AddChild(boardObject);
 
         snake.Head.Tile = new Point(board.Width / 4, board.Height / 2);
