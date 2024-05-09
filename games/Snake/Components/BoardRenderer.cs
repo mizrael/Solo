@@ -26,11 +26,6 @@ public class BoardRenderer : Component, IRenderable
 
     public void Render(SpriteBatch spriteBatch)
     {
-        if (Hidden)
-        {
-            return;
-        }
-
         for (var y = 0; y < Board.Height; y++)
         {
             for (var x = 0; x < Board.Width; x++)

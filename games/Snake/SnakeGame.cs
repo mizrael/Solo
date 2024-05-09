@@ -43,9 +43,11 @@ public class SnakeGame : Game
 
     protected override void LoadContent()
     {
+        _sceneManager.AddScene(Scenes.SceneNames.PreGame, new Scenes.PreGameScene(this));
         _sceneManager.AddScene(Scenes.SceneNames.Play, new Scenes.PlayScene(this));
-        
-        _sceneManager.SetCurrentScene(Scenes.SceneNames.Play);
+        _sceneManager.AddScene(Scenes.SceneNames.GameOver, new Scenes.PreGameScene(this, "Game Over!"));
+
+        _sceneManager.SetCurrentScene(Scenes.SceneNames.PreGame);
     }
 
     protected override void Update(GameTime gameTime)

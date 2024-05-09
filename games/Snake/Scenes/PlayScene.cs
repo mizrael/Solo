@@ -9,18 +9,19 @@ namespace Snake.Scenes;
 
 public class PlayScene : Scene
 {
-    private RenderService _renderService;
-
     public PlayScene(Game game) : base(game)
     {
     }
 
     protected override void EnterCore()
     {
-        _renderService = GameServicesManager.Instance.GetService<RenderService>();
+        var renderService = GameServicesManager.Instance.GetService<RenderService>();
 
         var board = new Board(16, 16);
-        var snake = new Snake();
+        var snake = new Snake()
+        {
+            Direction = Direction.Right,
+        };
 
         var snakeObject = new GameObject();
         var snakeBrain = snakeObject.Components.Add<SnakeBrain>();
@@ -43,20 +44,19 @@ public class PlayScene : Scene
         {
             snakeRenderer.TileSize =
             boardRenderer.TileSize = new Vector2(
-                (float)_renderService.Graphics.PreferredBackBufferWidth / board.Width,
-                (float)_renderService.Graphics.PreferredBackBufferHeight / board.Height
+                (float)renderService.Graphics.PreferredBackBufferWidth / board.Width,
+                (float)renderService.Graphics.PreferredBackBufferHeight / board.Height
             );
         });
         setTileSize();
-        _renderService.Graphics.DeviceReset += (s, e) => setTileSize();
+        renderService.Graphics.DeviceReset += (s, e) => setTileSize();
         this.Root.AddChild(boardObject);
 
-        snake.Head.Tile = board.GetRandomEmptyTile();
+        snake.Head.Tile = new Point(board.Width / 4, board.Height / 2);
 
         snakeBrain.OnDeath += () =>
         {
-            snake.Reset();
-            snake.Head.Tile = board.GetRandomEmptyTile();
+            GameServicesManager.Instance.GetService<SceneManager>().SetCurrentScene(SceneNames.GameOver);
         };
     }
 }
