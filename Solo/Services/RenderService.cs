@@ -43,15 +43,16 @@ public class RenderService : IGameService
             layer.Clear();
         }
 
-        RebuildLayers(_sceneManager.Current.Root, _layers);
+        RebuildLayers(_sceneManager?.Current?.Root, _layers);
     }
 
     public void Render()
     {
         Graphics.GraphicsDevice.Clear(Color.CornflowerBlue);
 
-        foreach(var layerIndex in _layers.Keys)
+        for(int i=0;i!=_layers.Count;i++)
         {
+            var layerIndex = _layers.Keys[i];
             var layer = _layers[layerIndex];
             
             if(!_layerConfigs.TryGetValue(layerIndex, out var layerConfig))                
@@ -66,7 +67,7 @@ public class RenderService : IGameService
         }                 
     }
 
-    private static void RebuildLayers(GameObject node, SortedList<int, IList<IRenderable>> layers)
+    private static void RebuildLayers(GameObject? node, SortedList<int, IList<IRenderable>> layers)
     {
         if (null == node || !node.Enabled)
             return;

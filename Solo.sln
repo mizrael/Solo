@@ -5,7 +5,13 @@ VisualStudioVersion = 17.8.34601.278
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Monoroids", "games\Monoroids\Monoroids.csproj", "{941A73B6-477E-4950-9359-CB10EE0294C7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Solo", "Solo\Solo.csproj", "{E4C1137D-A974-4243-80AF-7EF8402C8C17}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Solo", "Solo\Solo.csproj", "{E4C1137D-A974-4243-80AF-7EF8402C8C17}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "games", "games", "{523A1367-200D-4197-8F65-5E480ABC0862}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Snake", "games\Snake\Snake.csproj", "{7E9DA4B6-BC19-48B1-B5EA-24D0EEDB77C8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "engine", "engine", "{F62569E0-28A4-4BA1-B2A9-DF84F361F724}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,9 +27,18 @@ Global
 		{E4C1137D-A974-4243-80AF-7EF8402C8C17}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E4C1137D-A974-4243-80AF-7EF8402C8C17}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E4C1137D-A974-4243-80AF-7EF8402C8C17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E9DA4B6-BC19-48B1-B5EA-24D0EEDB77C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E9DA4B6-BC19-48B1-B5EA-24D0EEDB77C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E9DA4B6-BC19-48B1-B5EA-24D0EEDB77C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E9DA4B6-BC19-48B1-B5EA-24D0EEDB77C8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{941A73B6-477E-4950-9359-CB10EE0294C7} = {523A1367-200D-4197-8F65-5E480ABC0862}
+		{E4C1137D-A974-4243-80AF-7EF8402C8C17} = {F62569E0-28A4-4BA1-B2A9-DF84F361F724}
+		{7E9DA4B6-BC19-48B1-B5EA-24D0EEDB77C8} = {523A1367-200D-4197-8F65-5E480ABC0862}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A8DB24BE-C2CD-4FA8-B4F5-9FEECB8B62BE}
