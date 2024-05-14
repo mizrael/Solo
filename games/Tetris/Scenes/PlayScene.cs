@@ -1,10 +1,10 @@
 using System;
 using Microsoft.Xna.Framework;
-using Snake.Components;
 using Solo;
 using Solo.Services;
+using Tetris.Components;
 
-namespace Snake.Scenes;
+namespace Tetris.Scenes;
 
 public class PlayScene : Scene
 {
@@ -15,33 +15,15 @@ public class PlayScene : Scene
     protected override void EnterCore()
     {
         var renderService = GameServicesManager.Instance.GetService<RenderService>();
-
-        var board = new Board(16, 16);
-        var snake = new Snake()
-        {
-            Direction = Direction.Right,
-        };
-
-        var snakeObject = new GameObject();
-        var snakeBrain = snakeObject.Components.Add<SnakeBrain>();
-        snakeBrain.Snake = snake;
-        snakeBrain.Board = board;
-        var snakeRenderer = snakeObject.Components.Add<SnakeRenderer>();
-        snakeRenderer.Snake = snake;
-        snakeRenderer.LayerIndex = (int)RenderLayers.Player;
-
-        this.Root.AddChild(snakeObject);
-
+        
+        var board = new Board(10, 20);
         var boardObject = new GameObject();
-        var boardBrain = boardObject.Components.Add<BoardBrain>();
-        boardBrain.Board = board;
         var boardRenderer = boardObject.Components.Add<BoardRenderer>();
         boardRenderer.Board = board;
         boardRenderer.LayerIndex = (int)RenderLayers.Background;
-
+        
         var setTileSize = new Action(() =>
         {
-            snakeRenderer.TileSize =
             boardRenderer.TileSize = new Vector2(
                 (float)renderService.Graphics.GraphicsDevice.Viewport.Width / board.Width,
                 (float)renderService.Graphics.GraphicsDevice.Viewport.Height / board.Height
@@ -50,12 +32,5 @@ public class PlayScene : Scene
         setTileSize();
         renderService.Window.ClientSizeChanged += (s, e) => setTileSize();
         this.Root.AddChild(boardObject);
-
-        snake.Head.Tile = new Point(board.Width / 4, board.Height / 2);
-
-        snakeBrain.OnDeath += () =>
-        {
-            GameServicesManager.Instance.GetService<SceneManager>().SetCurrentScene(SceneNames.GameOver);
-        };
     }
 }

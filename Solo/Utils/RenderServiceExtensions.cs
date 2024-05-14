@@ -21,4 +21,13 @@ public static class RenderServiceExtensions
 
         return texture;
     }
+
+    public static Texture2D CreateTexture(this RenderService renderService, int width, int height, Color[] data)
+    {
+        var texture = new Texture2D(renderService.Graphics.GraphicsDevice, width, height);
+        
+        texture.SetData(data);
+
+        return texture;
+    }
 }

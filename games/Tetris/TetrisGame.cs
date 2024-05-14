@@ -2,32 +2,47 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
+using Solo.Services;
+
 namespace Tetris;
 
 public class TetrisGame : Game
 {
     private GraphicsDeviceManager _graphics;
-    private SpriteBatch _spriteBatch;
+    private SceneManager _sceneManager;
+    private RenderService _renderService;
 
     public TetrisGame()
     {
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
+        Window.AllowUserResizing = true;
     }
 
     protected override void Initialize()
     {
-        // TODO: Add your initialization logic here
+        _graphics.IsFullScreen = false;
+        _graphics.PreferredBackBufferWidth = 1024;
+        _graphics.PreferredBackBufferHeight = 768;
+        _graphics.ApplyChanges();
+
+        _renderService = new RenderService(_graphics, Window);
+        GameServicesManager.Instance.AddService(_renderService);
+
+        _sceneManager = new SceneManager();
+        GameServicesManager.Instance.AddService(_sceneManager);
+
+        GameServicesManager.Instance.Initialize();
 
         base.Initialize();
     }
 
     protected override void LoadContent()
     {
-        _spriteBatch = new SpriteBatch(GraphicsDevice);
+        _sceneManager.AddScene(Scenes.SceneNames.Play, new Scenes.PlayScene(this));
 
-        // TODO: use this.Content to load your game content here
+        _sceneManager.SetCurrentScene(Scenes.SceneNames.Play);
     }
 
     protected override void Update(GameTime gameTime)
@@ -35,16 +50,14 @@ public class TetrisGame : Game
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
 
-        // TODO: Add your update logic here
+        GameServicesManager.Instance.Step(gameTime);
 
         base.Update(gameTime);
     }
 
     protected override void Draw(GameTime gameTime)
     {
-        GraphicsDevice.Clear(Color.CornflowerBlue);
-
-        // TODO: Add your drawing code here
+        _renderService.Render();
 
         base.Draw(gameTime);
     }
