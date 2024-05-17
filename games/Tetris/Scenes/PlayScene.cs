@@ -15,22 +15,30 @@ public class PlayScene : Scene
     protected override void EnterCore()
     {
         var renderService = GameServicesManager.Instance.GetService<RenderService>();
-        
+
         var board = new Board(10, 20);
         var boardObject = new GameObject();
         var boardRenderer = boardObject.Components.Add<BoardRenderer>();
         boardRenderer.Board = board;
         boardRenderer.LayerIndex = (int)RenderLayers.Background;
-        
-        var setTileSize = new Action(() =>
+
+        var onWindowResize = new Action(() =>
         {
+            var w = (float)renderService.Graphics.GraphicsDevice.Viewport.Width;
+            var h = (float)renderService.Graphics.GraphicsDevice.Viewport.Height;
+
             boardRenderer.TileSize = new Vector2(
-                (float)renderService.Graphics.GraphicsDevice.Viewport.Width / board.Width,
-                (float)renderService.Graphics.GraphicsDevice.Viewport.Height / board.Height
+                w * 0.33f / board.Width,
+                h * 0.9f / board.Height
+            );
+
+            boardRenderer.Position = new Vector2(
+                0.5f * (w - boardRenderer.BoardSize.X),
+                0.5f * (h - boardRenderer.BoardSize.Y)
             );
         });
-        setTileSize();
-        renderService.Window.ClientSizeChanged += (s, e) => setTileSize();
+        onWindowResize();
+        renderService.Window.ClientSizeChanged += (s, e) => onWindowResize();
         this.Root.AddChild(boardObject);
     }
 }
