@@ -14,9 +14,26 @@ public class PlayScene : Scene
 
     protected override void EnterCore()
     {
+        var board = new Board(10, 20);
+
+        AddBoard(board);
+
+        AddPieceController(board);
+    }
+
+    private void AddPieceController(Board board)
+    {
+        var controller = new GameObject();
+        var brain = controller.Components.Add<PieceControllerBrain>();
+        brain.Board = board;
+        brain.Generator = new PieceGenerator();
+        this.Root.AddChild(controller);
+    }
+
+    private void AddBoard(Board board)
+    {
         var renderService = GameServicesManager.Instance.GetService<RenderService>();
 
-        var board = new Board(10, 20);
         var boardObject = new GameObject();
         var boardRenderer = boardObject.Components.Add<BoardRenderer>();
         boardRenderer.Board = board;

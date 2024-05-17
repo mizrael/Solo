@@ -13,7 +13,7 @@ public class PieceGenerator
 
         return new Piece(template, color)
         {
-            Position = Point.Zero,
+            OriginTile = Point.Zero,
             ShapeIndex = 0
         };
     }

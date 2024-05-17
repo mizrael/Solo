@@ -37,6 +37,22 @@ public record Board
     public Tile GetTileAt(int x, int y)
         => _cells[x, y];
 
+    public void SetPiece(Piece currPiece)
+    {
+        var shape = currPiece.Template.Shapes[currPiece.ShapeIndex];
+
+        for (int y = 0; y < shape.Tiles.GetLongLength(0); y++)
+        {
+            for (int x = 0; x < shape.Tiles.GetLongLength(0); x++)
+            {
+                var isFilled = shape.Tiles[x, y];
+                if(!isFilled)
+                    continue;
+                _cells[currPiece.OriginTile.X + x, currPiece.OriginTile.Y + y].Color = currPiece.Color;
+            }
+        }
+    }
+
     public int Width { get; }
     public int Height { get; }
 }

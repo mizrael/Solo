@@ -1,4 +1,3 @@
-using System.Data.Common;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Solo;
@@ -37,7 +36,9 @@ public class BoardRenderer : Component, IRenderable
             dest.X = (int)Position.X;
             for (var x = 0; x < Board.Width; x++)
             {
-                spriteBatch.Draw(_texture, dest, Color.Gray);
+                var tile = Board.GetTileAt(x, y);
+                var color = tile.Color.GetValueOrDefault(Color.LightGray);
+                spriteBatch.Draw(_texture, dest, color);
 
                 dest.X += (int)TileSize.X;
             }
