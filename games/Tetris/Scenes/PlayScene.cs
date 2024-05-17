@@ -28,8 +28,8 @@ public class PlayScene : Scene
             var h = (float)renderService.Graphics.GraphicsDevice.Viewport.Height;
 
             boardRenderer.TileSize = new Vector2(
-                w * 0.33f / board.Width,
-                h * 0.9f / board.Height
+                w * 0.4f / board.Width,
+                h * 0.95f / board.Height
             );
 
             boardRenderer.Position = new Vector2(

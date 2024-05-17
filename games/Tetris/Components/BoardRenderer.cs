@@ -1,3 +1,4 @@
+using System.Data.Common;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Solo;
@@ -19,28 +20,28 @@ public class BoardRenderer : Component, IRenderable
     {
         var renderService = GameServicesManager.Instance.GetService<RenderService>();
 
-        _texture = renderService.CreateTexture(Constants.TileTextureWidth, Constants.TileTextureHeight, Constants.TileTextureData);
+        _texture = renderService.CreateTexture(Constants.TileTextureSize.Width, Constants.TileTextureSize.Height, Constants.TileTextureData);
 
         base.InitCore();
     }
 
     public void Render(SpriteBatch spriteBatch)
     {
-        var rect = new Rectangle(0, 0, Constants.TileTextureWidth, Constants.TileTextureHeight);
+        var dest = new Rectangle(
+                    (int)this.Position.X,
+                    (int)this.Position.Y,
+                    (int)TileSize.X, (int)TileSize.Y);
 
         for (var y = 0; y < Board.Height; y++)
         {
+            dest.X = (int)Position.X;
             for (var x = 0; x < Board.Width; x++)
             {
-                var tile = Board.GetTileAt(x, y);
-                var color = Color.White; //tile.Color ?? Color.Gray;
+                spriteBatch.Draw(_texture, dest, Color.Gray);
 
-                var position = new Vector2(
-                    this.Position.X + x * TileSize.X,
-                    this.Position.Y + y * TileSize.Y);
-
-                spriteBatch.Draw(_texture, position, rect, color, 0f, Vector2.Zero, TileSize, SpriteEffects.None, LayerIndex);
+                dest.X += (int)TileSize.X;
             }
+            dest.Y += (int)TileSize.Y;
         }
     }
 

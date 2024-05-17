@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
 
 namespace Tetris.Components;
@@ -6,13 +7,21 @@ public sealed class Constants
 {
     static Constants()
     {
-        TileTextureData = new Color[TileTextureWidth * TileTextureHeight];
+        var borderWidth = 1;
+        TileTextureData = new Color[TileTextureSize.Width * TileTextureSize.Height];
 
-        for (int i = 0; i != TileTextureData.Length; i++)
-            TileTextureData[i] = Color.White;
+        for (int y = 0; y < TileTextureSize.Height; y++)
+        {
+            for (int x = 0; x < TileTextureSize.Width; x++)
+            {
+                var index = y * TileTextureSize.Width + x;
+                var color = (x < borderWidth || y < borderWidth || x >= TileTextureSize.Width - borderWidth || y >= TileTextureSize.Height - borderWidth)
+                            ? Color.Black : Color.White;
+                TileTextureData[index] = color;
+            }
+        }
     }
 
-    public const int TileTextureWidth = 1;
-    public const int TileTextureHeight = 1;
-    public static Color[] TileTextureData { get; private set; }
+    public static readonly Rectangle TileTextureSize = new Rectangle(0, 0, 16, 16);
+    public static readonly Color[] TileTextureData;
 }
