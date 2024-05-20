@@ -16,7 +16,7 @@ public sealed class Constants
             {
                 var index = y * TileTextureSize.Width + x;
                 var color = (x < borderWidth || y < borderWidth || x >= TileTextureSize.Width - borderWidth || y >= TileTextureSize.Height - borderWidth)
-                            ? Color.Black : Color.White;
+                            ? Color.DarkGray : Color.White;
                 TileTextureData[index] = color;
             }
         }

@@ -3,17 +3,6 @@ using Microsoft.Xna.Framework;
 
 namespace Tetris;
 
-public record Tile
-{
-    private static int _nextId = 0;
-    public readonly int Id = ++_nextId;
-    public bool IsFilled => Piece is not null;
-    public Piece? Piece;
-
-    public override int GetHashCode()
-    => this.Id.GetHashCode();
-}
-
 public record Board
 {
     private readonly Tile[,] _tiles;
@@ -78,7 +67,7 @@ public record Board
     {
         var shape = piece.CurrentShape;
 
-        var y = shape.Tiles.GetLength(1) - 1;
+        for (int y = 0; y < shape.Tiles.GetLength(1); y++)
         for (int x = 0; x < shape.Tiles.GetLength(0); x++)
         {
             var isFilled = shape.Tiles[x, y];
