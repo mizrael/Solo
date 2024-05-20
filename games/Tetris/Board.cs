@@ -1,33 +1,39 @@
-using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
 namespace Tetris;
 
 public record Tile
 {
-    public bool IsFilled => Color.HasValue;
-    public Color? Color { get; set; }
+    private static int _nextId = 0;
+    public readonly int Id = ++_nextId;
+    public bool IsFilled => Piece is not null;
+    public Piece? Piece;
+
+    public override int GetHashCode()
+    => this.Id.GetHashCode();
 }
 
 public record Board
 {
-    private readonly Tile[,] _cells;
+    private readonly Tile[,] _tiles;
+    private readonly Dictionary<int, HashSet<Tile>> _tilesByPiece = new();
 
     public Board(int width, int height)
     {
         Width = width;
         Height = height;
-        _cells = new Tile[width, height];
-        for(int x = 0; x < width; x++)
-            for(int y = 0; y < height; y++)
-                _cells[x, y] = new Tile();
+        _tiles = new Tile[width, height];
+        for (int x = 0; x < width; x++)
+            for (int y = 0; y < height; y++)
+                _tiles[x, y] = new Tile();
     }
 
     public bool IsRowFull(int row)
     {
         for (int x = 0; x < Width; x++)
         {
-            if (!_cells[x, row].IsFilled)
+            if (!_tiles[x, row].IsFilled)
                 return false;
         }
 
@@ -35,22 +41,61 @@ public record Board
     }
 
     public Tile GetTileAt(int x, int y)
-        => _cells[x, y];
+        => _tiles[x, y];
 
-    public void SetPiece(Piece currPiece)
+    public void Place(Piece piece)
     {
-        var shape = currPiece.Template.Shapes[currPiece.ShapeIndex];
+        var shape = piece.CurrentShape;
 
-        for (int y = 0; y < shape.Tiles.GetLongLength(0); y++)
+        var pieceTiles = _tilesByPiece.GetValueOrDefault(piece.Id) ?? new HashSet<Tile>();
+        foreach (var tile in pieceTiles)
+            tile.Piece = null;
+        pieceTiles.Clear();
+
+        for (int y = 0; y < shape.Tiles.GetLength(1); y++)
         {
-            for (int x = 0; x < shape.Tiles.GetLongLength(0); x++)
+            for (int x = 0; x < shape.Tiles.GetLength(0); x++)
             {
                 var isFilled = shape.Tiles[x, y];
-                if(!isFilled)
+                if (!isFilled)
                     continue;
-                _cells[currPiece.OriginTile.X + x, currPiece.OriginTile.Y + y].Color = currPiece.Color;
+
+                var newX = piece.Position.X + x;
+                var newY = piece.Position.Y + y;
+                if (newX < 0 || newX >= Width || newY < 0 || newY >= Height)
+                    continue;
+
+                var tile = _tiles[newX, newY];
+                tile.Piece = piece;
+                pieceTiles.Add(tile);
             }
         }
+
+        _tilesByPiece[piece.Id] = pieceTiles;
+    }
+
+    public bool CanPlace(Piece piece, Point newPosition)
+    {
+        var shape = piece.CurrentShape;
+
+        var y = shape.Tiles.GetLength(1) - 1;
+        for (int x = 0; x < shape.Tiles.GetLength(0); x++)
+        {
+            var isFilled = shape.Tiles[x, y];
+            if (!isFilled)
+                continue;
+
+            var newX = newPosition.X + x;
+            var newY = newPosition.Y + y;
+            if (newX < 0 || newX >= Width || newY < 0 || newY >= Height)
+                return false;
+
+            var tile = _tiles[newX, newY];
+            if (tile.IsFilled && tile.Piece != piece)
+                return false;
+        }
+
+        return true;
     }
 
     public int Width { get; }

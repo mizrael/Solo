@@ -6,16 +6,14 @@ namespace Tetris;
 
 public class PieceGenerator
 {
+    private int _lastId = 0;
+
     public Piece Create()
     {
         var template = _templates[Random.Shared.Next(_templates.Length)];
         var color = _colors[Random.Shared.Next(_colors.Length)];
 
-        return new Piece(template, color)
-        {
-            OriginTile = Point.Zero,
-            ShapeIndex = 0
-        };
+        return new Piece(++_lastId, template, color);
     }
 
     private readonly static Color[] _colors =

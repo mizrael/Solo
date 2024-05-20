@@ -37,7 +37,7 @@ public class BoardRenderer : Component, IRenderable
             for (var x = 0; x < Board.Width; x++)
             {
                 var tile = Board.GetTileAt(x, y);
-                var color = tile.Color.GetValueOrDefault(Color.LightGray);
+                var color = tile.Piece?.Color ?? Color.LightGray;
                 spriteBatch.Draw(_texture, dest, color);
 
                 dest.X += (int)TileSize.X;

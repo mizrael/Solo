@@ -24,7 +24,7 @@ public class PlayScene : Scene
     private void AddPieceController(Board board)
     {
         var controller = new GameObject();
-        var brain = controller.Components.Add<PieceControllerBrain>();
+        var brain = controller.Components.Add<PieceController>();
         brain.Board = board;
         brain.Generator = new PieceGenerator();
         this.Root.AddChild(controller);
