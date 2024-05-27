@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Tetris;
 
-public record Board
+public sealed record Board
 {
     private readonly Tile[,] _tiles;
     private readonly Dictionary<int, HashSet<Tile>> _tilesByPiece = new();
@@ -88,7 +88,7 @@ public record Board
         return true;
     }
 
-    public void UpdateRows()
+    public bool UpdateRows()
     {
         for (int row = Height - 1; row > -1; row--)
         {
@@ -108,8 +108,10 @@ public record Board
                 }
             }
 
-            break;
+            return true;
         }
+
+        return false;
     }
 
     public int Width { get; }

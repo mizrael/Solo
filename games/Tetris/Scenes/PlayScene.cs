@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Solo;
 using Solo.Components;
 using Solo.Services;
@@ -15,11 +16,22 @@ public class PlayScene : Scene
 
     protected override void EnterCore()
     {
+        var gameState = new GameState();
         var board = new Board(10, 20);
 
-        AddBoard(board);
+        AddBoard(board, gameState);
 
         AddPieceController(board);
+        AddUI(gameState);
+    }
+
+    private void AddUI(GameState gameState)
+    {
+        var ui = new GameObject();
+        var uiComponent = ui.Components.Add<GameUIComponent>();
+        uiComponent.GameState = gameState;
+        uiComponent.LayerIndex = (int)RenderLayers.UI;
+        uiComponent.Font = Game.Content.Load<SpriteFont>("Fonts/GameFont");
     }
 
     private void AddPieceController(Board board)
@@ -31,7 +43,7 @@ public class PlayScene : Scene
         this.Root.AddChild(controller);
     }
 
-    private void AddBoard(Board board)
+    private void AddBoard(Board board, GameState gameState)
     {
         var renderService = GameServicesManager.Instance.GetService<RenderService>();
 
@@ -39,7 +51,8 @@ public class PlayScene : Scene
         var brain = boardObject.Components.Add<LambdaComponent>();
         brain.OnUpdate = (obj, dt) =>
         {
-            board.UpdateRows();
+            if (board.UpdateRows())
+                gameState.IncreaseScore();
         };
 
         var boardRenderer = boardObject.Components.Add<BoardRenderer>();
