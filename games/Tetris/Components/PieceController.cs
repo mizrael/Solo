@@ -10,7 +10,7 @@ public class PieceController : Component
     private Piece? _currPiece;
 
     private double _lastInputUpdate;
-    private double _inputUpdateInterval = 150;
+    private double _inputUpdateInterval = 200;
 
     private double _lastGravityUpdate;
     private double _gravityInterval = 500;
@@ -41,6 +41,7 @@ public class PieceController : Component
         _lastInputUpdate = gameTime.TotalGameTime.TotalMilliseconds;
 
         var keyboard = Keyboard.GetState();
+
         if (keyboard.IsKeyDown(Keys.Left))
         {
             var nextPos = _currPiece.Position + new Point(-1, 0);
@@ -53,10 +54,13 @@ public class PieceController : Component
             if (Board.CanPlace(_currPiece, nextPos))
                 _currPiece.Position = nextPos;
         }
-        else if (keyboard.IsKeyDown(Keys.Up))
+        
+        if (keyboard.IsKeyDown(Keys.Up))
         {
             _currPiece.Rotate();
-        }else if (keyboard.IsKeyDown(Keys.Down))
+        }
+
+        if (keyboard.IsKeyDown(Keys.Down))
         {
             _gravityInterval -= 100;
             if (_gravityInterval < _maxGravityInterval)
@@ -86,7 +90,7 @@ public class PieceController : Component
         }
         else
         {
-            _currPiece = null;
+            _currPiece = null;            
         }
     }
 
