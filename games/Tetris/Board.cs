@@ -1,5 +1,6 @@
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Tetris;
 
@@ -41,16 +42,16 @@ public record Board
             tile.Piece = null;
         pieceTiles.Clear();
 
-        for (int y = 0; y < shape.Tiles.GetLength(1); y++)
+        for (int row = 0; row < shape.Tiles.GetLength(1); row++)
         {
-            for (int x = 0; x < shape.Tiles.GetLength(0); x++)
+            for (int col = 0; col < shape.Tiles.GetLength(0); col++)
             {
-                var isFilled = shape.Tiles[x, y];
+                var isFilled = shape.Tiles[col, row];
                 if (!isFilled)
                     continue;
 
-                var newX = piece.Position.X + x;
-                var newY = piece.Position.Y + y;
+                var newX = piece.Position.X + col;
+                var newY = piece.Position.Y + row;
                 if (newX < 0 || newX >= Width || newY < 0 || newY >= Height)
                     continue;
 
@@ -67,15 +68,15 @@ public record Board
     {
         var shape = piece.CurrentShape;
 
-        for (int y = 0; y < shape.Tiles.GetLength(1); y++)
-        for (int x = 0; x < shape.Tiles.GetLength(0); x++)
+        for (int row = 0; row < shape.Tiles.GetLength(1); row++)
+        for (int col = 0; col < shape.Tiles.GetLength(0); col++)
         {
-            var isFilled = shape.Tiles[x, y];
+            var isFilled = shape.Tiles[col, row];
             if (!isFilled)
                 continue;
 
-            var newX = newPosition.X + x;
-            var newY = newPosition.Y + y;
+            var newX = newPosition.X + col;
+            var newY = newPosition.Y + row;
             if (newX < 0 || newX >= Width || newY < 0 || newY >= Height)
                 return false;
 
@@ -85,6 +86,30 @@ public record Board
         }
 
         return true;
+    }
+
+    public void UpdateRows()
+    {
+        for (int row = Height - 1; row > -1; row--)
+        {
+            if (!IsRowFull(row))
+                continue;
+
+            for (int col = 0; col < Width; col++)
+            {
+                var curr = row;
+                while (curr >= 0)
+                {
+                    var prev = curr == 0 ? null : _tiles[col, curr - 1];
+                    _tiles[col, curr].Piece = prev?.Piece;
+                    if (prev is null)
+                        break;
+                    curr--;
+                }
+            }
+
+            break;
+        }
     }
 
     public int Width { get; }

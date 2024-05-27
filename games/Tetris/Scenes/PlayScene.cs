@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
 using Solo;
+using Solo.Components;
 using Solo.Services;
 using Tetris.Components;
 
@@ -35,6 +36,12 @@ public class PlayScene : Scene
         var renderService = GameServicesManager.Instance.GetService<RenderService>();
 
         var boardObject = new GameObject();
+        var brain = boardObject.Components.Add<LambdaComponent>();
+        brain.OnUpdate = (obj, dt) =>
+        {
+            board.UpdateRows();
+        };
+
         var boardRenderer = boardObject.Components.Add<BoardRenderer>();
         boardRenderer.Board = board;
         boardRenderer.LayerIndex = (int)RenderLayers.Background;
