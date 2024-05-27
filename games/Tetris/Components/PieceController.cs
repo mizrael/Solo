@@ -78,6 +78,10 @@ public class PieceController : Component
         var nextPos = Point.Zero;
         if (_currPiece is null){
             _currPiece = Generator.Create();
+
+            var halfSize = _currPiece.CurrentShape.Tiles.GetLength(0) / 2;
+            nextPos = new Point(Board.Width / 2 - halfSize, 0);
+
             _gravityInterval = _startGravityInterval;
         }
         else
