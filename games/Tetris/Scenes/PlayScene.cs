@@ -32,6 +32,7 @@ public class PlayScene : Scene
         uiComponent.GameState = gameState;
         uiComponent.LayerIndex = (int)RenderLayers.UI;
         uiComponent.Font = Game.Content.Load<SpriteFont>("Fonts/GameFont");
+        this.Root.AddChild(ui);
     }
 
     private void AddPieceController(Board board)

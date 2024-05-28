@@ -22,8 +22,11 @@ public class GameUIComponent : Component, IRenderable
 
     public void Render(SpriteBatch spriteBatch)
     {
-        _renderService.Graphics.GraphicsDevice.Clear(Color.Black);
-      
+        var scale = 1f;
+        var pos = new Vector2(10, 10);
+        var text = $"Score: {GameState.Score}";
+        spriteBatch.DrawString(Font, text, pos, Color.White,
+                               0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
     }
 
     public int LayerIndex { get; set; }
