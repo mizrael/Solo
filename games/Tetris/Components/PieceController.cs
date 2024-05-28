@@ -74,10 +74,11 @@ public class PieceController : Component
         if (elapsed < _gravityInterval)
             return;
         _lastGravityUpdate = gameTime.TotalGameTime.TotalMilliseconds;
-
-        var nextPos = Point.Zero;
-        if (_currPiece is null){
-            _currPiece = Generator.Create();
+        
+        Point nextPos;
+        if (_currPiece is null)
+        {
+            _currPiece = Generator.Step();
 
             var halfSize = _currPiece.CurrentShape.Tiles.GetLength(0) / 2;
             nextPos = new Point(Board.Width / 2 - halfSize, 0);

@@ -48,7 +48,7 @@ public class BoardRenderer : Component, IRenderable
 
     public int LayerIndex { get; set; }
     public bool Hidden { get; set; }
-    public Vector2 TileSize = new Vector2(16, 16);
+    public Vector2 TileSize;
     public Vector2 Position;
     public Vector2 BoardSize => new Vector2(Board.Width * TileSize.X, Board.Height * TileSize.Y);
     public Board Board;

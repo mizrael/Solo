@@ -7,14 +7,27 @@ namespace Tetris;
 public class PieceGenerator
 {
     private int _lastId = 0;
+    private Piece _upcoming;
+    private Piece _future;
 
-    public Piece Create()
+    private Piece Create()
     {
         var template = _templates[Random.Shared.Next(_templates.Length)];
         var color = _colors[Random.Shared.Next(_colors.Length)];
 
         return new Piece(++_lastId, template, color);
     }
+
+    public Piece Step()
+    {
+        var tmp = _upcoming;
+        _upcoming = _future ?? Create();
+        _future = Create();
+        return tmp ?? Create();
+    }
+
+    public Piece Peek()
+        => _upcoming;
 
     private readonly static Color[] _colors =
     [

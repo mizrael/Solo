@@ -17,39 +17,44 @@ public class PlayScene : Scene
 
     protected override void EnterCore()
     {
+        var pieceGenerator = new PieceGenerator();
         var gameState = new GameState();
         var board = new Board(10, 20);
 
-        AddBoard(board, gameState);
+        var uiObj = AddUI(gameState, pieceGenerator);
 
-        AddPieceController(board);
-        AddUI(gameState);
+        AddBoard(board, gameState, uiObj);
 
-        var mainTheme = Game.Content.Load<Song>("Audio/Tetris");        
+        AddPieceController(board, pieceGenerator);
+
+        var mainTheme = Game.Content.Load<Song>("Audio/Tetris");
         MediaPlayer.Play(mainTheme);
         MediaPlayer.IsRepeating = true;
     }
 
-    private void AddUI(GameState gameState)
+    private GameObject AddUI(GameState gameState, PieceGenerator pieceGenerator)
     {
-        var ui = new GameObject();
-        var uiComponent = ui.Components.Add<GameUIComponent>();
+        var uiObj = new GameObject();
+        var uiComponent = uiObj.Components.Add<GameUIComponent>();
         uiComponent.GameState = gameState;
         uiComponent.LayerIndex = (int)RenderLayers.UI;
         uiComponent.Font = Game.Content.Load<SpriteFont>("Fonts/GameFont");
-        this.Root.AddChild(ui);
+        uiComponent.PieceGenerator = pieceGenerator;
+        this.Root.AddChild(uiObj);
+
+        return uiObj;
     }
 
-    private void AddPieceController(Board board)
+    private void AddPieceController(Board board, PieceGenerator pieceGenerator)
     {
         var controller = new GameObject();
         var brain = controller.Components.Add<PieceController>();
         brain.Board = board;
-        brain.Generator = new PieceGenerator();
+        brain.Generator = pieceGenerator;
         this.Root.AddChild(controller);
     }
 
-    private void AddBoard(Board board, GameState gameState)
+    private void AddBoard(Board board, GameState gameState, GameObject uiObj)
     {
         var renderService = GameServicesManager.Instance.GetService<RenderService>();
 
@@ -74,6 +79,8 @@ public class PlayScene : Scene
                 w * 0.4f / board.Width,
                 h * 0.95f / board.Height
             );
+
+            uiObj.Components.Get<GameUIComponent>().TileSize = boardRenderer.TileSize * .5f;
 
             boardRenderer.Position = new Vector2(
                 0.5f * (w - boardRenderer.BoardSize.X),
