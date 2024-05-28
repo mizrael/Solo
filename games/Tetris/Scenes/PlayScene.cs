@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Media;
 using Solo;
 using Solo.Components;
 using Solo.Services;
@@ -23,6 +24,10 @@ public class PlayScene : Scene
 
         AddPieceController(board);
         AddUI(gameState);
+
+        var mainTheme = Game.Content.Load<Song>("Audio/Tetris");        
+        MediaPlayer.Play(mainTheme);
+        MediaPlayer.IsRepeating = true;
     }
 
     private void AddUI(GameState gameState)
