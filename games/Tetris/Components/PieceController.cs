@@ -2,6 +2,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Solo;
 using Solo.Components;
+using Solo.Services;
+using Tetris.Scenes;
 
 namespace Tetris.Components;
 
@@ -95,7 +97,13 @@ public class PieceController : Component
         }
         else
         {
-            _currPiece = null;            
+            if (Board.CheckGameover())
+            {
+                GameServicesManager.Instance.GetService<SceneManager>().SetCurrentScene(SceneNames.Play);
+                return;
+            }
+
+            _currPiece = null; 
         }
     }
 
