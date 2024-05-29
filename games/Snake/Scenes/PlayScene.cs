@@ -2,7 +2,6 @@ using System;
 using Microsoft.Xna.Framework;
 using Snake.Components;
 using Solo;
-using Solo.Components;
 using Solo.Services;
 
 namespace Snake.Scenes;

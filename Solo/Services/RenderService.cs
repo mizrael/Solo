@@ -58,7 +58,7 @@ public class RenderService : IGameService
 
     public void Render()
     {
-        Graphics.GraphicsDevice.Clear(Color.CornflowerBlue);
+        Graphics.GraphicsDevice.Clear(Color.Black);
 
         for(int i=0;i!=_layers.Count;i++)
         {
