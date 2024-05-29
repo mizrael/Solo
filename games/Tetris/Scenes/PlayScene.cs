@@ -64,6 +64,9 @@ public class PlayScene : Scene
         {
             if (board.UpdateRows())
                 gameState.IncreaseScore();
+
+            // if(board.CheckGameover())
+            //     GameServicesManager.Instance.GetService<SceneManager>().SetCurrentScene(SceneNames.Play);
         };
 
         var boardRenderer = boardObject.Components.Add<BoardRenderer>();

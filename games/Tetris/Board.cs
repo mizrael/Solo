@@ -68,7 +68,7 @@ public sealed record Board
     {
         var shape = piece.CurrentShape;
 
-        for (int row = 0; row < shape.Tiles.GetLength(1); row++)
+        for (int row = shape.Tiles.GetLength(1) -1; row >= 0; row--)
         for (int col = 0; col < shape.Tiles.GetLength(0); col++)
         {
             var isFilled = shape.Tiles[col, row];
@@ -109,6 +109,17 @@ public sealed record Board
             }
 
             return true;
+        }
+
+        return false;
+    }
+
+    public bool CheckGameover()
+    {
+        for (int x = 0; x < Width; x++)
+        {
+            if (_tiles[x, 0].IsFilled)
+                return true;
         }
 
         return false;
