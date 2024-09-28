@@ -1,0 +1,187 @@
+{
+  "spriteSheetName": "spritesheet",
+  "sprites": [
+    {
+      "name": "main_title",
+      "x": 0,
+      "y": 0,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "alien1a",
+      "x": 110,
+      "y": 0,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "alien1b",
+      "x": 220,
+      "y": 0,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "alien2a",
+      "x": 330,
+      "y": 0,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "alien2b",
+      "x": 440,
+      "y": 0,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "alien3a",
+      "x": 550,
+      "y": 0,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "alien3b",
+      "x": 660,
+      "y": 0,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "alien4a",
+      "x": 770,
+      "y": 0,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "alien4b",
+      "x": 880,
+      "y": 0,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "alien5a",
+      "x": 0,
+      "y": 120,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "alien5b",
+      "x": 110,
+      "y": 120,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "alien6a",
+      "x": 220,
+      "y": 120,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "alien6b",
+      "x": 330,
+      "y": 120,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "alien7a",
+      "x": 440,
+      "y": 120,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "alien7b",
+      "x": 550,
+      "y": 120,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "alien8a",
+      "x": 660,
+      "y": 120,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "alien8b",
+      "x": 770,
+      "y": 120,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "alien9a",
+      "x": 880,
+      "y": 120,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "alien9b",
+      "x": 0,
+      "y": 240,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "alien10a",
+      "x": 110,
+      "y": 240,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "alien10b",
+      "x": 220,
+      "y": 240,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "bigship",
+      "x": 330,
+      "y": 240,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "player",
+      "x": 440,
+      "y": 240,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "player_dead",
+      "x": 550,
+      "y": 240,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "alien_missile",
+      "x": 660,
+      "y": 240,
+      "width": 110,
+      "height": 120
+    },
+    {
+      "name": "explosion",
+      "x": 770,
+      "y": 240,
+      "width": 110,
+      "height": 120
+    }
+  ]
+}

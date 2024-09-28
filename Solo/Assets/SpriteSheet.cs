@@ -18,7 +18,11 @@ public record SpriteSheet
         this.ImagePath = spriteSheetName;
 
         foreach (var sprite in sprites)
+        {
+            if(_sprites.ContainsKey(sprite.Name))
+                throw new ArgumentException($"sprite with name '{sprite.Name}' already exists in the sprite sheet '{name}'");
             _sprites.Add(sprite.Name, sprite);
+        }
     }
 
     public Sprite Get(string name)
