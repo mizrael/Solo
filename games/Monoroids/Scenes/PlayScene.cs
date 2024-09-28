@@ -65,14 +65,14 @@ internal class PlayScene : Scene
 
     private Spawner BuildExplosionsSpawner()
     {
-        var explosionAnim = new AnimationLoader().Load("meta/animations/explosion1.json", Game);
+        var explosionAnim = new AnimatedSpriteSheetLoader().Load("meta/animations/explosion1.json", Game);
 
         var spawner = new Spawner(() =>
         {
             var explosion = new GameObject();
             explosion.Components.Add<TransformComponent>();
 
-            var renderer = explosion.Components.Add<AnimationRenderComponent>();
+            var renderer = explosion.Components.Add<AnimatedSpriteSheetRenderer>();
             renderer.Animation = explosionAnim;
             renderer.LayerIndex = (int)RenderLayers.Items;
             renderer.OnAnimationComplete += _ => explosion.Enabled = false;
@@ -80,7 +80,7 @@ internal class PlayScene : Scene
             return explosion;
         }, explosion =>
         {
-            var renderer = explosion.Components.Add<AnimationRenderComponent>();
+            var renderer = explosion.Components.Add<AnimatedSpriteSheetRenderer>();
             renderer.Reset();
         });
 

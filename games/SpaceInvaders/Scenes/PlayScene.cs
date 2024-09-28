@@ -23,8 +23,8 @@ public class PlayScene : Scene
         alien.Components.Add<TransformComponent>();
 
         var spriteSheetTexture = Game.Content.Load<Texture2D>(spriteSheet.ImagePath);
-        var animation = new Animation(spriteSheetTexture, "explosion", 10, 2, new Point(110, 120));
-        var renderer = alien.Components.Add<AnimationRenderComponent>();
+        var animation = new AnimatedSpriteSheet(spriteSheetTexture, "explosion", 10, 2, new Point(110, 120));
+        var renderer = alien.Components.Add<AnimatedSpriteSheetRenderer>();
         renderer.Animation = animation;
         renderer.LayerIndex = (int)RenderLayers.Enemies;
          
