@@ -72,7 +72,7 @@ internal class PlayScene : Scene
             var explosion = new GameObject();
             explosion.Components.Add<TransformComponent>();
 
-            var renderer = explosion.Components.Add<AnimatedSpriteSheetRenderer>();
+            var renderer = explosion.Components.Add<AnimationRenderer>();
             renderer.Animation = explosionAnim;
             renderer.LayerIndex = (int)RenderLayers.Items;
             renderer.OnAnimationComplete += _ => explosion.Enabled = false;
@@ -80,7 +80,7 @@ internal class PlayScene : Scene
             return explosion;
         }, explosion =>
         {
-            var renderer = explosion.Components.Add<AnimatedSpriteSheetRenderer>();
+            var renderer = explosion.Components.Add<AnimationRenderer>();
             renderer.Reset();
         });
 
