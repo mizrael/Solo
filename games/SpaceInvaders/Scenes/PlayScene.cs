@@ -20,13 +20,29 @@ public class PlayScene : Scene
     {
         var spriteSheet = new SpriteSheetLoader().Load("meta/spritesheet.json", Game);
 
-        AddAlien(spriteSheet, 2);
+        var rows = 5;
+        var cols = 8;
+        var alienWidth = 110;
+        var alienHeight = 120;
+        var scale = 0.65f;
+        var offsetX = 20;
+        var offsetY = 10;
+        for (int i=0; i<rows; i++) 
+        {
+            for (int j = 0; j < cols; j++)
+            {
+                var pos = new Vector2(j * alienWidth * scale + offsetX * j, i * alienHeight * scale + offsetY*i);
+                AddAlien(spriteSheet, i+1, pos, scale);
+            }
+        }
     }
 
-    private void AddAlien(SpriteSheet spriteSheet, int alienIndex, int framesCount = 2)
+    private void AddAlien(SpriteSheet spriteSheet, int alienIndex, Vector2 position, float scale, int framesCount = 2)
     {
         var alien = new GameObject();
-        alien.Components.Add<TransformComponent>();
+        var transform = alien.Components.Add<TransformComponent>();
+        transform.Local.Position = position;
+        transform.Local.Scale = new Vector2(scale, scale);
 
         var alienName = $"alien{alienIndex}";
 
