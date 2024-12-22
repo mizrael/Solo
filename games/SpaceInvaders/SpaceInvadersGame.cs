@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Input;
 
 using Solo.Services;
+using Solo.Services.Messaging;
 
 namespace SpaceInvaders;
 
@@ -31,6 +32,8 @@ public class SpaceInvadersGame : Game
 
         _sceneManager = new SceneManager();
         GameServicesManager.Instance.AddService(_sceneManager);
+
+        GameServicesManager.Instance.AddService(new MessageBus());
 
         GameServicesManager.Instance.Initialize();
 
