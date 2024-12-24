@@ -2,6 +2,8 @@
 
 public interface IMessage { }
 
-public struct NullMessage : IMessage { 
-    public static readonly NullMessage Instance = new();
+public struct NullMessage<TM> : IMessage
+    where TM : IMessage
+{ 
+    public static readonly NullMessage<TM> Instance = new();
 }

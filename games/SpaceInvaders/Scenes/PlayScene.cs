@@ -7,6 +7,7 @@ using Solo.Components;
 using Solo.Services;
 using Solo.Services.Messaging;
 using SpaceInvaders.Logic;
+using SpaceInvaders.Logic.Messages;
 using System.Linq;
 
 namespace SpaceInvaders.Scenes;
@@ -21,33 +22,60 @@ public class PlayScene : Scene
     {
         var spriteSheet = new SpriteSheetLoader().Load("meta/spritesheet.json", Game);
 
-        var rows = 5;
-        var cols = 8;
         var alienWidth = 110;
         var alienHeight = 120;
         var scale = 0.65f;
+
+        AddAliens(spriteSheet, alienWidth, alienHeight, scale);
+
+        AddPlayer(spriteSheet, alienHeight, scale);
+    }
+
+    private void AddPlayer(SpriteSheet spriteSheet, int alienHeight, float scale)
+    {
+        var player = new GameObject();
+        var transform = player.Components.Add<TransformComponent>();
+        transform.Local.Position.X = Game.GraphicsDevice.Viewport.Width * .5f;
+        transform.Local.Position.Y = Game.GraphicsDevice.Viewport.Height - alienHeight * .5f;
+        transform.Local.Scale = new Vector2(scale, scale);
+
+        var renderer = player.Components.Add<SpriteRenderComponent>();
+        renderer.Sprite = spriteSheet.Get("player");
+        renderer.LayerIndex = (int)RenderLayers.Player;
+
+        player.Components.Add<PlayerBrain>();
+
+        Root.AddChild(player);
+    }
+
+    private void AddAliens(SpriteSheet spriteSheet, int alienWidth, int alienHeight, float scale)
+    {
+        var rows = 5;
+        var cols = 8;
         var offsetX = 20;
         var offsetY = alienHeight * scale * .05f;
         var speed = 0.1f;
 
         var yStep = alienHeight * scale * .05f;
         var maxBoundWidth = Game.GraphicsDevice.Viewport.Width - alienWidth * scale;
-    
+
         var bus = GameServicesManager.Instance.GetService<MessageBus>();
 
-        for (int i=0; i<rows; i++) 
+        var setDirectionTopic = bus.GetTopic<SetDirection>();
+
+        for (int i = 0; i < rows; i++)
         {
             for (int j = 0; j < cols; j++)
             {
-                var pos = new Vector2(j * alienWidth * scale + offsetX * j, i * alienHeight * scale + offsetY*i);
-                var alien = AddAlien(spriteSheet, i+1, pos, scale);
+                var pos = new Vector2(j * alienWidth * scale + offsetX * j, i * alienHeight * scale + offsetY * i);
+                var alien = AddAlien(spriteSheet, i + 1, pos, scale);
 
                 var alienDirX = 1;
                 var alienPosY = pos.Y;
                 var transform = alien.Components.Get<TransformComponent>();
-                bus.GetTopic(nameof(SetDirection)).Subscribe(alien, (owner, msg) =>
+                setDirectionTopic.Subscribe(alien, (owner, msg) =>
                 {
-                    alienDirX = ((SetDirection)msg).NewDirection;
+                    alienDirX = msg.NewDirection;
                     alienPosY += yStep;
                 });
 
@@ -56,9 +84,9 @@ public class PlayScene : Scene
                     var transform = owner.Components.Get<TransformComponent>();
 
                     if (transform.Local.Position.X > maxBoundWidth)
-                        bus.GetTopic(nameof(SetDirection)).Publish(new SetDirection(-1));
+                        setDirectionTopic.Publish(new SetDirection(-1));
                     else if (transform.Local.Position.X < 0)
-                        bus.GetTopic(nameof(SetDirection)).Publish(new SetDirection(1));
+                        setDirectionTopic.Publish(new SetDirection(1));
 
                     transform.Local.Position.X += alienDirX * gameTime.ElapsedGameTime.Milliseconds * speed;
                     transform.Local.Position.Y = alienPosY;
@@ -104,5 +132,3 @@ public class PlayScene : Scene
         return alien;
     }
 }
-
-public record struct SetDirection(int NewDirection) : IMessage; 

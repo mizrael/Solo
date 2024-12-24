@@ -1,36 +1,28 @@
 ﻿namespace Solo.Services.Messaging;
 
-public class MessageTopic
+public class MessageTopic<TM>
+    where TM : IMessage
 {
     private readonly List<Subscription> _subscriptions = new();
 
-    public MessageTopic(string name)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
-        Name = name;
-    }
-
-    public string Name { get; }
-
-    public void Subscribe(GameObject gameObject, Action<GameObject, IMessage> handler)
+    public void Subscribe(GameObject gameObject, Action<GameObject, TM> handler)
     {
         ArgumentNullException.ThrowIfNull(gameObject, nameof(gameObject));
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
         _subscriptions.Add(new Subscription(gameObject, handler));
     }
 
-    public void Publish()
+    public void Publish(TM message)
     {
-        Publish(NullMessage.Instance);
-    }
-
-    public void Publish(IMessage message)
-    {
-        foreach (var subscription in _subscriptions)
+        int end = _subscriptions.Count;
+        int i = 0;
+        while (i != end)
         {
-            subscription.Handler(subscription.GameObject, message);
+            var sub = _subscriptions[i++];
+            if(sub.GameObject.Enabled)
+                sub.Handler(sub.GameObject, message);
         }
     }
 
-    private record Subscription(GameObject GameObject, Action<GameObject, IMessage> Handler);
+    private record struct Subscription(GameObject GameObject, Action<GameObject, TM> Handler);
 }

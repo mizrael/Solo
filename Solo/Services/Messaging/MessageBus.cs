@@ -2,12 +2,18 @@
 
 public class MessageBus : IGameService
 {
-    private readonly Dictionary<string, MessageTopic> _topics = new();
+    private readonly Dictionary<string, object> _topics = new();
 
-    public MessageTopic GetTopic(string name)
+    public MessageTopic<TM> GetTopic<TM>()
+        where TM : IMessage
     {
-        if (!_topics.ContainsKey(name))
-            _topics.Add(name, new MessageTopic(name));
-        return _topics[name];
+        var messageName = typeof(TM).Name;
+        if(!_topics.TryGetValue(messageName, out var topic))
+        {
+            topic = new MessageTopic<TM>();
+            _topics[messageName] = topic;
+        }
+
+        return (MessageTopic<TM>)topic;
     }
 }
