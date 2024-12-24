@@ -51,7 +51,7 @@ public class AnimatedSpriteSheetRenderer : Component, IRenderable
             sourceRectangle: frame.Bounds,
             color: Color.White,
             rotation: _transform.World.Rotation,
-            origin: Vector2.Zero,
+            origin: frame.Center,
             scale: _transform.World.Scale,
             SpriteEffects.None,
             layerDepth: 0f);

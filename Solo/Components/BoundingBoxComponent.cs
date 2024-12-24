@@ -1,16 +1,22 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Solo.Services;
 
 namespace Solo.Components;
 
 public class BoundingBoxComponent : Component
 #if DEBUG
-//    , IRenderable
+   // , Solo.Services.IRenderable
 #endif
 {
     private TransformComponent _transform;
     private Rectangle _bounds;
     private Vector2 _halfSize;
     private readonly int _hashCode;
+
+#if DEBUG
+    private Texture2D _pixelTexture;
+#endif
 
     private BoundingBoxComponent(GameObject owner) : base(owner)
     {
@@ -43,23 +49,22 @@ public class BoundingBoxComponent : Component
     }
 
 #if DEBUG
-    //public void Render()
-    //{
-    //    var tmpW = context.LineWidth;
-    //    var tmpS = context.StrokeStyle;
+    public void Render(SpriteBatch spriteBatch)
+    {
+        if (_pixelTexture is null)
+        {
+            var renderService = GameServicesManager.Instance.GetService<RenderService>();
+            _pixelTexture = Texture2DUtils.Generate(renderService.Graphics.GraphicsDevice, 1, 1, Color.White);
+        }
 
-    //    context.BeginPath();
+        spriteBatch.Draw(_pixelTexture, new Rectangle(_bounds.X, _bounds.Y, _bounds.Width, 1), Color.Yellow);
+        spriteBatch.Draw(_pixelTexture, new Rectangle(_bounds.X, _bounds.Y, 1, _bounds.Height), Color.Yellow);
+        spriteBatch.Draw(_pixelTexture, new Rectangle(_bounds.X + _bounds.Width - 1, _bounds.Y, 1, _bounds.Height), Color.Yellow);
+        spriteBatch.Draw(_pixelTexture, new Rectangle(_bounds.X, _bounds.Y + _bounds.Height - 1, _bounds.Width, 1), Color.Yellow);
+    }
 
-    //    context.StrokeStyle = "rgb(255,255,0)";
-    //    context.LineWidth = 3;
-
-    //    context.StrokeRect(_bounds.X, _bounds.Y,
-    //        _bounds.Width,
-    //        _bounds.Height);
-
-    //    context.StrokeStyle = tmpS;
-    //    context.LineWidth = tmpW;
-    //}
+    public bool Hidden { get; set; }
+    public int LayerIndex { get; set; }
 #endif
 
     public event OnPositionChangedHandler OnPositionChanged;

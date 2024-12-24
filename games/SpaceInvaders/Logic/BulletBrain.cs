@@ -24,6 +24,7 @@ public class BulletBrain : Component
         _boundingBox = Owner.Components.Get<BoundingBoxComponent>();
         _boundingBox.OnCollision += (sender, collidedWith) =>
         {
+            this.Owner.Enabled = false;
         };
         _renderService = GameServicesManager.Instance.GetService<RenderService>();
     }

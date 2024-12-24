@@ -171,10 +171,10 @@
     },
     {
       "name": "missile",
-      "x": 660,
-      "y": 240,
-      "width": 110,
-      "height": 120
+      "x": 700,
+      "y": 280,
+      "width": 30,
+      "height": 50
     },
     {
       "name": "explosion",
