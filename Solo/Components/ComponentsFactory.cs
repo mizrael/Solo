@@ -19,7 +19,7 @@ internal class ComponentsFactory
     {
         var ctor = GetCtor<TC>();
 
-        return ctor.Invoke(new[] { owner }) as TC;
+        return (TC)ctor.Invoke(new[] { owner });
     }
 
     private ConstructorInfo GetCtor<TC>() where TC : Component
@@ -30,7 +30,7 @@ internal class ComponentsFactory
         {
             var ctor = type.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public, null,
                 new[] { typeof(GameObject) }, null);
-            _cTorsByType.AddOrUpdate(type, ctor, (t, c) => ctor);
+            _cTorsByType.AddOrUpdate(type, ctor!, (t, c) => ctor!);
         }
 
         return _cTorsByType[type];

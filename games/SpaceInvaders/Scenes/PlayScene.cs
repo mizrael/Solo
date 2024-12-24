@@ -179,8 +179,8 @@ public class PlayScene : Scene
         bbox.SetSize(bboxSize);
         bbox.OnCollision += (sender, collidedWith) =>
         {
-            if (!collidedWith.Owner.Components.TryGet<PlayerBrain>(out var playerBrain) &&
-                !collidedWith.Owner.Components.TryGet<BulletBrain>(out var _))
+            if (!collidedWith.Owner.Components.Has<PlayerBrain>() &&
+                !collidedWith.Owner.Components.Has<BulletBrain>())
                 return;
 
             alien.Enabled = false;

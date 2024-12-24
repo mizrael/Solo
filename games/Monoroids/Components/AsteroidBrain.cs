@@ -29,12 +29,13 @@ public class AsteroidBrain : Component
         _boundingBox = Owner.Components.Get<BoundingBoxComponent>();
         _boundingBox.OnCollision += (sender, collidedWith) =>
         {
-            if (!collidedWith.Owner.Components.TryGet<PlayerBrain>(out var playerBrain) &&
-                !collidedWith.Owner.Components.TryGet<BulletBrain>(out var _))
+            var hasPlayerBrain = collidedWith.Owner.Components.Has<PlayerBrain>();
+            if (!hasPlayerBrain &&
+                !collidedWith.Owner.Components.Has<BulletBrain>())
                 return;
 
             this.Owner.Enabled = false;
-            this.OnDeath?.Invoke(this.Owner, playerBrain is not null);
+            this.OnDeath?.Invoke(this.Owner, hasPlayerBrain);
         };
 
         _renderService = GameServicesManager.Instance.GetService<RenderService>();
