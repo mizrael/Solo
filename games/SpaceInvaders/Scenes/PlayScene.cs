@@ -25,13 +25,18 @@ public class PlayScene : Scene
         var alienWidth = 110;
         var alienHeight = 120;
         var scale = 0.65f;
+        
+        var collisionService = GameServicesManager.Instance.GetService<CollisionService>();
+
+        var bulletSpawner = BuildBulletSpawner(spriteSheet, collisionService);
+        this.Root.AddChild(bulletSpawner);
 
         AddAliens(spriteSheet, alienWidth, alienHeight, scale);
 
-        AddPlayer(spriteSheet, alienHeight, scale);
+        AddPlayer(spriteSheet, alienHeight, scale, bulletSpawner);
     }
 
-    private void AddPlayer(SpriteSheet spriteSheet, int alienHeight, float scale)
+    private void AddPlayer(SpriteSheet spriteSheet, int alienHeight, float scale, Spawner bulletSpawner)
     {
         var player = new GameObject();
         var transform = player.Components.Add<TransformComponent>();
@@ -45,7 +50,48 @@ public class PlayScene : Scene
 
         player.Components.Add<PlayerBrain>();
 
+        var weapon = player.Components.Add<Weapon>();
+        weapon.Spawner = bulletSpawner;
+
         Root.AddChild(player);
+    }
+
+    private Spawner BuildBulletSpawner(SpriteSheet spriteSheet, CollisionService collisionService)
+    {
+        var spawner = new Spawner(() =>
+        {
+            var bullet = new GameObject();
+            bullet.Components.Add<TransformComponent>();
+
+            var bulletSpriteRenderer = bullet.Components.Add<SpriteRenderComponent>();
+            bulletSpriteRenderer.Sprite = spriteSheet.Get("missile");
+            bulletSpriteRenderer.LayerIndex = (int)RenderLayers.Items;
+
+            var bulletBBox = bullet.Components.Add<BoundingBoxComponent>();
+            bulletBBox.SetSize(bulletSpriteRenderer.Sprite.Bounds.Size);
+
+            var speed = 7000f;
+
+            var bulletRigidBody = bullet.Components.Add<MovingBody>();
+            bulletRigidBody.MaxSpeed = speed;
+
+            var brain = bullet.Components.Add<BulletBrain>();
+            brain.Speed = speed;
+
+            collisionService.Add(bulletBBox);
+
+            return bullet;
+        }, bullet =>
+        {
+            bullet.Components.Get<MovingBody>().Reset();
+
+            bullet.Components.Get<TransformComponent>().Local.Reset();
+            bullet.Components.Get<TransformComponent>().World.Reset();
+        });
+
+        spawner.Components.Add<TransformComponent>();
+
+        return spawner;
     }
 
     private void AddAliens(SpriteSheet spriteSheet, int alienWidth, int alienHeight, float scale)

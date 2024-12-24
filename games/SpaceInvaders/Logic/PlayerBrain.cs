@@ -11,6 +11,7 @@ public class PlayerBrain : Component
     private RenderService _renderService;
     private TransformComponent _transform;
     private float _velocity = 0f;
+    private Weapon _weapon;
 
     public PlayerBrain(GameObject owner) : base(owner)
     {
@@ -20,6 +21,7 @@ public class PlayerBrain : Component
     {
         _transform = Owner.Components.Get<TransformComponent>();
         _renderService = GameServicesManager.Instance.GetService<RenderService>();
+        _weapon = Owner.Components.Get<Weapon>();
         base.InitCore();
     }
 
@@ -27,6 +29,17 @@ public class PlayerBrain : Component
     {
         var keyboard = Keyboard.GetState();
 
+        HandleMovement(gameTime, keyboard);
+
+        var isShooting = keyboard.IsKeyDown(Keys.Space);
+        if (isShooting)
+            _weapon.Shoot(gameTime);
+
+        base.UpdateCore(gameTime);
+    }
+
+    private void HandleMovement(GameTime gameTime, KeyboardState keyboard)
+    {
         if (_transform.World.Position.X < 0)
             _transform.Local.Position.X = _renderService.Graphics.GraphicsDevice.Viewport.Width;
         else if (_transform.World.Position.X >= _renderService.Graphics.GraphicsDevice.Viewport.Width)
@@ -45,8 +58,6 @@ public class PlayerBrain : Component
         _velocity *= (1f - dt * Drag);
 
         _transform.Local.Position.X += _velocity * dt;
-
-        base.UpdateCore(gameTime);
     }
 
     public float Thrust = 0f;
