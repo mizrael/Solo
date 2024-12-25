@@ -36,6 +36,7 @@ public class PlayScene : Scene
     private void AddPlayer(SpriteSheet spriteSheet, CollisionService collisionService, float scale, Spawner bulletSpawner)
     {
         var player = new GameObject();
+        player.AddTag(Tags.Player);
 
         var renderer = player.Components.Add<SpriteRenderComponent>();
         renderer.Sprite = spriteSheet.Get("player");
@@ -59,6 +60,8 @@ public class PlayScene : Scene
         var spawner = new Spawner(() =>
         {
             var bullet = new GameObject();
+            bullet.AddTag(Tags.Bullet);
+
             bullet.Components.Add<TransformComponent>();
 
             var bulletSpriteRenderer = bullet.Components.Add<SpriteRenderComponent>();
@@ -105,9 +108,10 @@ public class PlayScene : Scene
         var offsetY = alienHeight * scale * .05f;
 
         var yStep = alienHeight * scale * .05f;
-        var maxBoundWidth = Game.GraphicsDevice.Viewport.Width - alienWidth * scale;
-        var minBoundWidth = alienWidth*scale;
-
+        var boardSize = new Vector2(
+            alienWidth * scale,
+            Game.GraphicsDevice.Viewport.Width - alienWidth * scale
+        );
         var startX = (Game.GraphicsDevice.Viewport.Width - (cols * alienWidth * scale + cols * offsetX * .5f)) * .5f;
         var startY = 50;
 
@@ -119,20 +123,20 @@ public class PlayScene : Scene
         {
             for (int j = 0; j < cols; j++)
             {
+                var alienName = $"alien{i + 1}";
                 var pos = new Vector2(startX + j * alienWidth * scale + offsetX * j, startY + i * alienHeight * scale + offsetY * i);
-                var alien = AddAlien(spriteSheet, collisionService, setDirectionTopic, yStep, minBoundWidth, maxBoundWidth, i + 1, pos, scale);
+                var alien = AddAlien(spriteSheet, alienName, collisionService, setDirectionTopic, yStep, boardSize, pos, scale);
             }
         }
     }
 
     private GameObject AddAlien(
         SpriteSheet spriteSheet,
+        string alienName,
         CollisionService collisionService,
         MessageTopic<SetDirection> setDirectionTopic,
         float yStep,
-        float minBoundWidth,
-        float maxBoundWidth,
-        int alienIndex, 
+        Vector2 boardSize,
         Vector2 position, 
         float scale,
         float speed = 0.1f,
@@ -140,6 +144,8 @@ public class PlayScene : Scene
         int fps = 2)
     {
         var alien = new GameObject();
+        alien.AddTag(Tags.Enemy);
+        
         var transform = alien.Components.Add<TransformComponent>();
         transform.Local.Position = position;
         transform.Local.Scale = new Vector2(scale, scale);
@@ -151,10 +157,6 @@ public class PlayScene : Scene
             alienDirX = msg.NewDirection;
             alienPosY += yStep;
         });
-
-        alien.Components.Add<LambdaComponent>();
-
-        var alienName = $"alien{alienIndex}";
 
         var frames = Enumerable.Range(1, framesCount)
             .Select(i =>
@@ -179,21 +181,20 @@ public class PlayScene : Scene
         bbox.SetSize(bboxSize);
         bbox.OnCollision += (sender, collidedWith) =>
         {
-            if (!collidedWith.Owner.Components.Has<PlayerBrain>() &&
-                !collidedWith.Owner.Components.Has<BulletBrain>())
+            if (collidedWith.Owner.HasTag(Tags.Enemy))
                 return;
-
             alien.Enabled = false;
         };
         collisionService.Add(bbox);
 
-        alien.Components.Get<LambdaComponent>().OnUpdate = (owner, gameTime) =>
+        var brain = alien.Components.Add<LambdaComponent>();
+        brain.OnUpdate = (owner, gameTime) =>
         {
             var transform = owner.Components.Get<TransformComponent>();
 
-            if (transform.Local.Position.X > maxBoundWidth)
+            if (transform.Local.Position.X > boardSize.Y)
                 setDirectionTopic.Publish(new SetDirection(-1));
-            else if (transform.Local.Position.X < minBoundWidth)
+            else if (transform.Local.Position.X < boardSize.X)
                 setDirectionTopic.Publish(new SetDirection(1));
 
             transform.Local.Position.X += alienDirX * gameTime.ElapsedGameTime.Milliseconds * speed;

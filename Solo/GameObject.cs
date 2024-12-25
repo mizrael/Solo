@@ -10,6 +10,7 @@ public class GameObject
     private readonly IList<GameObject> _children;
     private readonly Queue<GameObject> _childrenToRemove = new();
     private readonly Queue<GameObject> _childrenToAdd = new();
+    private readonly HashSet<string> _tags = new();
 
     public GameObject()
     {
@@ -88,6 +89,10 @@ public class GameObject
         foreach (var child in _children)
             child.Update(gameTime);
     }
+
+    public void AddTag(string tag) => _tags.Add(tag);
+    public void RemoveTag(string tag) => _tags.Remove(tag);
+    public bool HasTag(string tag) => _tags.Contains(tag);
 
     public override int GetHashCode() => Id;
 
