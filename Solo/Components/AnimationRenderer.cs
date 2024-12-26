@@ -5,7 +5,7 @@ using Solo.Services;
 
 namespace Solo.Components;
 
-public class AnimationRenderComponent : Component, IRenderable
+public class AnimationRenderer : Component, IRenderable
 {
     private TransformComponent _transform;
 
@@ -16,7 +16,7 @@ public class AnimationRenderComponent : Component, IRenderable
 
     private Animation _animation;
 
-    private AnimationRenderComponent(GameObject owner) : base(owner)
+    private AnimationRenderer(GameObject owner) : base(owner)
     {
     }
 
@@ -104,7 +104,7 @@ public class AnimationRenderComponent : Component, IRenderable
     }
 
     public event OnAnimationCompleteHandler OnAnimationComplete;
-    public delegate void OnAnimationCompleteHandler(AnimationRenderComponent renderer);
+    public delegate void OnAnimationCompleteHandler(AnimationRenderer renderer);
 
     public int LayerIndex { get; set; }
     public bool Hidden { get; set; }

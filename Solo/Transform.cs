@@ -11,9 +11,7 @@ public class Transform
     public float Rotation;
 
     public Vector2 GetDirection()
-    {
-        return new Vector2(-MathF.Sin(Rotation), MathF.Cos(Rotation));
-    }
+    => new Vector2(MathF.Sin(Rotation), -MathF.Cos(Rotation));
 
     public void Clone(Transform source)
     {

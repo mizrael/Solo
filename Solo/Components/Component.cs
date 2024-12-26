@@ -31,6 +31,7 @@ public abstract class Component
 
         UpdateCore(gameTime);
     }
+
     protected virtual void UpdateCore(GameTime gameTime) { }
 
     public GameObject Owner { get; }

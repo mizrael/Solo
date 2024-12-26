@@ -17,28 +17,35 @@ public class ComponentsCollection : IEnumerable<Component>
     public TC Add<TC>() where TC : Component
     {
         var type = typeof(TC);
-        if (!_items.ContainsKey(type))
-        {
-            var component = ComponentsFactory.Instance.Create<TC>(_owner);
-            _items.Add(type, component);
-        }
 
-        return _items[type] as TC;
+        if (_items.TryGetValue(type, out var result))
+            return (TC)result;
+        
+        var component = ComponentsFactory.Instance.Create<TC>(_owner);
+        _items.Add(type, component);
+        return component;      
     }
 
     public T Get<T>() where T : Component
     {
         var type = typeof(T);
-        return _items.ContainsKey(type) ? _items[type] as T : throw new ComponentNotFoundException<T>(_owner);
+
+        if (!_items.TryGetValue(type, out var result))
+            throw new ComponentNotFoundException<T>(_owner);
+
+        return (T)result;
     }
 
     public bool TryGet<T>(out T result) where T : Component
     {
         var type = typeof(T);
         _items.TryGetValue(type, out var tmp);
+        
         result = tmp as T;
         return result != null;
     }
+
+    public bool Has<T>() where T : Component => _items.ContainsKey(typeof(T));
 
     public IEnumerator<Component> GetEnumerator() => _items.Values.GetEnumerator();
 

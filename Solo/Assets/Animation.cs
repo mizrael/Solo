@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Solo.Assets;
 
+// TODO: this has to go away, in favor of AnimatedSpriteSheet
 public record Animation
 {
     public Animation(

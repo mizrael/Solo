@@ -33,7 +33,7 @@ public class PlayerBrain : Component
         var boundingBox = Owner.Components.Get<BoundingBoxComponent>();
         boundingBox.OnCollision += (sender, collidedWith) =>
         {
-            if (collidedWith.Owner.Components.TryGet<AsteroidBrain>(out var _))
+            if (collidedWith.Owner.Components.Has<AsteroidBrain>())
             {
                 if (this.Stats.HasShield)
                     this.Stats.ShieldPower--;

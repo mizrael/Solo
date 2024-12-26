@@ -1,9 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
 using Solo;
 using Solo.Components;
 
-namespace Monoroids.Components;
+namespace SpaceInvaders.Logic;
 
 public class Weapon : Component
 {
@@ -30,18 +29,18 @@ public class Weapon : Component
         var bullet = Spawner.Spawn();
         var bulletTransform = bullet.Components.Get<TransformComponent>();
 
-        bulletTransform.Local.Rotation = _ownerTransform.Local.Rotation;
+        bulletTransform.Local.Rotation = this.BulletsDirection;
         bulletTransform.Local.Position = GetBulletStartPosition();
-        
-        ShotSound?.Play();
+
+        bullet.Components.Get<BulletBrain>().Shooter = Owner;
     }
 
     private Vector2 GetBulletStartPosition() => _ownerTransform.World.Position +
                                                 _ownerTransform.Local.GetDirection() * Offset;
 
     public Spawner Spawner;
-    public SoundEffect ShotSound;
 
-    public float Offset = 50f;
-    private long FireRate = 150;
+    public float Offset = -50f;
+    public float BulletsDirection = MathHelper.Pi;
+    private long FireRate = 500;
 }

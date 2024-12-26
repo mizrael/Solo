@@ -23,13 +23,13 @@ public class MovingBody : Component
 
     protected override void UpdateCore(GameTime gameTime)
     {
-        var dt = (float)gameTime.ElapsedGameTime.TotalMilliseconds / 1000;
+        var dt = (float)gameTime.ElapsedGameTime.TotalMilliseconds / 1000f;
 
         _rotationVelocity += RotationSpeed * dt;
         _rotationVelocity *= (1f - dt * RotationDrag);
-        _transform.Local.Rotation += _rotationVelocity * dt;
+        _transform.Local.Rotation += _rotationVelocity * dt; 
 
-        var dir = new Vector2(MathF.Sin(_transform.Local.Rotation), -MathF.Cos(_transform.Local.Rotation));
+        var dir = _transform.Local.GetDirection();
 
         var traction = dir * this.Thrust;
 
