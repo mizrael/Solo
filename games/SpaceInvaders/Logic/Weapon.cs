@@ -29,8 +29,10 @@ public class Weapon : Component
         var bullet = Spawner.Spawn();
         var bulletTransform = bullet.Components.Get<TransformComponent>();
 
-        bulletTransform.Local.Rotation = _ownerTransform.Local.Rotation;
+        bulletTransform.Local.Rotation = this.BulletsDirection;
         bulletTransform.Local.Position = GetBulletStartPosition();
+
+        bullet.Components.Get<BulletBrain>().Shooter = Owner;
     }
 
     private Vector2 GetBulletStartPosition() => _ownerTransform.World.Position +
@@ -39,5 +41,6 @@ public class Weapon : Component
     public Spawner Spawner;
 
     public float Offset = -50f;
+    public float BulletsDirection = MathHelper.Pi;
     private long FireRate = 500;
 }

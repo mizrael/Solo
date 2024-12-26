@@ -24,6 +24,15 @@ public class BulletBrain : Component
         _boundingBox = Owner.Components.Get<BoundingBoxComponent>();
         _boundingBox.OnCollision += (sender, collidedWith) =>
         {
+            if(collidedWith.Owner == this.Shooter)
+                return;
+
+            if (collidedWith.Owner.HasTag(Tags.Bullet))
+                return;
+
+            if (collidedWith.Owner.HasTag(Tags.Enemy) && this.Shooter?.HasTag(Tags.Enemy) == true)
+                return;
+
             this.Owner.Enabled = false;
         };
         _renderService = GameServicesManager.Instance.GetService<RenderService>();
@@ -42,4 +51,6 @@ public class BulletBrain : Component
     }
 
     public float Speed { get; set; }
+
+    public GameObject? Shooter { get; set; }
 }

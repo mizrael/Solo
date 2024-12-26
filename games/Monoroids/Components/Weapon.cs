@@ -42,6 +42,6 @@ public class Weapon : Component
     public Spawner Spawner;
     public SoundEffect ShotSound;
 
-    public float Offset = -50f;
+    public float Offset = 50f;
     private long FireRate = 150;
 }

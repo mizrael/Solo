@@ -8,6 +8,8 @@ using Solo.Services;
 using Solo.Services.Messaging;
 using SpaceInvaders.Logic;
 using SpaceInvaders.Logic.Messages;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SpaceInvaders.Scenes;
@@ -28,7 +30,7 @@ public class PlayScene : Scene
 
         var scale = 0.65f;
 
-        AddAliens(spriteSheet, collisionService, scale);
+        AddAliens(spriteSheet, bulletSpawner, collisionService, scale);
 
         AddPlayer(spriteSheet, collisionService, scale, bulletSpawner);
     }
@@ -46,11 +48,24 @@ public class PlayScene : Scene
         transform.Local.Position.X = Game.GraphicsDevice.Viewport.Width * .5f;
         transform.Local.Position.Y = Game.GraphicsDevice.Viewport.Height - renderer.Sprite.Bounds.Height * .5f;
         transform.Local.Scale = new Vector2(scale, scale);
+        
+        var bboxSize = new Point(
+            (int)(renderer.Sprite.Bounds.Size.X * scale),
+            (int)(renderer.Sprite.Bounds.Size.Y * scale));
+        var bbox = player.Components.Add<BoundingBoxComponent>();
+        bbox.SetSize(bboxSize);
+        bbox.OnCollision += (sender, collidedWith) =>
+        {
+            //player.Enabled = false;
+        };
+        collisionService.Add(bbox);
 
         player.Components.Add<PlayerBrain>();
 
         var weapon = player.Components.Add<Weapon>();
         weapon.Spawner = bulletSpawner;
+        weapon.BulletsDirection = 0f;
+        weapon.Offset = 0f;
 
         Root.AddChild(player);
     }
@@ -71,7 +86,7 @@ public class PlayScene : Scene
             var bulletBBox = bullet.Components.Add<BoundingBoxComponent>();
             bulletBBox.SetSize(bulletSpriteRenderer.Sprite.Bounds.Size);
 
-            var speed = 7000f;
+            var speed = 5000f;
 
             var bulletRigidBody = bullet.Components.Add<MovingBody>();
             bulletRigidBody.MaxSpeed = speed;
@@ -88,6 +103,8 @@ public class PlayScene : Scene
 
             bullet.Components.Get<TransformComponent>().Local.Reset();
             bullet.Components.Get<TransformComponent>().World.Reset();
+
+            bullet.Components.Get<BulletBrain>().Shooter = null;
         });
 
         spawner.Components.Add<TransformComponent>();
@@ -96,7 +113,8 @@ public class PlayScene : Scene
     }
 
     private void AddAliens(
-        SpriteSheet spriteSheet, 
+        SpriteSheet spriteSheet,
+        Spawner bulletSpawner,
         CollisionService collisionService, 
         float scale)
     {
@@ -118,6 +136,7 @@ public class PlayScene : Scene
         var bus = GameServicesManager.Instance.GetService<MessageBus>();
 
         var setDirectionTopic = bus.GetTopic<SetDirection>();
+        var firingAliensMap = new Dictionary<int, LinkedList<GameObject>>();
 
         for (int i = 0; i < rows; i++)
         {
@@ -125,14 +144,48 @@ public class PlayScene : Scene
             {
                 var alienName = $"alien{i + 1}";
                 var pos = new Vector2(startX + j * alienWidth * scale + offsetX * j, startY + i * alienHeight * scale + offsetY * i);
-                var alien = AddAlien(spriteSheet, alienName, collisionService, setDirectionTopic, yStep, boardSize, pos, scale);
+                var alien = AddAlien(spriteSheet, alienName, bulletSpawner, collisionService, setDirectionTopic, yStep, boardSize, pos, scale);
+
+                if(!firingAliensMap.TryGetValue(j, out var aliens))
+                    aliens = firingAliensMap[j] = new LinkedList<GameObject>();
+                aliens.AddLast(alien);
             }
         }
+
+        var aliensController = new GameObject();
+        double lastBulletFiredTime = 0;
+        var fireRate = 1000;
+        var brain = aliensController.Components.Add<LambdaComponent>();
+        brain.OnUpdate = (owner, gameTime) =>
+        {
+
+            var col = Random.Shared.Next(cols);
+            if (!firingAliensMap.TryGetValue(col, out var aliens) || aliens.Count < 1)
+                return;
+
+            while (aliens.Count > 0 && !aliens.Last!.Value.Enabled)
+                aliens.RemoveLast();
+
+            if (aliens.Count < 1)
+            {
+                firingAliensMap.Remove(col); 
+                return;
+            }
+
+            var canShoot = gameTime.TotalGameTime.TotalMilliseconds - lastBulletFiredTime >= fireRate;
+            if (!canShoot)
+                return;
+
+            lastBulletFiredTime = gameTime.TotalGameTime.TotalMilliseconds;
+            aliens.Last!.Value.Components.Get<Weapon>().Shoot(gameTime);
+        };
+        this.Root.AddChild(aliensController);
     }
 
     private GameObject AddAlien(
         SpriteSheet spriteSheet,
         string alienName,
+        Spawner bulletSpawner,
         CollisionService collisionService,
         MessageTopic<SetDirection> setDirectionTopic,
         float yStep,
@@ -183,7 +236,15 @@ public class PlayScene : Scene
         {
             if (collidedWith.Owner.HasTag(Tags.Enemy))
                 return;
-            alien.Enabled = false;
+
+            if(collidedWith.Owner.HasTag(Tags.Bullet))
+            {
+                var bulletShooter = collidedWith.Owner.Components.Get<BulletBrain>().Shooter;
+                if(bulletShooter?.HasTag(Tags.Enemy) == true)
+                    return;
+            }
+
+             alien.Enabled = false;
         };
         collisionService.Add(bbox);
 
@@ -200,6 +261,11 @@ public class PlayScene : Scene
             transform.Local.Position.X += alienDirX * gameTime.ElapsedGameTime.Milliseconds * speed;
             transform.Local.Position.Y = alienPosY;
         };
+
+        var weapon = alien.Components.Add<Weapon>();
+        weapon.Spawner = bulletSpawner;
+        weapon.BulletsDirection = MathHelper.Pi;
+        weapon.Offset = -bboxSize.Y;
 
         this.Root.AddChild(alien);
 
