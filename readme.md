@@ -14,3 +14,4 @@ I have built a few sample games to show how to use the engine. Those are very si
 - [Monoroids](./games/Monoroids/)
 - [Snake](./games/Snake/)
 - [Tetris](./games/Tetris/)
+- [SpaceInvaders](./games/SpaceInvaders/)
