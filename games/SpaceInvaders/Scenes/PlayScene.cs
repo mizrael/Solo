@@ -56,7 +56,16 @@ public class PlayScene : Scene
         bbox.SetSize(bboxSize);
         bbox.OnCollision += (sender, collidedWith) =>
         {
-            //player.Enabled = false;
+            if (collidedWith.Owner.HasTag(Tags.Bullet))
+            {
+                var bulletShooter = collidedWith.Owner.Components.Get<BulletBrain>().Shooter;
+                if (bulletShooter == player)
+                    return;
+            }
+
+            player.Enabled = false;
+
+            OnGameOver();
         };
         collisionService.Add(bbox);
 
@@ -192,7 +201,7 @@ public class PlayScene : Scene
         Vector2 boardSize,
         Vector2 position, 
         float scale,
-        float speed = 0.1f,
+        float speed = .2f,
         int framesCount = 2,
         int fps = 2)
     {
@@ -237,14 +246,14 @@ public class PlayScene : Scene
             if (collidedWith.Owner.HasTag(Tags.Enemy))
                 return;
 
-            if(collidedWith.Owner.HasTag(Tags.Bullet))
+            if (collidedWith.Owner.HasTag(Tags.Bullet))
             {
                 var bulletShooter = collidedWith.Owner.Components.Get<BulletBrain>().Shooter;
-                if(bulletShooter?.HasTag(Tags.Enemy) == true)
+                if (bulletShooter?.HasTag(Tags.Enemy) == true)
                     return;
             }
 
-             alien.Enabled = false;
+            alien.Enabled = false;
         };
         collisionService.Add(bbox);
 
@@ -260,6 +269,9 @@ public class PlayScene : Scene
 
             transform.Local.Position.X += alienDirX * gameTime.ElapsedGameTime.Milliseconds * speed;
             transform.Local.Position.Y = alienPosY;
+
+            if(transform.Local.Position.Y >= Game.GraphicsDevice.Viewport.Height)
+                OnGameOver();
         };
 
         var weapon = alien.Components.Add<Weapon>();
@@ -270,5 +282,10 @@ public class PlayScene : Scene
         this.Root.AddChild(alien);
 
         return alien;
+    }
+
+    private void OnGameOver()
+    {
+        GameServicesManager.Instance.GetService<SceneManager>().SetCurrentScene(SceneNames.MainTitle);
     }
 }
