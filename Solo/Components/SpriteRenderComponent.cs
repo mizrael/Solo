@@ -21,7 +21,7 @@ public class SpriteRenderComponent : Component, IRenderable
             color: Color.White, 
             rotation: _transform.World.Rotation,
             origin: Sprite.Center,
-            scale: _transform.World.Scale,
+            scale: _transform.World.Scale, 
             SpriteEffects.None,
             layerDepth: 0f);
     }

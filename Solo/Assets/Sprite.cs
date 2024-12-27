@@ -12,7 +12,6 @@ public record Sprite
         Texture = texture;
 
         Bounds = bounds;
-        Center = new Vector2(bounds.Width / 2, bounds.Height / 2);
     }
 
     public Sprite(string name, Texture2D texture) 
@@ -23,7 +22,21 @@ public record Sprite
     public string Name { get; }
     public Texture2D Texture { get; }
 
-    public Rectangle Bounds { get; set; }
+    private Rectangle _bounds;
+    public Rectangle Bounds
+    {
+        get => _bounds;
+        set
+        {
+            _bounds = value;
+            Center = new Vector2((float)value.Width * .5f, (float)value.Height * .5f);
+        }
+    }
+
+    /// <summary>
+    /// Sets the center of the sprite.
+    /// Will be recalculated when <see cref="Sprite.Bounds"/> is set.
+    /// </summary>
     public Vector2 Center { get; set; }        
 
     public static Sprite FromTexture(string name, ContentManager contentManager)
