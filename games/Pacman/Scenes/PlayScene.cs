@@ -1,6 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using Pacman.Components;
 using Solo;
 using Solo.Assets;
@@ -34,7 +33,7 @@ public class PlayScene : Scene
         var transform = player.Components.Add<TransformComponent>();
 
         var framesCount = 3;
-        var fps = 6;
+        var fps = 10;
         var frames = Enumerable.Range(1, framesCount)
             .Select(i =>
             {
@@ -86,67 +85,4 @@ public class PlayScene : Scene
 
         return map;
     }
-}
-
-public class PlayerBrainComponent : Component
-{
-    private TransformComponent _transform;
-
-    public PlayerBrainComponent(GameObject owner) : base(owner)
-    {
-    }
-
-    protected override void InitCore()
-    {
-        var mapLogic = this.Map.Components.Get<MapLogicComponent>();
-
-        _transform = Owner.Components.Get<TransformComponent>();
-        _transform.Local.Position = mapLogic.GetPlayerStartTile();
-
-        var renderer = this.Owner.Components.Get<AnimatedSpriteSheetRenderer>();
-
-        var renderService = GameServicesManager.Instance.GetService<RenderService>();
-        var calculateSize = new Action(() =>
-        {
-            if (renderer.CurrentFrame is null)
-                return;
-
-            _transform.Local.Scale.X = mapLogic.TileSize.X / renderer.CurrentFrame.Bounds.Width;
-            _transform.Local.Scale.Y = mapLogic.TileSize.Y / renderer.CurrentFrame.Bounds.Height;
-        });
-        calculateSize();
-
-        renderService.Window.ClientSizeChanged += (s, e) => calculateSize();
-
-        base.InitCore();
-    }
-
-    protected override void UpdateCore(GameTime gameTime)
-    {
-        var keyboard = Keyboard.GetState();
-
-        var velocity = Vector2.Zero;
-        if (keyboard.IsKeyDown(Keys.W))
-        {
-            velocity.Y = -1;
-        }
-        if (keyboard.IsKeyDown(Keys.S))
-        {
-            velocity.Y = 1;
-        }
-        if (keyboard.IsKeyDown(Keys.A))
-        {
-            velocity.X = -1;
-        }
-        if (keyboard.IsKeyDown(Keys.D))
-        {
-            velocity.X = 1;
-        }
-        
-        _transform.Local.Position += velocity * Speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
-    }
-
-    public float Speed = 100f;
-
-    public GameObject Map;
 }

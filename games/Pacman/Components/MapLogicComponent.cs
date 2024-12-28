@@ -9,7 +9,7 @@ namespace Pacman.Components;
 
 public class MapLogicComponent : Component
 #if DEBUG
-    , IRenderable
+   // , IRenderable
 #endif
 {
     private Texture2D _pixelTexture;
@@ -73,11 +73,28 @@ public class MapLogicComponent : Component
         renderService.Window.ClientSizeChanged += (s, e) => calculateSize();
     }
 
-    public Vector2 GetPlayerStartTile()
-        => GetTileCenter(1, 1);
+    public (int row, int col) GetPlayerStartTile() => (1, 1);
 
     public Vector2 GetTileCenter(int row, int col)
         => new Vector2(col * _tileSize.X + _tileCenter.X, row * _tileSize.Y + _tileCenter.Y);
+
+    public bool IsWalkable(int row, int col)
+        => row < _tiles.GetLength(0) && row > -1 &&
+           col < _tiles.GetLength(1) && col > -1 &&
+           _tiles[row, col] != TileTypes.Wall;
+
+    public bool IsWalkable(Vector2 position)
+    {
+        var (row, col) = GetTileIndex(position);
+        return IsWalkable(row, col);
+    }
+
+    public (int row, int col) GetTileIndex(Vector2 position)
+    {
+        var row = (int)(position.Y / _tileSize.Y);
+        var col = (int)(position.X / _tileSize.X);
+        return (row, col);
+    }
 
     #region Debug Rendering
 
@@ -123,4 +140,11 @@ public class MapLogicComponent : Component
     public bool Hidden { get; set; }
 
     #endregion Debug Rendering
+}
+
+public static class TileTypes 
+{
+    public const int Empty = 0;
+    public const int Pellet = 1;
+    public const int Wall = 2;
 }

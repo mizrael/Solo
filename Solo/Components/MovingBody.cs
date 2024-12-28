@@ -23,7 +23,7 @@ public class MovingBody : Component
 
     protected override void UpdateCore(GameTime gameTime)
     {
-        var dt = (float)gameTime.ElapsedGameTime.TotalMilliseconds / 1000f;
+        var dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
         _rotationVelocity += RotationSpeed * dt;
         _rotationVelocity *= (1f - dt * RotationDrag);
