@@ -1,0 +1,33 @@
+{
+  "spriteSheetName": "spritesheet",
+  "sprites": [
+    {
+      "name": "pacman1",
+      "x": 0,
+      "y": 0,
+      "width": 84,
+      "height": 84
+    },
+    {
+      "name": "pacman2",
+      "x": 84,
+      "y": 0,
+      "width": 84,
+      "height": 84
+    },
+    {
+      "name": "pacman3",
+      "x": 168,
+      "y": 0,
+      "width": 84,
+      "height": 84
+    },
+    {
+      "name": "powerup",
+      "x": 699,
+      "y": 172,
+      "width": 22,
+      "height": 20
+    }
+  ]
+}

@@ -1,10 +1,15 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using Pacman.Components;
 using Solo;
 using Solo.Assets;
+using Solo.Assets.Loaders;
 using Solo.Components;
 using Solo.Services;
 using System;
+using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Pacman.Scenes;
 
@@ -16,14 +21,47 @@ public class PlayScene : Scene
 
     protected override void EnterCore()
     {
-        AddMap();
+        var spriteSheet = new SpriteSheetLoader().Load("meta/spritesheet.json", Game);
+
+        var map = AddMap();
+
+        AddPlayer(spriteSheet, map);
     }
 
-    private void AddMap()
+    private void AddPlayer(SpriteSheet spriteSheet, GameObject map)
+    {
+        var player = new GameObject();
+        var transform = player.Components.Add<TransformComponent>();
+
+        var framesCount = 3;
+        var fps = 6;
+        var frames = Enumerable.Range(1, framesCount)
+            .Select(i =>
+            {
+                var spriteName = $"pacman{i}";
+                var sprite = spriteSheet.Get(spriteName);
+                return new AnimatedSpriteSheet.Frame(sprite.Bounds);
+            })
+            .ToArray();
+
+        var spriteSheetTexture = Game.Content.Load<Texture2D>(spriteSheet.ImagePath);
+        var animation = new AnimatedSpriteSheet("pacman", spriteSheetTexture, fps, frames);
+
+        var renderer = player.Components.Add<AnimatedSpriteSheetRenderer>();
+        renderer.Animation = animation;
+        renderer.LayerIndex = (int)RenderLayers.Player;
+
+        var playerBrain = player.Components.Add<PlayerBrainComponent>();
+        playerBrain.Map = map;
+
+        this.Root.AddChild(player);
+    }
+
+    private GameObject AddMap()
     {
         var map = new GameObject();
         
-        map.Components.Add<MapBrainComponent>();
+        map.Components.Add<MapLogicComponent>();
         var transform = map.Components.Add<TransformComponent>();
 
         var sprite = Sprite.FromTexture("map", Game.Content);
@@ -32,10 +70,6 @@ public class PlayScene : Scene
         renderer.LayerIndex = (int)RenderLayers.Background;
 
         var renderService = GameServicesManager.Instance.GetService<RenderService>();
-        renderService.SetLayerConfig((int)RenderLayers.Background, new RenderLayerConfig
-        {
-            SamplerState = SamplerState.LinearClamp
-        });
         var calculateSize = new Action(() =>
         {
             transform.Local.Position.X = renderService.Graphics.GraphicsDevice.Viewport.Width / 2;
@@ -49,109 +83,70 @@ public class PlayScene : Scene
         renderService.Window.ClientSizeChanged += (s, e) => calculateSize();
 
         this.Root.AddChild(map);
+
+        return map;
     }
 }
 
-
-public class MapBrainComponent : Component
-#if DEBUG
-    , IRenderable
-#endif
+public class PlayerBrainComponent : Component
 {
-    private Texture2D _pixelTexture;
-    private Point _tileSize = Point.Zero;
+    private TransformComponent _transform;
 
-    private static int[,] _tiles =
+    public PlayerBrainComponent(GameObject owner) : base(owner)
     {
-        { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 },
-        { 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2 },
-        { 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2 },
-        { 2, 4, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 4, 2 },
-        { 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2 },
-        { 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2 },
-        { 2, 1, 2, 2, 2, 2, 1, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 1, 2, 2, 2, 2, 1, 2 },
-        { 2, 1, 2, 2, 2, 2, 1, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 1, 2, 2, 2, 2, 1, 2 },
-        { 2, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 2 },
-        { 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2 },
-        { 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2 },
-        { 2, 2, 2, 2, 2, 2, 1, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 1, 2, 2, 2, 2, 2, 2 },
-        { 2, 2, 2, 2, 2, 2, 1, 2, 2, 0, 2, 2, 2, 0, 0, 2, 2, 2, 0, 2, 2, 1, 2, 2, 2, 2, 2, 2 },
-        { 2, 2, 2, 2, 2, 2, 1, 2, 2, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 2, 2, 1, 2, 2, 2, 2, 2, 2 },
-        { 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 },
-        { 2, 2, 2, 2, 2, 2, 1, 2, 2, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 2, 2, 1, 2, 2, 2, 2, 2, 2 },
-        { 2, 2, 2, 2, 2, 2, 1, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 1, 2, 2, 2, 2, 2, 2 },
-        { 2, 2, 2, 2, 2, 2, 1, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 1, 2, 2, 2, 2, 2, 2 },
-        { 2, 2, 2, 2, 2, 2, 1, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 1, 2, 2, 2, 2, 2, 2 },
-        { 2, 2, 2, 2, 2, 2, 1, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 1, 2, 2, 2, 2, 2, 2 },
-        { 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2 },
-        { 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2 },
-        { 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2 },
-        { 2, 4, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 4, 2 },
-        { 2, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 2 },
-        { 2, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 2 },
-        { 2, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 2 },
-        { 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2 },
-        { 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2 },
-        { 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2 },
-        { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 },
-    };
-
-    public MapBrainComponent(GameObject owner) : base(owner)
-    {
-        this.LayerIndex = (int)RenderLayers.UI;
     }
 
     protected override void InitCore()
     {
+        var mapLogic = this.Map.Components.Get<MapLogicComponent>();
+
+        _transform = Owner.Components.Get<TransformComponent>();
+        _transform.Local.Position = mapLogic.GetPlayerStartTile();
+
+        var renderer = this.Owner.Components.Get<AnimatedSpriteSheetRenderer>();
+
         var renderService = GameServicesManager.Instance.GetService<RenderService>();
         var calculateSize = new Action(() =>
         {
-            _tileSize.X = (int)((float)renderService.Graphics.GraphicsDevice.Viewport.Width / _tiles.GetLength(1));
-            _tileSize.Y = (int)((float)renderService.Graphics.GraphicsDevice.Viewport.Height / _tiles.GetLength(0));
+            if (renderer.CurrentFrame is null)
+                return;
+
+            _transform.Local.Scale.X = mapLogic.TileSize.X / renderer.CurrentFrame.Bounds.Width;
+            _transform.Local.Scale.Y = mapLogic.TileSize.Y / renderer.CurrentFrame.Bounds.Height;
         });
         calculateSize();
 
         renderService.Window.ClientSizeChanged += (s, e) => calculateSize();
+
+        base.InitCore();
     }
 
-    #region Debug Rendering
-
-    public void Render(SpriteBatch spriteBatch)
+    protected override void UpdateCore(GameTime gameTime)
     {
-        if (_pixelTexture is null)
+        var keyboard = Keyboard.GetState();
+
+        var velocity = Vector2.Zero;
+        if (keyboard.IsKeyDown(Keys.W))
         {
-            var renderService = GameServicesManager.Instance.GetService<RenderService>();
-            _pixelTexture = Texture2DUtils.Generate(renderService.Graphics.GraphicsDevice, 1, 1, Color.White);
+            velocity.Y = -1;
         }
-
-        for (int j = 0; j < _tiles.GetLength(1); j++) 
+        if (keyboard.IsKeyDown(Keys.S))
         {
-            for (int i = 0; i < _tiles.GetLength(0); i++)
-            {
-                int topLeftX = (int)_tileSize.X * j,
-                    topLeftY = (int)_tileSize.Y * i;
-
-                var color = _tiles[i, j] switch
-                {
-                    0 => Color.Black,
-                    1 => Color.White,
-                    2 => Color.Blue,
-                    3 => Color.Red,
-                    4 => Color.Green,
-                    _ => Color.Gray
-                };
-
-                spriteBatch.Draw(_pixelTexture, new Rectangle(topLeftX, topLeftY, _tileSize.X, 1), color);
-                spriteBatch.Draw(_pixelTexture, new Rectangle(topLeftX, topLeftY, 1, _tileSize.Y), color);
-                spriteBatch.Draw(_pixelTexture, new Rectangle(topLeftX + _tileSize.X - 1, topLeftY, 1, _tileSize.Y), color);
-                spriteBatch.Draw(_pixelTexture, new Rectangle(topLeftX, topLeftY + _tileSize.Y - 1, _tileSize.X, 1), color);
-            }
+            velocity.Y = 1;
         }
-
+        if (keyboard.IsKeyDown(Keys.A))
+        {
+            velocity.X = -1;
+        }
+        if (keyboard.IsKeyDown(Keys.D))
+        {
+            velocity.X = 1;
+        }
+        
+        _transform.Local.Position += velocity * Speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
     }
 
-    public int LayerIndex { get; set; }
-    public bool Hidden { get; set; }
+    public float Speed = 100f;
 
-    #endregion Debug Rendering
+    public GameObject Map;
 }
