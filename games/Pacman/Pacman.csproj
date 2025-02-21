@@ -12,6 +12,11 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="meta\animations\**" />
+    <EmbeddedResource Remove="meta\animations\**" />
+    <None Remove="meta\animations\**" />
+  </ItemGroup>
+  <ItemGroup>
     <None Remove="Icon.ico" />
     <None Remove="Icon.bmp" />
   </ItemGroup>
@@ -30,9 +35,6 @@
 		<None Update="meta\spritesheet.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-	</ItemGroup>
-	<ItemGroup>
-	  <Folder Include="meta\animations\" />
 	</ItemGroup>
   <Target Name="RestoreDotnetTools" BeforeTargets="Restore">
     <Message Text="Restoring dotnet tools" Importance="High" />

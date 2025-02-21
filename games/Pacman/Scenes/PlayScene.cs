@@ -22,7 +22,7 @@ public class PlayScene : Scene
     {
         var spriteSheet = new SpriteSheetLoader().Load("meta/spritesheet.json", Game);
 
-        var map = AddMap();
+        var map = AddMap(spriteSheet);
 
         AddPlayer(spriteSheet, map);
     }
@@ -56,11 +56,11 @@ public class PlayScene : Scene
         this.Root.AddChild(player);
     }
 
-    private GameObject AddMap()
+    private GameObject AddMap(SpriteSheet spriteSheet)
     {
         var map = new GameObject();
         
-        map.Components.Add<MapLogicComponent>();
+        var mapBrain = map.Components.Add<MapLogicComponent>();
         var transform = map.Components.Add<TransformComponent>();
 
         var sprite = Sprite.FromTexture("map", Game.Content);
@@ -80,6 +80,24 @@ public class PlayScene : Scene
         calculateSize();
 
         renderService.Window.ClientSizeChanged += (s, e) => calculateSize();
+
+        mapBrain.OnInitialized += () => 
+        {
+            var pelletSprite = spriteSheet.Get("pellet");
+            var pelletPositions = mapBrain.GetTilesByType(TileTypes.Pellet);
+            foreach (var pos in pelletPositions) {
+                var pellet = new GameObject();
+
+                var pelletTransform = pellet.Components.Add<TransformComponent>();
+                pelletTransform.Local.Position = mapBrain.GetTileCenter(pos.row, pos.col) - transform.Local.Position;
+
+                var pelletRenderer = pellet.Components.Add<SpriteRenderComponent>();
+                pelletRenderer.Sprite = pelletSprite;
+                pelletRenderer.LayerIndex = (int)RenderLayers.Items;
+
+                map.AddChild(pellet);
+            } 
+        };
 
         this.Root.AddChild(map);
 

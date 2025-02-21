@@ -18,6 +18,8 @@ public abstract class Component
 
         InitCore();
         _initialized = true;
+
+        OnInitialized?.Invoke();
     }
 
     protected virtual void InitCore() { }
@@ -36,4 +38,7 @@ public abstract class Component
 
     public GameObject Owner { get; }
     public bool Initialized => _initialized;
+
+    public OnInitializedHandler OnInitialized;
+    public delegate void OnInitializedHandler();
 }

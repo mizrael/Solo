@@ -4,6 +4,7 @@ using Solo;
 using Solo.Components;
 using Solo.Services;
 using System;
+using System.Collections.Generic;
 
 namespace Pacman.Components;
 
@@ -81,7 +82,7 @@ public class MapLogicComponent : Component
     public bool IsWalkable(int row, int col)
         => row < _tiles.GetLength(0) && row > -1 &&
            col < _tiles.GetLength(1) && col > -1 &&
-           _tiles[row, col] != TileTypes.Wall;
+           _tiles[row, col] != (int)TileTypes.Wall;
 
     public bool IsWalkable(Vector2 position)
     {
@@ -94,6 +95,18 @@ public class MapLogicComponent : Component
         var row = (int)(position.Y / _tileSize.Y);
         var col = (int)(position.X / _tileSize.X);
         return (row, col);
+    }
+
+    public IEnumerable<(int row, int col)> GetTilesByType(TileTypes type)
+    {
+        for (int j = 0; j < _tiles.GetLength(1); j++)
+        {
+            for (int i = 0; i < _tiles.GetLength(0); i++)
+            {
+                if (_tiles[i, j] == (int)type)
+                    yield return (i, j);
+            }
+        }
     }
 
     public int Cols => _tiles.GetLength(1);
@@ -145,9 +158,9 @@ public class MapLogicComponent : Component
     #endregion Debug Rendering
 }
 
-public static class TileTypes 
+public enum TileTypes 
 {
-    public const int Empty = 0;
-    public const int Pellet = 1;
-    public const int Wall = 2;
+    Empty = 0,
+    Pellet = 1,
+    Wall = 2
 }
