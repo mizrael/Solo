@@ -96,6 +96,9 @@ public class MapLogicComponent : Component
         return (row, col);
     }
 
+    public int Cols => _tiles.GetLength(1);
+    public int Rows => _tiles.GetLength(0);
+
     #region Debug Rendering
 
     public void Render(SpriteBatch spriteBatch)

@@ -82,10 +82,32 @@ public class PlayerBrainComponent : Component
 
         _direction = newDirection;
 
+        var isTeleport = false;
+        if (nextRow < 0)
+        {
+            isTeleport = true;
+            nextRow = _mapLogic.Rows - 1;
+        }
+        else if (nextRow >= _mapLogic.Rows)
+        {
+            isTeleport = true;
+            nextRow = 0;
+        }
+        if (nextCol < 0)
+        {
+            isTeleport = true;
+            nextCol = _mapLogic.Cols - 1;
+        }
+        else if (nextCol >= _mapLogic.Cols)
+        {
+            isTeleport = true;
+            nextCol = 0;
+        }
+
         Vector2 newPos;
         if (_mapLogic.IsWalkable(nextRow, nextCol))
         {
-            newPos = _mapLogic.GetTileCenter(nextRow, nextCol);            
+            newPos = _mapLogic.GetTileCenter(nextRow, nextCol);
         }
         else
         {
@@ -101,8 +123,8 @@ public class PlayerBrainComponent : Component
                 _ => newPos
             };
         }
-
-        _transform.Local.Position = Vector2.Lerp(_transform.Local.Position, newPos, Speed);
+        
+        _transform.Local.Position = isTeleport ? newPos : Vector2.Lerp(_transform.Local.Position, newPos, Speed);
 
         (_currRow, _currCol) = _mapLogic.GetTileIndex(_transform.Local.Position);
 
