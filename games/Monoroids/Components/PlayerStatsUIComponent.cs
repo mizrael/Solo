@@ -23,7 +23,7 @@ public class PlayerStatsUIComponent : Component, IRenderable
 
     protected override void InitCore()
     {
-        _renderService = GameServicesManager.Instance.GetService<RenderService>();
+        _renderService = GameServicesManager.Instance.GetRequired<RenderService>();
 
         _texture = Texture2DUtils.Generate(_renderService.Graphics.GraphicsDevice, 1, 1, Color.White);
     }

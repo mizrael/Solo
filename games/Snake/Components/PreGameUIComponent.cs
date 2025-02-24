@@ -19,7 +19,7 @@ public class PreGameUIComponent : Component, IRenderable
 
     protected override void InitCore()
     {
-        _renderService = GameServicesManager.Instance.GetService<RenderService>();
+        _renderService = GameServicesManager.Instance.GetRequired<RenderService>();
     }
 
     public void Render(SpriteBatch spriteBatch)
@@ -50,7 +50,7 @@ public class PreGameUIComponent : Component, IRenderable
         var keyboardState = Keyboard.GetState();
         var canStart = _prevKeyState.IsKeyDown(Keys.Enter) && keyboardState.IsKeyUp(Keys.Enter);
         if (canStart)
-            GameServicesManager.Instance.GetService<SceneManager>().SetCurrentScene(SceneNames.Play);
+            GameServicesManager.Instance.GetRequired<SceneManager>().SetCurrentScene(SceneNames.Play);
         _prevKeyState = keyboardState;
     }
 

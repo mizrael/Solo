@@ -6,7 +6,7 @@ namespace Solo.Components;
 
 public class BoundingBoxComponent : Component
 #if DEBUG
-   // , Solo.Services.IRenderable
+    , Solo.Services.IRenderable
 #endif
 {
     private TransformComponent _transform;
@@ -53,7 +53,7 @@ public class BoundingBoxComponent : Component
     {
         if (_pixelTexture is null)
         {
-            var renderService = GameServicesManager.Instance.GetService<RenderService>();
+            var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
             _pixelTexture = Texture2DUtils.Generate(renderService.Graphics.GraphicsDevice, 1, 1, Color.White);
         }
 
@@ -70,10 +70,10 @@ public class BoundingBoxComponent : Component
     public event OnPositionChangedHandler OnPositionChanged;
     public delegate void OnPositionChangedHandler(BoundingBoxComponent sender);
 
-    public void CollideWith(BoundingBoxComponent other) => this.OnCollision?.Invoke(this, other);
+    public void CollideWith(BoundingBoxComponent other) => this.OnCollision?.Invoke(other);
 
     public event OnCollisionHandler OnCollision;
-    public delegate void OnCollisionHandler(BoundingBoxComponent sender, BoundingBoxComponent collidedWith);
+    public delegate void OnCollisionHandler(BoundingBoxComponent otherBBox);
 
     public override int GetHashCode()
         => _hashCode;

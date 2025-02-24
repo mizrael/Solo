@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Solo;
+using Solo.Assets;
 using Solo.Components;
 using Solo.Services;
 using System;
@@ -16,8 +17,11 @@ public class MapLogicComponent : Component
     private Texture2D _pixelTexture;
     private Vector2 _tileSize = Vector2.Zero;
     private Vector2 _tileCenter = Vector2.Zero;
+    private Vector2 _posOffset = Vector2.Zero;
 
     public Vector2 TileSize => _tileSize;
+
+    private TransformComponent _transform;
 
     private static int[,] _tiles =
     {
@@ -61,23 +65,41 @@ public class MapLogicComponent : Component
 
     protected override void InitCore()
     {
-        var renderService = GameServicesManager.Instance.GetService<RenderService>();
+        _transform = Owner.Components.Get<TransformComponent>();
+
+        var renderer = Owner.Components.Add<SpriteRenderComponent>();
+
+        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
         var calculateSize = new Action(() =>
         {
-            _tileSize.X = (float)renderService.Graphics.GraphicsDevice.Viewport.Width / _tiles.GetLength(1);
-            _tileSize.Y = (float)renderService.Graphics.GraphicsDevice.Viewport.Height / _tiles.GetLength(0);
+            _posOffset.Y = renderService.Graphics.GraphicsDevice.Viewport.Height * 0.05f;
+            _posOffset.X = renderService.Graphics.GraphicsDevice.Viewport.Width * .125f; 
 
-            _tileCenter = new Vector2(_tileSize.X * .5f, _tileSize.Y * .5f);
+            var height = renderService.Graphics.GraphicsDevice.Viewport.Height - _posOffset.Y;
+            var width = renderService.Graphics.GraphicsDevice.Viewport.Width - _posOffset.X * 2f;
+
+            _tileSize.X = width / _tiles.GetLength(1);
+            _tileSize.Y = height / _tiles.GetLength(0);
+
+            _tileCenter = new Vector2(_tileSize.X * .5f, _tileSize.Y * .5f);          
+
+            _transform.Local.Position.X = width * .5f + _posOffset.X;
+            _transform.Local.Position.Y = height * .5f + _posOffset.Y;
+
+            _transform.Local.Scale.X = width / (float)renderer.Sprite.Bounds.Width;
+            _transform.Local.Scale.Y = height / (float)renderer.Sprite.Bounds.Height;
         });
         calculateSize();
 
         renderService.Window.ClientSizeChanged += (s, e) => calculateSize();
     }
 
-    public (int row, int col) GetPlayerStartTile() => (1, 1);
+    public (int row, int col) GetPlayerStartTile() => (14, 1);
 
     public Vector2 GetTileCenter(int row, int col)
-        => new Vector2(col * _tileSize.X + _tileCenter.X, row * _tileSize.Y + _tileCenter.Y);
+        => new Vector2(
+            col * _tileSize.X + _tileCenter.X + _posOffset.X, 
+            row * _tileSize.Y + _tileCenter.Y + _posOffset.Y);
 
     public bool IsWalkable(int row, int col)
         => row < _tiles.GetLength(0) && row > -1 &&
@@ -92,8 +114,8 @@ public class MapLogicComponent : Component
 
     public (int row, int col) GetTileIndex(Vector2 position)
     {
-        var row = (int)(position.Y / _tileSize.Y);
-        var col = (int)(position.X / _tileSize.X);
+        var row = (int)((position.Y - _posOffset.Y) / _tileSize.Y);
+        var col = (int)((position.X - _posOffset.X) / _tileSize.X);
         return (row, col);
     }
 
@@ -118,7 +140,7 @@ public class MapLogicComponent : Component
     {
         if (_pixelTexture is null)
         {
-            var renderService = GameServicesManager.Instance.GetService<RenderService>();
+            var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
             _pixelTexture = Texture2DUtils.Generate(renderService.Graphics.GraphicsDevice, 1, 1, new Color(Color.LightGray, 200));
         }
 

@@ -22,7 +22,7 @@ public class BulletBrain : Component
         _movingBody = Owner.Components.Get<MovingBody>();
         _transformComponent = Owner.Components.Get<TransformComponent>();
         _boundingBox = Owner.Components.Get<BoundingBoxComponent>();
-        _boundingBox.OnCollision += (sender, collidedWith) =>
+        _boundingBox.OnCollision += (collidedWith) =>
         {
             if(collidedWith.Owner == this.Shooter)
                 return;
@@ -35,7 +35,7 @@ public class BulletBrain : Component
 
             this.Owner.Enabled = false;
         };
-        _renderService = GameServicesManager.Instance.GetService<RenderService>();
+        _renderService = GameServicesManager.Instance.GetRequired<RenderService>();
     }
 
     protected override void UpdateCore(GameTime gameTime)

@@ -56,7 +56,7 @@ public class PlayScene : Scene
 
     private void AddBoard(Board board, GameState gameState, GameObject uiObj)
     {
-        var renderService = GameServicesManager.Instance.GetService<RenderService>();
+        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
 
         var boardObject = new GameObject();
         var brain = boardObject.Components.Add<LambdaComponent>();

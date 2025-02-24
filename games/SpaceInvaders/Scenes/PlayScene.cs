@@ -23,7 +23,7 @@ public class PlayScene : Scene
     protected override void EnterCore()
     {
         var spriteSheet = new SpriteSheetLoader().Load("meta/spritesheet.json", Game);        
-        var collisionService = GameServicesManager.Instance.GetService<CollisionService>();
+        var collisionService = GameServicesManager.Instance.GetRequired<CollisionService>();
 
         var bulletSpawner = BuildBulletSpawner(spriteSheet, collisionService);
         this.Root.AddChild(bulletSpawner);
@@ -54,7 +54,7 @@ public class PlayScene : Scene
             (int)(renderer.Sprite.Bounds.Size.Y * scale));
         var bbox = player.Components.Add<BoundingBoxComponent>();
         bbox.SetSize(bboxSize);
-        bbox.OnCollision += (sender, collidedWith) =>
+        bbox.OnCollision += (collidedWith) =>
         {
             if (collidedWith.Owner.HasTag(Tags.Bullet))
             {
@@ -142,7 +142,7 @@ public class PlayScene : Scene
         var startX = (Game.GraphicsDevice.Viewport.Width - (cols * alienWidth * scale + cols * offsetX * .5f)) * .5f;
         var startY = 50;
 
-        var bus = GameServicesManager.Instance.GetService<MessageBus>();
+        var bus = GameServicesManager.Instance.GetRequired<MessageBus>();
 
         var setDirectionTopic = bus.GetTopic<SetDirection>();
         var firingAliensMap = new Dictionary<int, LinkedList<GameObject>>();
@@ -241,7 +241,7 @@ public class PlayScene : Scene
             (int)(animation.Frames[0].Bounds.Size.Y * scale));
         var bbox = alien.Components.Add<BoundingBoxComponent>();
         bbox.SetSize(bboxSize);
-        bbox.OnCollision += (sender, collidedWith) =>
+        bbox.OnCollision += (collidedWith) =>
         {
             if (collidedWith.Owner.HasTag(Tags.Enemy))
                 return;
@@ -286,6 +286,6 @@ public class PlayScene : Scene
 
     private void OnGameOver()
     {
-        GameServicesManager.Instance.GetService<SceneManager>().SetCurrentScene(SceneNames.MainTitle);
+        GameServicesManager.Instance.GetRequired<SceneManager>().SetCurrentScene(SceneNames.MainTitle);
     }
 }

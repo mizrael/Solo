@@ -19,10 +19,10 @@ public class CollisionService : IGameService
 
     public void Initialize()
     {
-        _sceneManager = GameServicesManager.Instance.GetService<SceneManager>();
+        _sceneManager = GameServicesManager.Instance.GetRequired<SceneManager>();
         _sceneManager.OnSceneChanged += OnSceneChanged;
 
-        _renderService = GameServicesManager.Instance.GetService<RenderService>();
+        _renderService = GameServicesManager.Instance.GetRequired<RenderService>();
         _renderService.Graphics.DeviceReset += (s, e) => BuildBuckets();
 
         BuildBuckets();

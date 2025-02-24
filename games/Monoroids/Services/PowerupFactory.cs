@@ -49,7 +49,7 @@ public class PowerupFactory
         bbox.SetSize(sprite.Bounds.Size);
         _collisionService.Add(bbox);
 
-        bbox.OnCollision += (_, with) =>
+        bbox.OnCollision += (with) =>
         {
             if (!with.Owner.Components.TryGet<PlayerBrain>(out var playerBrain))
                 return;

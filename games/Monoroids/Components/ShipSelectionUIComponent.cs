@@ -26,7 +26,7 @@ public class ShipSelectionUIComponent : Component, IRenderable
 
     protected override void InitCore()
     {
-        _renderService = GameServicesManager.Instance.GetService<RenderService>();
+        _renderService = GameServicesManager.Instance.GetRequired<RenderService>();
     }
 
     public void Render(SpriteBatch spriteBatch)

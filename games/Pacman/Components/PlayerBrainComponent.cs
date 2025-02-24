@@ -29,8 +29,9 @@ public class PlayerBrainComponent : Component
         _transform.Local.Position = _mapLogic.GetTileCenter(_currRow, _currCol);
 
         var renderer = Owner.Components.Get<AnimatedSpriteSheetRenderer>();
+        var bbox = Owner.Components.Add<BoundingBoxComponent>();
 
-        var renderService = GameServicesManager.Instance.GetService<RenderService>();
+        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
         var calculateSize = new Action(() =>
         {
             if (renderer.CurrentFrame is null)
@@ -40,6 +41,11 @@ public class PlayerBrainComponent : Component
             _transform.Local.Scale.Y = _mapLogic.TileSize.Y / renderer.CurrentFrame.Bounds.Height;
 
             _transform.Local.Position = _mapLogic.GetTileCenter(_currRow, _currCol);
+
+            var bboxSize = new Point(
+                 (int)((float)renderer.CurrentFrame.Bounds.Size.X * _transform.Local.Scale.X),
+                 (int)((float)renderer.CurrentFrame.Bounds.Size.Y * _transform.Local.Scale.Y));
+            bbox.SetSize(bboxSize);
         });
         calculateSize();
 

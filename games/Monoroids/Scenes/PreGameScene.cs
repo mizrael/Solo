@@ -41,7 +41,7 @@ internal class PreGameScene : Scene
 
     private GameObject BuildBackground()
     {
-        var renderService = GameServicesManager.Instance.GetService<RenderService>();
+        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
         var background = new GameObject();
         background.Components.Add<TransformComponent>();
 

@@ -31,8 +31,8 @@ internal class PlayScene : Scene
     {
         var spriteSheet = new SpriteSheetLoader().Load("meta/sheet.json", Game);
 
-        var collisionService = GameServicesManager.Instance.GetService<CollisionService>();
-        var renderService = GameServicesManager.Instance.GetService<RenderService>();
+        var collisionService = GameServicesManager.Instance.GetRequired<CollisionService>();
+        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
 
         var explosionSpawner = BuildExplosionsSpawner();
         var bulletSpawner = BuildBulletSpawner(spriteSheet, collisionService);
@@ -149,7 +149,7 @@ internal class PlayScene : Scene
         brain.Stats = shipTemplate.Stats;
         brain.OnDeath += player =>
         {
-            GameServicesManager.Instance.GetService<SceneManager>()
+            GameServicesManager.Instance.GetRequired<SceneManager>()
                 .SetCurrentScene(SceneNames.GameOver);
         };
 
