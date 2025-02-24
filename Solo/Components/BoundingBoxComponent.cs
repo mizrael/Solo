@@ -6,7 +6,7 @@ namespace Solo.Components;
 
 public class BoundingBoxComponent : Component
 #if DEBUG
-    , Solo.Services.IRenderable
+  //  , Solo.Services.IRenderable
 #endif
 {
     private TransformComponent _transform;

@@ -8,6 +8,7 @@ using Solo.Components;
 using Solo.Services;
 using System;
 using System.Linq;
+using System.Numerics;
 
 namespace Pacman.Scenes;
 
@@ -25,10 +26,19 @@ public class PlayScene : Scene
         var collisionService = GameServicesManager.Instance.GetRequired<CollisionService>();
         var map = AddMap(spriteSheet, collisionService, gameState);
 
-        AddPellets(spriteSheet, collisionService, gameState, map);
+        var mapBrain = map.Components.Get<MapLogicComponent>();
+        mapBrain.OnInitialized += () =>
+        {
+            AddPellets(spriteSheet, collisionService, gameState, map);
 
-        AddPlayer(spriteSheet, map, collisionService);
-        
+            AddPlayer(spriteSheet, collisionService, map);
+
+            AddGhost(spriteSheet, collisionService, map, Ghosts.Blinky);
+            AddGhost(spriteSheet, collisionService, map, Ghosts.Pinky);
+            AddGhost(spriteSheet, collisionService, map, Ghosts.Inky);
+            AddGhost(spriteSheet, collisionService, map, Ghosts.Clyde);
+        };
+
         AddUI(gameState);
     }
 
@@ -44,40 +54,36 @@ public class PlayScene : Scene
         return uiObj;
     }
 
-    private void AddPlayer(SpriteSheet spriteSheet, GameObject map, CollisionService collisionService)
+    private void AddPlayer(SpriteSheet spriteSheet, CollisionService collisionService, GameObject map)
     {
-        var mapBrain = map.Components.Get<MapLogicComponent>();
-        mapBrain.OnInitialized += () =>
-        {
-            var player = new GameObject();
-            var transform = player.Components.Add<TransformComponent>();
+        var player = new GameObject();
+        var transform = player.Components.Add<TransformComponent>();
 
-            var framesCount = 3;
-            var fps = 10;
-            var frames = Enumerable.Range(1, framesCount)
-                .Select(i =>
-                {
-                    var spriteName = $"pacman{i}";
-                    var sprite = spriteSheet.Get(spriteName);
-                    return new AnimatedSpriteSheet.Frame(sprite.Bounds);
-                })
-                .ToArray();
+        var framesCount = 3;
+        var fps = 10;
+        var frames = Enumerable.Range(1, framesCount)
+            .Select(i =>
+            {
+                var spriteName = $"pacman{i}";
+                var sprite = spriteSheet.Get(spriteName);
+                return new AnimatedSpriteSheet.Frame(sprite.Bounds);
+            })
+            .ToArray();
 
-            var spriteSheetTexture = Game.Content.Load<Texture2D>(spriteSheet.ImagePath);
-            var animation = new AnimatedSpriteSheet("pacman", spriteSheetTexture, fps, frames);
+        var spriteSheetTexture = Game.Content.Load<Texture2D>(spriteSheet.ImagePath);
+        var animation = new AnimatedSpriteSheet("pacman", spriteSheetTexture, fps, frames);
 
-            var renderer = player.Components.Add<AnimatedSpriteSheetRenderer>();
-            renderer.Animation = animation;
-            renderer.LayerIndex = (int)RenderLayers.Player;
+        var renderer = player.Components.Add<AnimatedSpriteSheetRenderer>();
+        renderer.Animation = animation;
+        renderer.LayerIndex = (int)RenderLayers.Player;
 
-            var playerBrain = player.Components.Add<PlayerBrainComponent>();
-            playerBrain.Map = map;
+        var playerBrain = player.Components.Add<PlayerBrainComponent>();
+        playerBrain.Map = map;
 
-            var playerBBox = player.Components.Add<BoundingBoxComponent>();
-            collisionService.Add(playerBBox);
+        var playerBBox = player.Components.Add<BoundingBoxComponent>();
+        collisionService.Add(playerBBox);
 
-            this.Root.AddChild(player);
-        };
+        this.Root.AddChild(player);
     }
 
     private GameObject AddMap(SpriteSheet spriteSheet, CollisionService collisionService, GameState gameState)
@@ -109,13 +115,10 @@ public class PlayScene : Scene
         var pelletSprite = spriteSheet.Get("pellet");
         var pelletPositions = mapBrain.GetTilesByType(TileTypes.Pellet);
 
-        mapBrain.OnInitialized += () =>
+        foreach (var pos in pelletPositions)
         {
-            foreach (var pos in pelletPositions)
-            {
-                AddPellet(container, mapBrain, mapTransform, pelletSprite, pos, collisionService, renderService, gameState);
-            }
-        };
+            AddPellet(container, mapBrain, mapTransform, pelletSprite, pos, collisionService, renderService, gameState);
+        }
 
         this.Root.AddChild(container);
     }
@@ -175,5 +178,40 @@ public class PlayScene : Scene
         resize();
 
         parent.AddChild(pellet);
+    }
+
+
+    private void AddGhost(SpriteSheet spriteSheet, CollisionService collisionService, GameObject map, Ghosts ghostType)
+    {
+        var ghost = new GameObject();
+        var transform = ghost.Components.Add<TransformComponent>();
+
+        var ghostName = ghostType.ToString().ToLower();
+        var framesCount = 2;
+        var fps = 6;
+        var frames = Enumerable.Range(1, framesCount)
+            .Select(i =>
+            {
+                var spriteName = $"{ghostName}{i}";
+                var sprite = spriteSheet.Get(spriteName);
+                return new AnimatedSpriteSheet.Frame(sprite.Bounds);
+            })
+            .ToArray();
+
+        var spriteSheetTexture = Game.Content.Load<Texture2D>(spriteSheet.ImagePath);
+        var animation = new AnimatedSpriteSheet(ghostName, spriteSheetTexture, fps, frames);
+
+        var renderer = ghost.Components.Add<AnimatedSpriteSheetRenderer>();
+        renderer.Animation = animation;
+        renderer.LayerIndex = (int)RenderLayers.Enemies;
+
+        var bbox = ghost.Components.Add<BoundingBoxComponent>();
+        collisionService.Add(bbox);
+
+        var brain = ghost.Components.Add<GhostBrainComponent>();
+        brain.Map = map;
+        brain.GhostType = ghostType;
+
+        this.Root.AddChild(ghost);
     }
 }

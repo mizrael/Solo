@@ -96,6 +96,15 @@ public class MapLogicComponent : Component
 
     public (int row, int col) GetPlayerStartTile() => (14, 1);
 
+    public (int row, int col) GetGhostStartTile(Ghosts ghost) 
+        => ghost switch {
+            Ghosts.Blinky => (14, 12),
+            Ghosts.Pinky => (14, 13),
+            Ghosts.Inky => (14, 14),
+            Ghosts.Clyde => (14, 15),
+            _ => (14, 26),
+        };
+
     public Vector2 GetTileCenter(int row, int col)
         => new Vector2(
             col * _tileSize.X + _tileCenter.X + _posOffset.X, 
@@ -178,11 +187,4 @@ public class MapLogicComponent : Component
     public bool Hidden { get; set; }
 
     #endregion Debug Rendering
-}
-
-public enum TileTypes 
-{
-    Empty = 0,
-    Pellet = 1,
-    Wall = 2
 }

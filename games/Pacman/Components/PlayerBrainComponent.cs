@@ -148,12 +148,3 @@ public class PlayerBrainComponent : Component
 
     public GameObject Map;
 }
-
-public enum Directions
-{
-    None,
-    Up,
-    Down,
-    Left,
-    Right
-}
