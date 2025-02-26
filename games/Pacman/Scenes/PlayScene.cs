@@ -8,7 +8,6 @@ using Solo.Components;
 using Solo.Services;
 using System;
 using System.Linq;
-using System.Numerics;
 
 namespace Pacman.Scenes;
 
@@ -31,12 +30,12 @@ public class PlayScene : Scene
         {
             AddPellets(spriteSheet, collisionService, gameState, map);
 
-            AddPlayer(spriteSheet, collisionService, map);
+            var player = AddPlayer(spriteSheet, collisionService, map);
 
-            AddGhost(spriteSheet, collisionService, map, Ghosts.Blinky);
-            AddGhost(spriteSheet, collisionService, map, Ghosts.Pinky);
-            AddGhost(spriteSheet, collisionService, map, Ghosts.Inky);
-            AddGhost(spriteSheet, collisionService, map, Ghosts.Clyde);
+            AddGhost(spriteSheet, collisionService, map, Ghosts.Blinky, player);
+       //     AddGhost(spriteSheet, collisionService, map, Ghosts.Pinky, player);
+            AddGhost(spriteSheet, collisionService, map, Ghosts.Inky, player);
+            //AddGhost(spriteSheet, collisionService, map, Ghosts.Clyde, player);
         };
 
         AddUI(gameState);
@@ -54,7 +53,7 @@ public class PlayScene : Scene
         return uiObj;
     }
 
-    private void AddPlayer(SpriteSheet spriteSheet, CollisionService collisionService, GameObject map)
+    private GameObject AddPlayer(SpriteSheet spriteSheet, CollisionService collisionService, GameObject map)
     {
         var player = new GameObject();
         var transform = player.Components.Add<TransformComponent>();
@@ -84,6 +83,8 @@ public class PlayScene : Scene
         collisionService.Add(playerBBox);
 
         this.Root.AddChild(player);
+
+        return player;
     }
 
     private GameObject AddMap(SpriteSheet spriteSheet, CollisionService collisionService, GameState gameState)
@@ -128,7 +129,7 @@ public class PlayScene : Scene
         MapLogicComponent mapBrain, 
         TransformComponent mapTransform, 
         Sprite pelletSprite, 
-        (int row, int col) tileCoords,
+        TileInfo tile,
         CollisionService collisionService,
         RenderService renderService,
         GameState gameState)
@@ -145,7 +146,7 @@ public class PlayScene : Scene
             var hasPlayerBrain = collidedWith.Owner.Components.Has<PlayerBrainComponent>();
             if (hasPlayerBrain)
             {
-                gameState.IncreaseScore(50);
+                gameState.IncreaseScore(10);
                 pellet.Enabled = false;
                 pellet.Parent?.RemoveChild(pellet);
             }
@@ -160,7 +161,7 @@ public class PlayScene : Scene
 
         var resize = new Action(() =>
         {
-            pelletTransform.Local.Position = mapBrain.GetTileCenter(tileCoords.row, tileCoords.col);
+            pelletTransform.Local.Position = mapBrain.GetTileCenter(tile);
 
             pelletTransform.Local.Scale.X = mapBrain.TileSize.X / (float)pelletSprite.Bounds.Width * scaleFactor;
             pelletTransform.Local.Scale.Y = mapBrain.TileSize.Y / (float)pelletSprite.Bounds.Height * scaleFactor;
@@ -181,7 +182,7 @@ public class PlayScene : Scene
     }
 
 
-    private void AddGhost(SpriteSheet spriteSheet, CollisionService collisionService, GameObject map, Ghosts ghostType)
+    private void AddGhost(SpriteSheet spriteSheet, CollisionService collisionService, GameObject map, Ghosts ghostType, GameObject player)
     {
         var ghost = new GameObject();
         var transform = ghost.Components.Add<TransformComponent>();
@@ -210,7 +211,17 @@ public class PlayScene : Scene
 
         var brain = ghost.Components.Add<GhostBrainComponent>();
         brain.Map = map;
+        brain.Player = player;
         brain.GhostType = ghostType;
+
+        brain.Logic = ghostType switch
+        {
+            Ghosts.Blinky => AI.StateMachines.Blinky(ghost, player, map, 2000f),
+            //Ghosts.Pinky => new PinkyBrain(ghost),
+            Ghosts.Inky => AI.StateMachines.Inky(ghost, player, map, 2000f),
+            //Ghosts.Clyde => new ClydeBrain(ghost),
+            _ => throw new NotImplementedException()
+        };
 
         this.Root.AddChild(ghost);
     }

@@ -11,8 +11,7 @@ public class PlayerBrainComponent : Component
 {
     private TransformComponent _transform;
     private MapLogicComponent _mapLogic;
-    private int _currRow = -1;
-    private int _currCol = -1;
+    private TileInfo _currTile;
     private Directions _direction;
 
 
@@ -24,9 +23,8 @@ public class PlayerBrainComponent : Component
     {
         _mapLogic = Map.Components.Get<MapLogicComponent>();
 
-        (_currRow, _currCol) = _mapLogic.GetPlayerStartTile();
+        _currTile = _mapLogic.GetPlayerStartTile();
         _transform = Owner.Components.Get<TransformComponent>();
-        _transform.Local.Position = _mapLogic.GetTileCenter(_currRow, _currCol);
 
         var renderer = Owner.Components.Get<AnimatedSpriteSheetRenderer>();
         var bbox = Owner.Components.Add<BoundingBoxComponent>();
@@ -40,7 +38,7 @@ public class PlayerBrainComponent : Component
             _transform.Local.Scale.X = _mapLogic.TileSize.X / renderer.CurrentFrame.Bounds.Width;
             _transform.Local.Scale.Y = _mapLogic.TileSize.Y / renderer.CurrentFrame.Bounds.Height;
 
-            _transform.Local.Position = _mapLogic.GetTileCenter(_currRow, _currCol);
+            _transform.Local.Position = _mapLogic.GetTileCenter(_currTile);
 
             var bboxSize = new Point(
                  (int)((float)renderer.CurrentFrame.Bounds.Size.X * _transform.Local.Scale.X),
@@ -58,8 +56,8 @@ public class PlayerBrainComponent : Component
     {
         var keyboard = Keyboard.GetState();
 
-        var nextRow = _currRow;
-        var nextCol = _currCol;
+        var nextRow = _currTile.Row;
+        var nextCol = _currTile.Col;
 
         Directions newDirection = Directions.None;
         if (keyboard.IsKeyDown(Keys.Up))
@@ -92,9 +90,9 @@ public class PlayerBrainComponent : Component
         if (nextRow < 0)
         {
             isTeleport = true;
-            nextRow = _mapLogic.Rows - 1;
+            nextRow = _mapLogic.RowsCount - 1;
         }
-        else if (nextRow >= _mapLogic.Rows)
+        else if (nextRow >= _mapLogic.RowsCount)
         {
             isTeleport = true;
             nextRow = 0;
@@ -102,24 +100,25 @@ public class PlayerBrainComponent : Component
         if (nextCol < 0)
         {
             isTeleport = true;
-            nextCol = _mapLogic.Cols - 1;
+            nextCol = _mapLogic.ColsCount - 1;
         }
-        else if (nextCol >= _mapLogic.Cols)
+        else if (nextCol >= _mapLogic.ColsCount)
         {
             isTeleport = true;
             nextCol = 0;
         }
 
         Vector2 newPos;
-        if (_mapLogic.IsWalkable(nextRow, nextCol))
+        var nextTile = _mapLogic.GetTileAt(nextRow, nextCol);
+        if (nextTile?.IsWalkable == true)
         {
-            newPos = _mapLogic.GetTileCenter(nextRow, nextCol);
+            newPos = _mapLogic.GetTileCenter(nextTile);
         }
         else
         {
             // if we can't move to the next tile, we should move to the center of the current tile
             // trying to avoid bouncing back and forth between two tiles
-            newPos = _mapLogic.GetTileCenter(_currRow, _currCol);
+            newPos = _mapLogic.GetTileCenter(_currTile);
             newPos = _direction switch
             {
                 Directions.Up => new Vector2(_transform.Local.Position.X, newPos.Y),
@@ -132,7 +131,7 @@ public class PlayerBrainComponent : Component
         
         _transform.Local.Position = isTeleport ? newPos : Vector2.Lerp(_transform.Local.Position, newPos, Speed);
 
-        (_currRow, _currCol) = _mapLogic.GetTileIndex(_transform.Local.Position);
+        _currTile = _mapLogic.GetTileAt(_transform.Local.Position);
 
         _transform.Local.Rotation = _direction switch
         {
@@ -147,4 +146,6 @@ public class PlayerBrainComponent : Component
     public float Speed = .1f;
 
     public GameObject Map;
+
+    public Directions Direction => _direction;
 }

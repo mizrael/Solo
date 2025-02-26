@@ -1,17 +1,18 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Solo;
-using Solo.Assets;
+using Solo.AI;
 using Solo.Components;
 using Solo.Services;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Pacman.Components;
 
 public class MapLogicComponent : Component
 #if DEBUG
-   // , IRenderable
+    //, IRenderable
 #endif
 {
     private Texture2D _pixelTexture;
@@ -23,7 +24,7 @@ public class MapLogicComponent : Component
 
     private TransformComponent _transform;
 
-    private static int[,] _tiles =
+    private readonly static int[,] _tiles =
     {
         { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 },
         { 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2 },
@@ -58,9 +59,16 @@ public class MapLogicComponent : Component
         { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 },
     };
 
+    private readonly TileInfo[,] _tileInfos;
+
+    private Func<TileInfo, IEnumerable<TileInfo>> _findNeighboursFunc;
+
     public MapLogicComponent(GameObject owner) : base(owner)
     {
+        _tileInfos = BuildTileInfoMatrix();
         LayerIndex = (int)RenderLayers.UI;
+
+        _findNeighboursFunc = t => GetNeighbours(t, n => null != n && n.IsWalkable);
     }
 
     protected override void InitCore()
@@ -94,54 +102,130 @@ public class MapLogicComponent : Component
         renderService.Window.ClientSizeChanged += (s, e) => calculateSize();
     }
 
-    public (int row, int col) GetPlayerStartTile() => (14, 1);
+    public TileInfo GetPlayerStartTile() => _tileInfos[14, 1];
 
-    public (int row, int col) GetGhostStartTile(Ghosts ghost) 
+    public TileInfo GetGhostStartTile(Ghosts ghost) 
         => ghost switch {
-            Ghosts.Blinky => (14, 12),
-            Ghosts.Pinky => (14, 13),
-            Ghosts.Inky => (14, 14),
-            Ghosts.Clyde => (14, 15),
-            _ => (14, 26),
+            Ghosts.Blinky => _tileInfos[11, 13],
+            Ghosts.Pinky => _tileInfos[14, 13],
+            Ghosts.Inky => _tileInfos[14, 14],
+            Ghosts.Clyde => _tileInfos[14, 15],
+            _ => _tileInfos[14, 26],
         };
 
-    public Vector2 GetTileCenter(int row, int col)
-        => new Vector2(
-            col * _tileSize.X + _tileCenter.X + _posOffset.X, 
-            row * _tileSize.Y + _tileCenter.Y + _posOffset.Y);
+    public Vector2 GetTileCenter(TileInfo tile)
+         => new Vector2(
+            tile.Col * _tileSize.X + _tileCenter.X + _posOffset.X,
+            tile.Row * _tileSize.Y + _tileCenter.Y + _posOffset.Y);
 
-    public bool IsWalkable(int row, int col)
-        => row < _tiles.GetLength(0) && row > -1 &&
-           col < _tiles.GetLength(1) && col > -1 &&
-           _tiles[row, col] != (int)TileTypes.Wall;
-
-    public bool IsWalkable(Vector2 position)
-    {
-        var (row, col) = GetTileIndex(position);
-        return IsWalkable(row, col);
-    }
-
-    public (int row, int col) GetTileIndex(Vector2 position)
+    public TileInfo? GetTileAt(Vector2 position)
     {
         var row = (int)((position.Y - _posOffset.Y) / _tileSize.Y);
         var col = (int)((position.X - _posOffset.X) / _tileSize.X);
-        return (row, col);
+        
+        return row < RowsCount && row > -1 &&
+           col < ColsCount && col > -1 ?
+             _tileInfos[row, col] : null;
     }
 
-    public IEnumerable<(int row, int col)> GetTilesByType(TileTypes type)
+    public TileInfo? GetTileAt(int row, int col)
+        => row < RowsCount && row > -1 &&
+           col < ColsCount && col > -1 ? 
+        _tileInfos[row, col] : null;
+    
+    public IEnumerable<TileInfo> GetTilesByType(TileTypes type)
     {
-        for (int j = 0; j < _tiles.GetLength(1); j++)
+        for (int row = 0; row < RowsCount; row++)
         {
-            for (int i = 0; i < _tiles.GetLength(0); i++)
+            for (int col = 0; col < ColsCount; col++)
             {
-                if (_tiles[i, j] == (int)type)
-                    yield return (i, j);
+                if (_tileInfos[row, col].Type == type)
+                    yield return _tileInfos[row, col];
             }
         }
     }
 
-    public int Cols => _tiles.GetLength(1);
-    public int Rows => _tiles.GetLength(0);
+    public Path<TileInfo> FindPath(TileInfo start, TileInfo destination)
+    {
+        if(start is null)
+            return Path<TileInfo>.Empty; // TODO: this should probably throw
+        if (destination is null)
+            return new Path<TileInfo>([start]);
+
+        if (start == destination)
+            return new Path<TileInfo>([destination]);
+
+        return Pathfinder.FindPath(start, destination,
+                                   TileInfo.Distance,
+                                   _findNeighboursFunc);
+    }
+
+    public int ColsCount => _tiles.GetLength(1);
+    public int RowsCount => _tiles.GetLength(0);
+
+    #region Private methods
+
+    private TileInfo[,] BuildTileInfoMatrix()
+    {
+        var tileInfos = new TileInfo[RowsCount, ColsCount];
+        for (int row = 0; row < RowsCount; row++) 
+        {
+            for (int col = 0; col < ColsCount; col++)
+            {
+                tileInfos[row, col] = new TileInfo(row, col, (TileTypes)_tiles[row,col]);
+            }
+        }
+        return tileInfos;
+    }
+
+    private TileInfo[] GetNeighbours(TileInfo tile, Predicate<TileInfo> filter)
+    {
+        var results = new List<TileInfo>(8);
+
+        int x = tile.Row - 1;
+        int y = tile.Col - 1;
+        if (x > -1 && x < RowsCount && y > -1 && y < ColsCount && filter(_tileInfos[x, y]))
+            results.Add(_tileInfos[x, y]);
+
+        x = tile.Row;
+        y = tile.Col - 1;
+        if (x > -1 && x < RowsCount && y > -1 && y < ColsCount && filter(_tileInfos[x, y]))
+            results.Add(_tileInfos[x, y]);
+
+        x = tile.Row + 1;
+        y = tile.Col - 1;
+        if (x > -1 && x < RowsCount && y > -1 && y < ColsCount && filter(_tileInfos[x, y]))
+            results.Add(_tileInfos[x, y]);
+
+        x = tile.Row - 1;
+        y = tile.Col;
+        if (x > -1 && x < RowsCount && y > -1 && y < ColsCount && filter(_tileInfos[x, y]))
+            results.Add(_tileInfos[x, y]);
+
+        x = tile.Row + 1;
+        y = tile.Col;
+        if (x > -1 && x < RowsCount && y > -1 && y < ColsCount && filter(_tileInfos[x, y]))
+            results.Add(_tileInfos[x, y]);
+
+        x = tile.Row - 1;
+        y = tile.Col + 1;
+        if (x > -1 && x < RowsCount && y > -1 && y < ColsCount && filter(_tileInfos[x, y]))
+            results.Add(_tileInfos[x, y]);
+
+        x = tile.Row;
+        y = tile.Col + 1;
+        if (x > -1 && x < RowsCount && y > -1 && y < ColsCount && filter(_tileInfos[x, y]))
+            results.Add(_tileInfos[x, y]);
+
+        x = tile.Row + 1;
+        y = tile.Col + 1;
+        if (x > -1 && x < RowsCount && y > -1 && y < ColsCount && filter(_tileInfos[x, y]))
+            results.Add(_tileInfos[x, y]);
+
+        return results.ToArray();
+    }
+
+    #endregion
 
     #region Debug Rendering
 
@@ -157,7 +241,7 @@ public class MapLogicComponent : Component
         {
             for (int i = 0; i < _tiles.GetLength(0); i++)
             {
-                Vector2 pos = new Vector2(j * _tileSize.X, i * _tileSize.Y);
+                Vector2 pos = new Vector2(j * _tileSize.X + _posOffset.X, i * _tileSize.Y + _posOffset.Y);
 
                 var color = _tiles[i, j] switch
                 {
