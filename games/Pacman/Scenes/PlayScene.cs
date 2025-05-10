@@ -58,19 +58,8 @@ public class PlayScene : Scene
         var player = new GameObject();
         var transform = player.Components.Add<TransformComponent>();
 
-        var framesCount = 3;
-        var fps = 10;
-        var frames = Enumerable.Range(1, framesCount)
-            .Select(i =>
-            {
-                var spriteName = $"pacman{i}";
-                var sprite = spriteSheet.Get(spriteName);
-                return new AnimatedSpriteSheet.Frame(sprite.Bounds);
-            })
-            .ToArray();
-
-        var spriteSheetTexture = Game.Content.Load<Texture2D>(spriteSheet.ImagePath);
-        var animation = new AnimatedSpriteSheet("pacman", spriteSheetTexture, fps, frames);
+        var animLoader = new AnimatedSpriteSheetLoader();
+        var animation = animLoader.Load("meta/animations/pacman_walk.json", Game);
 
         var renderer = player.Components.Add<AnimatedSpriteSheetRenderer>();
         renderer.Animation = animation;
@@ -188,19 +177,9 @@ public class PlayScene : Scene
         var transform = ghost.Components.Add<TransformComponent>();
 
         var ghostName = ghostType.ToString().ToLower();
-        var framesCount = 2;
-        var fps = 6;
-        var frames = Enumerable.Range(1, framesCount)
-            .Select(i =>
-            {
-                var spriteName = $"{ghostName}{i}";
-                var sprite = spriteSheet.Get(spriteName);
-                return new AnimatedSpriteSheet.Frame(sprite.Bounds);
-            })
-            .ToArray();
 
-        var spriteSheetTexture = Game.Content.Load<Texture2D>(spriteSheet.ImagePath);
-        var animation = new AnimatedSpriteSheet(ghostName, spriteSheetTexture, fps, frames);
+        var animLoader = new AnimatedSpriteSheetLoader();
+        var animation = animLoader.Load($"meta/animations/{ghostName}_walk.json", Game);
 
         var renderer = ghost.Components.Add<AnimatedSpriteSheetRenderer>();
         renderer.Animation = animation;
@@ -208,6 +187,12 @@ public class PlayScene : Scene
 
         var bbox = ghost.Components.Add<BoundingBoxComponent>();
         collisionService.Add(bbox);
+        bbox.OnCollision += (collidedWith) =>
+        {
+            var collidedWithPlayer = collidedWith.Owner.Id == player.Id;
+            if (!collidedWithPlayer)
+                return;
+        };
 
         var brain = ghost.Components.Add<GhostBrainComponent>();
         brain.Map = map;

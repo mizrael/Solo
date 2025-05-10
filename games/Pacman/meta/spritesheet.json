@@ -2,88 +2,11 @@
   "spriteSheetName": "spritesheet",
   "sprites": [
     {
-      "name": "pacman1",
-      "x": 0,
-      "y": 0,
-      "width": 84,
-      "height": 84
-    },
-    {
-      "name": "pacman2",
-      "x": 84,
-      "y": 0,
-      "width": 84,
-      "height": 84
-    },
-    {
-      "name": "pacman3",
-      "x": 168,
-      "y": 0,
-      "width": 84,
-      "height": 84
-    },
-    {
       "name": "pellet",
       "x": 699,
       "y": 172,
       "width": 22,
       "height": 20
-    },
-    {
-      "name": "blinky1",
-      "x": 0,
-      "y": 336,
-      "width": 84,
-      "height": 84
-    },
-    {
-      "name": "blinky2",
-      "x": 84,
-      "y": 336,
-      "width": 84,
-      "height": 84
-    },
-    {
-      "name": "pinky1",
-      "x": 0,
-      "y": 423,
-      "width": 84,
-      "height": 84
-    },
-    {
-      "name": "pinky2",
-      "x": 84,
-      "y": 423,
-      "width": 84,
-      "height": 84
-    },
-    {
-      "name": "inky1",
-      "x": 0,
-      "y": 510,
-      "width": 84,
-      "height": 84
-    },
-    {
-      "name": "inky2",
-      "x": 84,
-      "y": 510,
-      "width": 84,
-      "height": 84
-    },
-    {
-      "name": "clyde1",
-      "x": 0,
-      "y": 596,
-      "width": 84,
-      "height": 84
-    },
-    {
-      "name": "clyde2",
-      "x": 84,
-      "y": 596,
-      "width": 84,
-      "height": 84
     }
   ]
 }

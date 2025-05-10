@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Solo.Assets;
 
 // TODO: this has to go away, in favor of AnimatedSpriteSheet
+[Obsolete("This class is obsolete. Use AnimatedSpriteSheet instead.")]
 public record Animation
 {
     public Animation(

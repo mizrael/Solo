@@ -6,7 +6,6 @@ using Solo.Components;
 using Solo.Services;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Pacman.Components;
 

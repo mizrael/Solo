@@ -65,7 +65,7 @@ internal class PlayScene : Scene
 
     private Spawner BuildExplosionsSpawner()
     {
-        var explosionAnim = new AnimatedSpriteSheetLoader().Load("meta/animations/explosion1.json", Game);
+        var explosionAnim = new AnimationLoader().Load("meta/animations/explosion1.json", Game);
 
         var spawner = new Spawner(() =>
         {

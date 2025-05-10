@@ -12,11 +12,6 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="meta\animations\**" />
-    <EmbeddedResource Remove="meta\animations\**" />
-    <None Remove="meta\animations\**" />
-  </ItemGroup>
-  <ItemGroup>
     <None Remove="Icon.ico" />
     <None Remove="Icon.bmp" />
   </ItemGroup>
@@ -32,6 +27,21 @@
 		<ProjectReference Include="..\..\Solo\Solo.csproj" />
 	</ItemGroup>
 	<ItemGroup>
+		<None Update="meta\animations\clyde_walk.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="meta\animations\inky_walk.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="meta\animations\pinky_walk.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="meta\animations\blinky_walk.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="meta\animations\pacman_walk.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="meta\spritesheet.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>

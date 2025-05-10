@@ -6,24 +6,35 @@ namespace Solo.Assets.Loaders;
 
 public class AnimatedSpriteSheetLoader
 {
-    public Animation Load(string assetPath, Game game)
+    private readonly static JsonSerializerOptions _jsonOptions = new()
+    {
+        NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
+    };
+    public AnimatedSpriteSheet Load(string assetPath, Game game)
     {
         var json = File.ReadAllText(assetPath);
-        var dto = JsonSerializer.Deserialize<AnimationDTO>(json, new JsonSerializerOptions()
-        {
-            NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
-        });
+        var dto = JsonSerializer.Deserialize<animDto>(json, _jsonOptions);
 
-        var texture = game.Content.Load<Texture2D>(dto!.asset);
-        return new Animation(texture, assetPath, dto.fps, dto.framesCount, new Point(dto.frameWidth, dto.frameHeight));
+        var texture = game.Content.Load<Texture2D>(dto!.spriteSheetName);
+        return new AnimatedSpriteSheet(
+            dto.animationName, 
+            texture, 
+            dto.fps, 
+            dto.frames.Select(f => new AnimatedSpriteSheet.Frame(new Rectangle(f.x, f.y, f.width, f.height))).ToArray());
     }
 
-    internal class AnimationDTO
+    internal class animDto
     {
-        public string asset { get; set; }
+        public string animationName { get; set; }
+        public string spriteSheetName { get; set; }
         public int fps { get; set; }
-        public int framesCount { get; set; }
-        public int frameWidth { get; set; }
-        public int frameHeight { get; set; }        
+        public frameDto[] frames { get; set; }
+
+        internal class frameDto { 
+            public int x { get; set; }
+            public int y { get; set; }
+            public int width { get; set; }
+            public int height { get; set; }
+        }
     }
 }
