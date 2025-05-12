@@ -96,5 +96,5 @@ public class GameObject
 
     public override bool Equals(object obj) => obj is GameObject node && Id.Equals(node.Id);
 
-    public override string ToString() => $"GameObject {Id}";
+    public override string ToString() => $"[{this.GetType().Name}] #{Id}";
 }

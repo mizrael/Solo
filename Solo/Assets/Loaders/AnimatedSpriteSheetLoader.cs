@@ -10,6 +10,7 @@ public class AnimatedSpriteSheetLoader
     {
         NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
     };
+
     public AnimatedSpriteSheet Load(string assetPath, Game game)
     {
         var json = File.ReadAllText(assetPath);

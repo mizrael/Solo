@@ -33,6 +33,9 @@
 		<None Update="meta\animations\inky_walk.json">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Update="meta\animations\pacman_die.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="meta\animations\pinky_walk.json">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>

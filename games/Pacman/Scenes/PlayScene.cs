@@ -7,7 +7,6 @@ using Solo.Assets.Loaders;
 using Solo.Components;
 using Solo.Services;
 using System;
-using System.Linq;
 
 namespace Pacman.Scenes;
 
@@ -30,7 +29,7 @@ public class PlayScene : Scene
         {
             AddPellets(spriteSheet, collisionService, gameState, map);
 
-            var player = AddPlayer(spriteSheet, collisionService, map);
+            var player = AddPlayer(spriteSheet, collisionService, map, gameState);
 
             AddGhost(spriteSheet, collisionService, map, Ghosts.Blinky, player);
        //     AddGhost(spriteSheet, collisionService, map, Ghosts.Pinky, player);
@@ -53,23 +52,46 @@ public class PlayScene : Scene
         return uiObj;
     }
 
-    private GameObject AddPlayer(SpriteSheet spriteSheet, CollisionService collisionService, GameObject map)
+    private GameObject AddPlayer(SpriteSheet spriteSheet, CollisionService collisionService, GameObject map, GameState gameState)
     {
         var player = new GameObject();
         var transform = player.Components.Add<TransformComponent>();
 
         var animLoader = new AnimatedSpriteSheetLoader();
-        var animation = animLoader.Load("meta/animations/pacman_walk.json", Game);
+        var walkAnim = animLoader.Load("meta/animations/pacman_walk.json", Game);
+        var deathAnim = animLoader.Load("meta/animations/pacman_die.json", Game);
 
-        var renderer = player.Components.Add<AnimatedSpriteSheetRenderer>();
-        renderer.Animation = animation;
-        renderer.LayerIndex = (int)RenderLayers.Player;
+        var playerRenderer = player.Components.Add<AnimatedSpriteSheetRenderer>();
+        playerRenderer.Animation = walkAnim;
+        playerRenderer.LayerIndex = (int)RenderLayers.Player;
 
         var playerBrain = player.Components.Add<PlayerBrainComponent>();
         playerBrain.Map = map;
 
         var playerBBox = player.Components.Add<BoundingBoxComponent>();
         collisionService.Add(playerBBox);
+        playerBBox.OnCollision += (collidedWith) =>
+        {
+            if (!playerBrain.Enabled)
+                return;
+
+            var collidedWithGhost = collidedWith.Owner.Components.Has<GhostBrainComponent>();
+            if (!collidedWithGhost)
+                return;
+
+            playerRenderer.Animation = deathAnim;
+            playerBrain.Enabled = false;
+
+            var timer = new System.Timers.Timer(TimeSpan.FromSeconds(5));
+            timer.Elapsed += (s, e) =>
+            {
+                timer.Stop();
+                timer.Dispose();
+
+                GameServicesManager.Instance.GetRequired<SceneManager>().SetCurrentScene(SceneNames.Intro);
+            };
+            timer.Start();
+        };
 
         this.Root.AddChild(player);
 
@@ -187,13 +209,7 @@ public class PlayScene : Scene
 
         var bbox = ghost.Components.Add<BoundingBoxComponent>();
         collisionService.Add(bbox);
-        bbox.OnCollision += (collidedWith) =>
-        {
-            var collidedWithPlayer = collidedWith.Owner.Id == player.Id;
-            if (!collidedWithPlayer)
-                return;
-        };
-
+        
         var brain = ghost.Components.Add<GhostBrainComponent>();
         brain.Map = map;
         brain.Player = player;

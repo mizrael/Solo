@@ -32,6 +32,18 @@
 /processorParam:TextureFormat=Color
 /build:map.png
 
+#begin pacman_intro.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:pacman_intro.png
+
 #begin spritesheet.png
 /importer:TextureImporter
 /processor:TextureProcessor

@@ -14,7 +14,6 @@ public class PlayerBrainComponent : Component
     private TileInfo _currTile;
     private Directions _direction;
 
-
     public PlayerBrainComponent(GameObject owner) : base(owner)
     {
     }
@@ -141,6 +140,14 @@ public class PlayerBrainComponent : Component
             Directions.Right => 0,
             _ => _transform.Local.Rotation
         };
+    }
+
+    public void Reset()
+    {
+        _currTile = _mapLogic.GetPlayerStartTile();
+        _transform.Local.Position = _mapLogic.GetTileCenter(_currTile);
+
+        _direction = Directions.Right;
     }
 
     public float Speed = .1f;

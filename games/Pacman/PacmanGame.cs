@@ -40,8 +40,9 @@ public class PacmanGame : Game
 
     protected override void LoadContent()
     {
+        _sceneManager.AddScene(Scenes.SceneNames.Intro, new Scenes.IntroScene(this));
         _sceneManager.AddScene(Scenes.SceneNames.Play, new Scenes.PlayScene(this));
-        _sceneManager.SetCurrentScene(Scenes.SceneNames.Play);
+        _sceneManager.SetCurrentScene(Scenes.SceneNames.Intro);
     }
 
     protected override void Update(GameTime gameTime)

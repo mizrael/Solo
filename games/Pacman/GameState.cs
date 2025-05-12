@@ -8,4 +8,9 @@ public sealed record GameState
     {
         Score += amount;
     }
+
+    public void Reset()
+    {
+        Score = 0;
+    }
 }
