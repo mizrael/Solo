@@ -82,7 +82,7 @@ public class PlayScene : Scene
             playerRenderer.Animation = deathAnim;
             playerBrain.Enabled = false;
 
-            var timer = new System.Timers.Timer(TimeSpan.FromSeconds(5));
+            var timer = new System.Timers.Timer(deathAnim.Duration);
             timer.Elapsed += (s, e) =>
             {
                 timer.Stop();

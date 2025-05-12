@@ -1,7 +1,7 @@
 {
   "animationName": "pacman_die",
   "spriteSheetName": "spritesheet",
-  "fps": 10,
+  "fps": 7,
   "frames": [
     {
       "x": 252,

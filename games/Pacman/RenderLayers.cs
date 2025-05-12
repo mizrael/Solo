@@ -4,9 +4,9 @@ public enum RenderLayers
 {
     Background = 0,
 
-    Player,
     Items,
     Enemies,
-    
+    Player,
+
     UI
 }

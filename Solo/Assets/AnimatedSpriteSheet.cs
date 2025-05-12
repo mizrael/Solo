@@ -16,4 +16,13 @@ public record AnimatedSpriteSheet(string Name, Texture2D Texture, int Fps, Anima
             this.Bounds = bounds;
         }
     }
+
+    private Lazy<TimeSpan> _duration = new (() =>
+    {
+        var totalFrames = Frames.Length;
+        var duration = TimeSpan.FromSeconds(totalFrames / (float)Fps);
+        return duration;
+    }, isThreadSafe: true);
+
+    public TimeSpan Duration => _duration.Value;
 }
