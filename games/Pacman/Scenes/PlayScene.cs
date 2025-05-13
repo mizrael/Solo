@@ -32,9 +32,9 @@ public class PlayScene : Scene
             var player = AddPlayer(spriteSheet, collisionService, map, gameState);
 
             AddGhost(spriteSheet, collisionService, map, Ghosts.Blinky, player);
-       //     AddGhost(spriteSheet, collisionService, map, Ghosts.Pinky, player);
+            AddGhost(spriteSheet, collisionService, map, Ghosts.Pinky, player);
             AddGhost(spriteSheet, collisionService, map, Ghosts.Inky, player);
-            //AddGhost(spriteSheet, collisionService, map, Ghosts.Clyde, player);
+            AddGhost(spriteSheet, collisionService, map, Ghosts.Clyde, player);
         };
 
         AddUI(gameState);
@@ -218,9 +218,9 @@ public class PlayScene : Scene
         brain.Logic = ghostType switch
         {
             Ghosts.Blinky => AI.StateMachines.Blinky(ghost, player, map, 2000f),
-            //Ghosts.Pinky => new PinkyBrain(ghost),
-            Ghosts.Inky => AI.StateMachines.Inky(ghost, player, map, 2000f),
-            //Ghosts.Clyde => new ClydeBrain(ghost),
+            Ghosts.Inky => AI.StateMachines.Inky(ghost, player, map, 2000f, this),
+            Ghosts.Pinky => AI.StateMachines.Pinky(ghost, player, map, 2000f),
+            Ghosts.Clyde => AI.StateMachines.Clyde(ghost, player, map, 2000f),
             _ => throw new NotImplementedException()
         };
 

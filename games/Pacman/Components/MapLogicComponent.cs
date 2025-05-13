@@ -112,6 +112,16 @@ public class MapLogicComponent : Component
             _ => _tileInfos[14, 26],
         };
 
+    public TileInfo GetGhostScatterTile(Ghosts ghost)
+        => ghost switch
+        {
+            Ghosts.Blinky => _tileInfos[1, 26],
+            Ghosts.Pinky => _tileInfos[1, 1],
+            Ghosts.Inky => _tileInfos[29, 26],
+            Ghosts.Clyde => _tileInfos[29, 1],
+            _ => _tileInfos[14, 26],
+        };
+
     public Vector2 GetTileCenter(TileInfo tile)
          => new Vector2(
             tile.Col * _tileSize.X + _tileCenter.X + _posOffset.X,
@@ -126,6 +136,9 @@ public class MapLogicComponent : Component
            col < ColsCount && col > -1 ?
              _tileInfos[row, col] : null;
     }
+
+    public TileInfo? GetTileAt(TilePos pos)
+        => GetTileAt(pos.Row, pos.Col);
 
     public TileInfo? GetTileAt(int row, int col)
         => row < RowsCount && row > -1 &&
