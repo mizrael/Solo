@@ -87,6 +87,17 @@ public class GhostBrainComponent : Component
         };
     }
 
+    public void WasEaten()
+    {
+        var mapLogic = this.Map.Components.Get<MapLogicComponent>();
+        var ghostStartTile = mapLogic.GetGhostStartTile(this.GhostType);
+        var ghostTransform = this.Owner.Components.Get<TransformComponent>();
+        ghostTransform.Local.Position = mapLogic.GetTileCenter(ghostStartTile);
+
+        this.IsScared = false;
+        _logic.Reset();
+    }
+
     public GameObject Map { get; private set; }
 
     public GhostTypes GhostType { get; private set; }

@@ -6,12 +6,14 @@ public class StateMachine
 {
     private readonly Dictionary<int, List<IStateTransition>> _states;
     private readonly Game _game;
+    private readonly State _startState;
     private State? _currState;
 
-    public StateMachine(Game game)
+    public StateMachine(Game game, State startState)
     {
         _states = new ();
-        _currState = null;
+        _startState = startState;
+        _currState = startState;
         _game = game;
     }
 
@@ -29,11 +31,11 @@ public class StateMachine
         where TS2 : State
         => this.AddTransition(from, to, predicate, null);
 
-    public void SetState(State? state)
+    public void Reset()
     {
         _currState?.Exit(_game);
 
-        _currState = state;
+        _currState = _startState;
         _currState?.Enter(_game);
     }
 

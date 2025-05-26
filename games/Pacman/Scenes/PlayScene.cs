@@ -36,10 +36,10 @@ public class PlayScene : Scene
 
             var player = AddPlayer(spriteSheet, collisionService, map, gameState);
 
-            AddGhost(spriteSheet, collisionService, map, GhostTypes.Blinky, player, magicPillEatenTopic);
-            //AddGhost(spriteSheet, collisionService, map, Ghosts.Pinky, player);
-            //AddGhost(spriteSheet, collisionService, map, Ghosts.Inky, player);
-            //AddGhost(spriteSheet, collisionService, map, Ghosts.Clyde, player);
+            //AddGhost(spriteSheet, collisionService, map, GhostTypes.Blinky, player, magicPillEatenTopic);
+           // AddGhost(spriteSheet, collisionService, map, GhostTypes.Pinky, player, magicPillEatenTopic);
+           // AddGhost(spriteSheet, collisionService, map, GhostTypes.Inky, player, magicPillEatenTopic);
+            AddGhost(spriteSheet, collisionService, map, GhostTypes.Clyde, player, magicPillEatenTopic);
         };
 
         AddUI(gameState);
@@ -86,7 +86,7 @@ public class PlayScene : Scene
 
             if (ghostBrain.IsScared)
             {
-
+                ghostBrain.WasEaten();
             }
             else
             {
