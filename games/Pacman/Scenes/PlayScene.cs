@@ -6,6 +6,8 @@ using Solo.Assets;
 using Solo.Assets.Loaders;
 using Solo.Components;
 using Solo.Services;
+using Solo.Services.Messaging;
+using SpaceInvaders.Logic.Messages;
 using System;
 
 namespace Pacman.Scenes;
@@ -22,19 +24,22 @@ public class PlayScene : Scene
 
         var spriteSheet = new SpriteSheetLoader().Load("meta/spritesheet.json", Game);
         var collisionService = GameServicesManager.Instance.GetRequired<CollisionService>();
-        var map = AddMap(spriteSheet, collisionService, gameState);
 
+        var bus = GameServicesManager.Instance.GetRequired<MessageBus>();
+        var magicPillEatenTopic = bus.GetTopic<MagicPillEaten>();
+
+        var map = AddMap(spriteSheet, collisionService, gameState);
         var mapBrain = map.Components.Get<MapLogicComponent>();
         mapBrain.OnInitialized += () =>
         {
-            AddPellets(spriteSheet, collisionService, gameState, map);
+            AddPellets(spriteSheet, collisionService, gameState, map, magicPillEatenTopic);
 
             var player = AddPlayer(spriteSheet, collisionService, map, gameState);
 
-            AddGhost(spriteSheet, collisionService, map, Ghosts.Blinky, player);
-            AddGhost(spriteSheet, collisionService, map, Ghosts.Pinky, player);
-            AddGhost(spriteSheet, collisionService, map, Ghosts.Inky, player);
-            AddGhost(spriteSheet, collisionService, map, Ghosts.Clyde, player);
+            AddGhost(spriteSheet, collisionService, map, GhostTypes.Blinky, player, magicPillEatenTopic);
+            //AddGhost(spriteSheet, collisionService, map, Ghosts.Pinky, player);
+            //AddGhost(spriteSheet, collisionService, map, Ghosts.Inky, player);
+            //AddGhost(spriteSheet, collisionService, map, Ghosts.Clyde, player);
         };
 
         AddUI(gameState);
@@ -58,8 +63,8 @@ public class PlayScene : Scene
         var transform = player.Components.Add<TransformComponent>();
 
         var animLoader = new AnimatedSpriteSheetLoader();
-        var walkAnim = animLoader.Load("meta/animations/pacman_walk.json", Game);
-        var deathAnim = animLoader.Load("meta/animations/pacman_die.json", Game);
+        var walkAnim = AnimatedSpriteSheetLoader.Load("meta/animations/pacman_walk.json", Game);
+        var deathAnim = AnimatedSpriteSheetLoader.Load("meta/animations/pacman_die.json", Game);
 
         var playerRenderer = player.Components.Add<AnimatedSpriteSheetRenderer>();
         playerRenderer.Animation = walkAnim;
@@ -75,22 +80,29 @@ public class PlayScene : Scene
             if (!playerBrain.Enabled)
                 return;
 
-            var collidedWithGhost = collidedWith.Owner.Components.Has<GhostBrainComponent>();
+            var collidedWithGhost = collidedWith.Owner.Components.TryGet<GhostBrainComponent>(out var ghostBrain);
             if (!collidedWithGhost)
                 return;
 
-            playerRenderer.Animation = deathAnim;
-            playerBrain.Enabled = false;
-
-            var timer = new System.Timers.Timer(deathAnim.Duration);
-            timer.Elapsed += (s, e) =>
+            if (ghostBrain.IsScared)
             {
-                timer.Stop();
-                timer.Dispose();
 
-                GameServicesManager.Instance.GetRequired<SceneManager>().SetCurrentScene(SceneNames.Intro);
-            };
-            timer.Start();
+            }
+            else
+            {
+                playerRenderer.Animation = deathAnim;
+                playerBrain.Enabled = false;
+
+                var timer = new System.Timers.Timer(deathAnim.Duration);
+                timer.Elapsed += (s, e) =>
+                {
+                    timer.Stop();
+                    timer.Dispose();
+
+                    GameServicesManager.Instance.GetRequired<SceneManager>().SetCurrentScene(SceneNames.Intro);
+                };
+                timer.Start();
+            }
         };
 
         this.Root.AddChild(player);
@@ -115,7 +127,7 @@ public class PlayScene : Scene
         return map;
     }
 
-    private void AddPellets(SpriteSheet spriteSheet, CollisionService collisionService, GameState gameState, GameObject map)
+    private void AddPellets(SpriteSheet spriteSheet, CollisionService collisionService, GameState gameState, GameObject map, MessageTopic<MagicPillEaten> magicPillEatenTopic)
     {
         var container = new GameObject();
 
@@ -125,11 +137,17 @@ public class PlayScene : Scene
         var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
 
         var pelletSprite = spriteSheet.Get("pellet");
-        var pelletPositions = mapBrain.GetTilesByType(TileTypes.Pellet);
 
+        var pelletPositions = mapBrain.GetTilesByType(TileTypes.Pellet);
         foreach (var pos in pelletPositions)
         {
             AddPellet(container, mapBrain, mapTransform, pelletSprite, pos, collisionService, renderService, gameState);
+        }
+
+        pelletPositions = mapBrain.GetTilesByType(TileTypes.MagicPill);
+        foreach (var pos in pelletPositions)
+        {
+            AddPellet(container, mapBrain, mapTransform, pelletSprite, pos, collisionService, renderService, gameState, true, magicPillEatenTopic);
         }
 
         this.Root.AddChild(container);
@@ -143,7 +161,9 @@ public class PlayScene : Scene
         TileInfo tile,
         CollisionService collisionService,
         RenderService renderService,
-        GameState gameState)
+        GameState gameState,
+        bool isMagicPill = false,
+        MessageTopic<MagicPillEaten>? magicPillEatenTopic = null)
     {
         var pellet = new GameObject();
 
@@ -157,9 +177,12 @@ public class PlayScene : Scene
             var hasPlayerBrain = collidedWith.Owner.Components.Has<PlayerBrainComponent>();
             if (hasPlayerBrain)
             {
-                gameState.IncreaseScore(10);
+                var points = isMagicPill ? 50u : 10u;
+                gameState.IncreaseScore(points);
                 pellet.Enabled = false;
                 pellet.Parent?.RemoveChild(pellet);
+
+                magicPillEatenTopic?.Publish(new MagicPillEaten());
             }
         };
 
@@ -167,7 +190,7 @@ public class PlayScene : Scene
         pelletRenderer.Sprite = pelletSprite;
         pelletRenderer.LayerIndex = (int)RenderLayers.Items;
 
-        var scaleFactor = .35f;
+        var scaleFactor = isMagicPill ? .75f : .35f;
         var bboxScaleFactor = 1.5f;
 
         var resize = new Action(() =>
@@ -192,37 +215,29 @@ public class PlayScene : Scene
         parent.AddChild(pellet);
     }
 
-
-    private void AddGhost(SpriteSheet spriteSheet, CollisionService collisionService, GameObject map, Ghosts ghostType, GameObject player)
+    private void AddGhost(SpriteSheet spriteSheet, CollisionService collisionService, GameObject map, GhostTypes ghostType, GameObject player, MessageTopic<MagicPillEaten> magicPillEatenTopic)
     {
         var ghost = new GameObject();
         var transform = ghost.Components.Add<TransformComponent>();
 
         var ghostName = ghostType.ToString().ToLower();
 
-        var animLoader = new AnimatedSpriteSheetLoader();
-        var animation = animLoader.Load($"meta/animations/{ghostName}_walk.json", Game);
+        var ghostWalkAnim = AnimatedSpriteSheetLoader.Load($"meta/animations/{ghostName}_walk.json", Game);
 
         var renderer = ghost.Components.Add<AnimatedSpriteSheetRenderer>();
-        renderer.Animation = animation;
+        renderer.Animation = ghostWalkAnim;
         renderer.LayerIndex = (int)RenderLayers.Enemies;
-
+       
         var bbox = ghost.Components.Add<BoundingBoxComponent>();
         collisionService.Add(bbox);
         
         var brain = ghost.Components.Add<GhostBrainComponent>();
-        brain.Map = map;
-        brain.Player = player;
-        brain.GhostType = ghostType;
+        brain.Setup(this, ghostType, map, player);
 
-        brain.Logic = ghostType switch
+        magicPillEatenTopic.Subscribe(ghost, (s, e) =>
         {
-            Ghosts.Blinky => AI.StateMachines.Blinky(ghost, player, map, 2000f),
-            Ghosts.Inky => AI.StateMachines.Inky(ghost, player, map, 2000f, this),
-            Ghosts.Pinky => AI.StateMachines.Pinky(ghost, player, map, 2000f),
-            Ghosts.Clyde => AI.StateMachines.Clyde(ghost, player, map, 2000f),
-            _ => throw new NotImplementedException()
-        };
+            brain.IsScared = true;
+        });
 
         this.Root.AddChild(ghost);
     }

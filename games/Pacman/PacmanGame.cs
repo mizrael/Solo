@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Solo.Services;
+using Solo.Services.Messaging;
 
 namespace Pacman;
 
@@ -32,6 +33,8 @@ public class PacmanGame : Game
         GameServicesManager.Instance.AddService(_sceneManager);
 
         GameServicesManager.Instance.AddService(new CollisionService(new Point(64, 64)));
+
+        GameServicesManager.Instance.AddService(new MessageBus());
 
         GameServicesManager.Instance.Initialize();
 

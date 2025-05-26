@@ -9,28 +9,36 @@ namespace Pacman.AI;
 public static class StateMachines
 {
     public static StateMachine Blinky(
-        GameObject owner,
+        Game game,
+        GameObject ghost,
         GameObject player,
         GameObject map,
         float startDelayMS)
     {
-        var transform = owner.Components.Get<TransformComponent>();
-    
-        var idle = new Idle(owner, startDelayMS);
-        var chase = new Chase(owner, player, map);
+        var transform = ghost.Components.Get<TransformComponent>();
+        var ghostBrain = ghost.Components.Get<GhostBrainComponent>();
+
+        var idle = new Idle(ghost, startDelayMS);
+        var chase = new Chase(ghost, player, map);
+        var frightened = new Scared(ghost);
 
         var machine = new StateMachine(
+            game,
         [
             idle,
-            chase
+            chase,
+            frightened
         ]);
 
         machine.AddTransition(idle, chase, _ => idle.IsCompleted);
+        machine.AddTransition(chase, frightened, _ => ghostBrain.IsScared);
+        machine.AddTransition(frightened, chase, _ => frightened.IsCompleted);
 
         return machine;
     }
 
     public static StateMachine Inky(
+        Game game,
         GameObject owner,
         GameObject player,
         GameObject map,
@@ -43,6 +51,7 @@ public static class StateMachines
         var chase = new InkyIntercept(owner, player, map, playScene);
 
         var machine = new StateMachine(
+            game,
         [
             idle,
             chase
@@ -54,6 +63,7 @@ public static class StateMachines
     }
 
     public static StateMachine Pinky(
+        Game game,
         GameObject owner,
         GameObject player,
         GameObject map,
@@ -65,6 +75,7 @@ public static class StateMachines
         var intercept = new Intercept(owner, player, map);
 
         var machine = new StateMachine(
+            game,
         [
             idle,
             intercept
@@ -76,6 +87,7 @@ public static class StateMachines
     }
 
     public static StateMachine Clyde(
+        Game game,
         GameObject owner,
         GameObject player,
         GameObject map,
@@ -88,9 +100,10 @@ public static class StateMachines
 
         var idle = new Idle(owner, startDelayMS);
         var chase = new Chase(owner, player, map);
-        var arrive = new Arrive(owner, mapBrain.GetGhostScatterTile(Ghosts.Clyde), map);
+        var arrive = new Arrive(owner, mapBrain.GetGhostScatterTile(GhostTypes.Clyde), map);
 
         var machine = new StateMachine(
+            game,
         [
             idle,
             chase,

@@ -1,4 +1,5 @@
-﻿using Pacman.Components;
+﻿using Microsoft.Xna.Framework;
+using Pacman.Components;
 using Pacman.Scenes;
 using Solo;
 using Solo.Components;
@@ -21,13 +22,14 @@ public record InkyIntercept : Chase
         _playScene = playScene;
     }
 
-    protected override void OnEnter()
+    protected override void OnEnter(Game game)
     {
-        base.OnEnter();
+        base.OnEnter(game);
+
         _playerTransform = Target.Components.Get<TransformComponent>();
         _mapLogic = Map.Components.Get<MapLogicComponent>();
 
-        var blinky = _playScene.FindFirst(o => o.Components.TryGet<GhostBrainComponent>(out var ghost) && ghost.GhostType == Ghosts.Blinky);
+        var blinky = _playScene.FindFirst(o => o.Components.TryGet<GhostBrainComponent>(out var ghost) && ghost.GhostType == GhostTypes.Blinky);
         if (blinky is not null)
         {
             _blinkyTransform = blinky.Components.Get<TransformComponent>();           

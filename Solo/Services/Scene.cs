@@ -1,11 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
-using System.Linq.Expressions;
 
 namespace Solo.Services;
 
 public abstract class Scene
 {
-    protected Game Game { get; }
+    public Game Game { get; }
 
     protected Scene(Game game)
     {
@@ -24,6 +23,7 @@ public abstract class Scene
         this.Root = new GameObject();
         this.EnterCore();
     }
+
     protected virtual void EnterCore() { }
 
     public void Exit()

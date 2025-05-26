@@ -103,22 +103,22 @@ public class MapLogicComponent : Component
 
     public TileInfo GetPlayerStartTile() => _tileInfos[14, 1];
 
-    public TileInfo GetGhostStartTile(Ghosts ghost) 
+    public TileInfo GetGhostStartTile(GhostTypes ghost) 
         => ghost switch {
-            Ghosts.Blinky => _tileInfos[11, 13],
-            Ghosts.Pinky => _tileInfos[14, 13],
-            Ghosts.Inky => _tileInfos[14, 14],
-            Ghosts.Clyde => _tileInfos[14, 15],
+            GhostTypes.Blinky => _tileInfos[11, 13],
+            GhostTypes.Pinky => _tileInfos[14, 13],
+            GhostTypes.Inky => _tileInfos[14, 14],
+            GhostTypes.Clyde => _tileInfos[14, 15],
             _ => _tileInfos[14, 26],
         };
 
-    public TileInfo GetGhostScatterTile(Ghosts ghost)
+    public TileInfo GetGhostScatterTile(GhostTypes ghost)
         => ghost switch
         {
-            Ghosts.Blinky => _tileInfos[1, 26],
-            Ghosts.Pinky => _tileInfos[1, 1],
-            Ghosts.Inky => _tileInfos[29, 26],
-            Ghosts.Clyde => _tileInfos[29, 1],
+            GhostTypes.Blinky => _tileInfos[1, 26],
+            GhostTypes.Pinky => _tileInfos[1, 1],
+            GhostTypes.Inky => _tileInfos[29, 26],
+            GhostTypes.Clyde => _tileInfos[29, 1],
             _ => _tileInfos[14, 26],
         };
 

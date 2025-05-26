@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
+using Pacman.Scenes;
 using Solo;
 using Solo.AI;
+using Solo.Assets.Loaders;
 using Solo.Components;
 using Solo.Services;
 using System;
@@ -9,7 +11,7 @@ namespace Pacman.Components;
 
 public class GhostBrainComponent : Component
 {
-    public StateMachine Logic;
+    private StateMachine _logic;
 
     public GhostBrainComponent(GameObject owner) : base(owner)
     {
@@ -50,12 +52,46 @@ public class GhostBrainComponent : Component
 
     protected override void UpdateCore(GameTime gameTime)
     {
-        Logic.Update(gameTime);
+        _logic.Update(gameTime);
     }
 
-    public GameObject Map;
+    public void Setup(
+        PlayScene playScene,
+        GhostTypes ghostType, 
+        GameObject map, 
+        GameObject player)
+    {
+        this.Map = map;
+        this.Player = player;
+        this.GhostType = ghostType;
+        _logic = ghostType switch
+        {
+            GhostTypes.Blinky => AI.StateMachines.Blinky(playScene.Game, this.Owner, player, map, 2000f),
+            GhostTypes.Inky => AI.StateMachines.Inky(playScene.Game, this.Owner, player, map, 2000f, playScene),
+            GhostTypes.Pinky => AI.StateMachines.Pinky(playScene.Game, this.Owner, player, map, 2000f),
+            GhostTypes.Clyde => AI.StateMachines.Clyde(playScene.Game, this.Owner, player, map, 2000f),
+            _ => throw new NotImplementedException()
+        };
+    }
 
-    public Ghosts GhostType;
+    public void SetAnimation(GhostAnimations animType, Game game)
+    {
+        var ghostName = this.Owner.Components.Get<GhostBrainComponent>().GhostType.ToString().ToLower();
+        var renderer = Owner.Components.Get<AnimatedSpriteSheetRenderer>();
+        renderer.Animation = animType switch
+        {
+            GhostAnimations.Walk => AnimatedSpriteSheetLoader.Load($"meta/animations/{ghostName}_walk.json", game),
+            GhostAnimations.Scared1 => AnimatedSpriteSheetLoader.Load("meta/animations/ghost_frightened1.json", game),
+            GhostAnimations.Scared2 => AnimatedSpriteSheetLoader.Load("meta/animations/ghost_frightened2.json", game),
+            _ => throw new NotImplementedException()
+        };
+    }
 
-    public GameObject Player;
+    public GameObject Map { get; private set; }
+
+    public GhostTypes GhostType { get; private set; }
+
+    public GameObject Player { get; private set; }
+
+    public bool IsScared { get; internal set; }
 }

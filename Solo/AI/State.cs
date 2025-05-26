@@ -13,29 +13,29 @@ public abstract record State
         this.Id = IdGenerator<State>.Next();
     }
 
-    protected virtual void OnEnter() { }
+    protected virtual void OnEnter(Game game) { }
 
-    protected virtual void OnExecute(GameTime gameTime) { }
+    protected virtual void OnExecute(Game game, GameTime gameTime) { }
 
-    protected virtual void OnExit() { }
+    protected virtual void OnExit(Game game) { }
 
-    public void Enter()
+    public void Enter(Game game)
     {
         this.ElapsedMilliseconds = 0f;
         this.IsCompleted = false;
-        this.OnEnter();
+        this.OnEnter(game);
     }
 
-    public void Execute(GameTime gameTime)
+    public void Execute(Game game, GameTime gameTime)
     {
         this.ElapsedMilliseconds += gameTime.ElapsedGameTime.TotalMilliseconds;
-        OnExecute(gameTime);
+        OnExecute(game, gameTime);
     }
 
-    public void Exit()
+    public void Exit(Game game)
     {
         this.IsCompleted = true;
-        this.OnExit();
+        this.OnExit(game);
     }
 
     #region Properties

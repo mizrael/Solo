@@ -11,17 +11,24 @@ public class AnimatedSpriteSheetLoader
         NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
     };
 
-    public AnimatedSpriteSheet Load(string assetPath, Game game)
+    private readonly static Dictionary<string, AnimatedSpriteSheet> _cache = new();
+
+    public static AnimatedSpriteSheet Load(string assetPath, Game game)
     {
+        if(_cache.TryGetValue(assetPath, out var cached))
+            return cached;
+
         var json = File.ReadAllText(assetPath);
         var dto = JsonSerializer.Deserialize<animDto>(json, _jsonOptions);
 
         var texture = game.Content.Load<Texture2D>(dto!.spriteSheetName);
-        return new AnimatedSpriteSheet(
+        var result = new AnimatedSpriteSheet(
             dto.animationName, 
             texture, 
             dto.fps, 
             dto.frames.Select(f => new AnimatedSpriteSheet.Frame(new Rectangle(f.x, f.y, f.width, f.height))).ToArray());
+        _cache.Add(assetPath, result);
+        return result;
     }
 
     internal class animDto

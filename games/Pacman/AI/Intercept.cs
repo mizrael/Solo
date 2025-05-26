@@ -1,4 +1,5 @@
-﻿using Pacman.Components;
+﻿using Microsoft.Xna.Framework;
+using Pacman.Components;
 using Solo;
 using Solo.Components;
 
@@ -16,9 +17,9 @@ public record Intercept : Chase
     {
     }
 
-    protected override void OnEnter()
+    protected override void OnEnter(Game game)
     {
-        base.OnEnter();
+        base.OnEnter(game);
         _playerTransform = Target.Components.Get<TransformComponent>();
         _mapLogic = Map.Components.Get<MapLogicComponent>();
     }

@@ -1,0 +1,19 @@
+{
+  "animationName": "ghost_frightened1",
+  "spriteSheetName": "spritesheet",
+  "fps": 10,
+  "frames": [
+    {
+      "x": 856,
+      "y": 345,
+      "width": 84,
+      "height": 84
+    },
+    {
+      "x": 942,
+      "y": 345,
+      "width": 84,
+      "height": 84
+    }
+  ]
+}
