@@ -19,7 +19,7 @@ public record TilePos(int Row, int Col)
             Directions.Right => new TilePos(this.Row, val + this.Col),
             Directions.Down => new TilePos(-val + this.Row, this.Col),
             Directions.Left => new TilePos(this.Row, -val + this.Col),
-            _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
+            _ => this
         };
     }
 

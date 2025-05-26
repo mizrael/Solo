@@ -17,22 +17,22 @@ public static class StateMachines
     {
         var transform = ghost.Components.Get<TransformComponent>();
         var ghostBrain = ghost.Components.Get<GhostBrainComponent>();
+        var mapBrain = map.Components.Get<MapLogicComponent>();
 
         var idle = new Idle(ghost, startDelayMS);
         var chase = new Chase(ghost, player, map);
-        var frightened = new Scared(ghost);
+        var scatter = new Arrive(ghost, mapBrain.GetGhostScatterTile(GhostTypes.Blinky), map);
+        var scared = new Scared(ghost, map);
 
-        var machine = new StateMachine(
-            game,
-        [
-            idle,
-            chase,
-            frightened
-        ]);
+        var machine = new StateMachine(game);
 
         machine.AddTransition(idle, chase, _ => idle.IsCompleted);
-        machine.AddTransition(chase, frightened, _ => ghostBrain.IsScared);
-        machine.AddTransition(frightened, chase, _ => frightened.IsCompleted);
+        machine.AddTransition(chase, scatter, _ => chase.ElapsedMilliseconds > 20000f);
+        machine.AddTransition(scatter, chase, _ => scatter.ElapsedMilliseconds > 5000f);
+        machine.AddTransition(chase, scared, _ => ghostBrain.IsScared);
+        machine.AddTransition(scared, chase, _ => scared.IsCompleted);
+
+        machine.SetState(idle);
 
         return machine;
     }
@@ -50,12 +50,7 @@ public static class StateMachines
         var idle = new Idle(owner, startDelayMS);
         var chase = new InkyIntercept(owner, player, map, playScene);
 
-        var machine = new StateMachine(
-            game,
-        [
-            idle,
-            chase
-        ]);
+        var machine = new StateMachine(game);
 
         machine.AddTransition(idle, chase, _ => idle.IsCompleted);
 
@@ -74,12 +69,7 @@ public static class StateMachines
         var idle = new Idle(owner, startDelayMS);
         var intercept = new Intercept(owner, player, map);
 
-        var machine = new StateMachine(
-            game,
-        [
-            idle,
-            intercept
-        ]);
+        var machine = new StateMachine(game);
 
         machine.AddTransition(idle, intercept, _ => idle.IsCompleted);
 
@@ -102,13 +92,7 @@ public static class StateMachines
         var chase = new Chase(owner, player, map);
         var arrive = new Arrive(owner, mapBrain.GetGhostScatterTile(GhostTypes.Clyde), map);
 
-        var machine = new StateMachine(
-            game,
-        [
-            idle,
-            chase,
-            arrive
-        ]);
+        var machine = new StateMachine(game);
 
         machine.AddTransition(idle, chase, _ => idle.IsCompleted);
 

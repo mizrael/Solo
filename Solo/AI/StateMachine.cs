@@ -4,22 +4,38 @@ namespace Solo.AI;
 
 public class StateMachine
 {
-    private readonly Dictionary<int, List<StateTransition>> _states;
+    private readonly Dictionary<int, List<IStateTransition>> _states;
     private readonly Game _game;
-    private State _currState;
+    private State? _currState;
 
-    public StateMachine(Game game, IEnumerable<State> states)
+    public StateMachine(Game game)
     {
-        _states = states.ToDictionary(s => s.Id, _ => new List<StateTransition>());
-        _currState = states.First();
+        _states = new ();
+        _currState = null;
         _game = game;
     }
 
-    public void AddTransition(State from, State to, Predicate<State> predicate)
+    public void AddTransition<TS1, TS2>(TS1 from, TS2 to, Predicate<TS1> predicate, Action<TS2>? beforeTransition)
+        where TS1 : State
+        where TS2 : State
+    {
+        if(!_states.ContainsKey(from.Id))
+            _states.Add(from.Id, new List<IStateTransition>());
+        _states[from.Id].Add(new StateTransition<TS1, TS2>(from, to, predicate, beforeTransition));
+    }
+
+    public void AddTransition<TS1, TS2>(TS1 from, TS2 to, Predicate<TS1> predicate)
+        where TS1 : State
+        where TS2 : State
         => this.AddTransition(from, to, predicate, null);
 
-    public void AddTransition(State from, State to, Predicate<State> predicate, Action<State>? beforeTransition)
-        => _states[from.Id].Add(new StateTransition(from, to, predicate, beforeTransition));
+    public void SetState(State? state)
+    {
+        _currState?.Exit(_game);
+
+        _currState = state;
+        _currState?.Enter(_game);
+    }
 
     public void Update(GameTime gameTime)
     {

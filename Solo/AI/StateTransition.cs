@@ -1,14 +1,25 @@
 ﻿namespace Solo.AI;
 
-public record StateTransition
+public interface IStateTransition
 {
-    private readonly State _from;
-    private readonly Predicate<State> _predicate;
-    private readonly Action<State>? _beforeTransition;
+    bool CanTransition();
+    void BeforeTransition();
 
-    public StateTransition(State from, State to, Predicate<State> predicate, Action<State>? beforeTransition)
+    State To { get; }
+}
+
+public record StateTransition<TS1, TS2> : IStateTransition
+    where TS1 : State
+    where TS2 : State
+{
+    private readonly TS1 _from;
+    public readonly TS2 _to;
+    private readonly Predicate<TS1> _predicate;
+    private readonly Action<TS2>? _beforeTransition;
+
+    public StateTransition(TS1 from, TS2 to, Predicate<TS1> predicate, Action<TS2>? beforeTransition)
     {
-        To = to;
+        _to = to;
         _from = from;
         _predicate = predicate;
         _beforeTransition = beforeTransition;
@@ -18,7 +29,7 @@ public record StateTransition
         => _predicate(_from);
 
     public void BeforeTransition()
-        => _beforeTransition?.Invoke(this.To);
+        => _beforeTransition?.Invoke(_to);
 
-    public readonly State To;
+    public State To => _to;
 }
