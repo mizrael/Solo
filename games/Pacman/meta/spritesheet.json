@@ -1,0 +1,12 @@
+{
+  "spriteSheetName": "spritesheet",
+  "sprites": [
+    {
+      "name": "pellet",
+      "x": 699,
+      "y": 172,
+      "width": 22,
+      "height": 20
+    }
+  ]
+}

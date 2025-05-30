@@ -80,4 +80,6 @@ public class AnimatedSpriteSheetRenderer : Component, IRenderable
 
     public int LayerIndex { get; set; }
     public bool Hidden { get; set; }
+
+    public AnimatedSpriteSheet.Frame? CurrentFrame => Animation?.Frames[_currentFrame];
 }

@@ -99,7 +99,7 @@ public class PieceController : Component
         {
             if (Board.CheckGameover())
             {
-                GameServicesManager.Instance.GetService<SceneManager>().SetCurrentScene(SceneNames.Play);
+                GameServicesManager.Instance.GetRequired<SceneManager>().SetCurrentScene(SceneNames.Play);
                 return;
             }
 

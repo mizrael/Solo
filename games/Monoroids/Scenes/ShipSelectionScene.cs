@@ -69,7 +69,7 @@ public class ShipSelectionScene : Scene
             {
                 GameState.Instance.ShipTemplate = _shipTemplates[_selectedShipIndex];
                 
-                GameServicesManager.Instance.GetService<SceneManager>().SetCurrentScene(SceneNames.Play);
+                GameServicesManager.Instance.GetRequired<SceneManager>().SetCurrentScene(SceneNames.Play);
             }
 
             prevKeyState = keyboardState;
@@ -93,7 +93,7 @@ public class ShipSelectionScene : Scene
     {
         var shipsContainer = new GameObject();
 
-        var renderService = GameServicesManager.Instance.GetService<RenderService>();
+        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
 
         var shipPosition = new Vector2((float)renderService.Graphics.GraphicsDevice.Viewport.Width * .75f,
                                        renderService.Graphics.GraphicsDevice.Viewport.Height * .5f);
@@ -135,7 +135,7 @@ public class ShipSelectionScene : Scene
 
     private GameObject BuildBackground()
     {
-        var renderService = GameServicesManager.Instance.GetService<RenderService>();
+        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
 
         var background = new GameObject();
         background.Components.Add<TransformComponent>();

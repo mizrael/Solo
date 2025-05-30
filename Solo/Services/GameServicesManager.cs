@@ -12,7 +12,7 @@ public sealed class GameServicesManager
     private static Lazy<GameServicesManager> _instance = new(() => new GameServicesManager());
     public static GameServicesManager Instance => _instance.Value;
 
-    public T GetService<T>() where T : class, IGameService
+    public T GetRequired<T>() where T : class, IGameService
     {
         if (!_servicesMap.TryGetValue(typeof(T), out var service))
             throw new Exceptions.ServiceNotFoundException<T>();

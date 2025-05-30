@@ -27,7 +27,7 @@ public class AsteroidBrain : Component
     {
         _transform = Owner.Components.Get<TransformComponent>();
         _boundingBox = Owner.Components.Get<BoundingBoxComponent>();
-        _boundingBox.OnCollision += (sender, collidedWith) =>
+        _boundingBox.OnCollision += (collidedWith) =>
         {
             var hasPlayerBrain = collidedWith.Owner.Components.Has<PlayerBrain>();
             if (!hasPlayerBrain &&
@@ -38,7 +38,7 @@ public class AsteroidBrain : Component
             this.OnDeath?.Invoke(this.Owner, hasPlayerBrain);
         };
 
-        _renderService = GameServicesManager.Instance.GetService<RenderService>();
+        _renderService = GameServicesManager.Instance.GetRequired<RenderService>();
     }
 
     protected override void UpdateCore(GameTime gameTime)

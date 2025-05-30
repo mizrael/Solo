@@ -18,13 +18,15 @@ public abstract class Component
 
         InitCore();
         _initialized = true;
+
+        OnInitialized?.Invoke();
     }
 
     protected virtual void InitCore() { }
 
     public void Update(GameTime gameTime)
     {
-        if (!Owner.Enabled)
+        if (!Owner.Enabled || !this.Enabled)
             return;
 
         Init();
@@ -36,4 +38,9 @@ public abstract class Component
 
     public GameObject Owner { get; }
     public bool Initialized => _initialized;
+
+    public bool Enabled { get; set; } = true;
+
+    public OnInitializedHandler OnInitialized;
+    public delegate void OnInitializedHandler();
 }

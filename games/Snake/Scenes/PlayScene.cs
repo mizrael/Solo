@@ -14,7 +14,7 @@ public class PlayScene : Scene
 
     protected override void EnterCore()
     {
-        var renderService = GameServicesManager.Instance.GetService<RenderService>();
+        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
 
         var board = new Board(16, 16);
         var snake = new Snake()
@@ -55,7 +55,7 @@ public class PlayScene : Scene
 
         snakeBrain.OnDeath += () =>
         {
-            GameServicesManager.Instance.GetService<SceneManager>().SetCurrentScene(SceneNames.GameOver);
+            GameServicesManager.Instance.GetRequired<SceneManager>().SetCurrentScene(SceneNames.GameOver);
         };
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using Solo.Exceptions;
 
 namespace Solo.Components;
@@ -26,22 +27,23 @@ public class ComponentsCollection : IEnumerable<Component>
         return component;      
     }
 
-    public T Get<T>() where T : Component
+    public TC Get<TC>() where TC : Component
     {
-        var type = typeof(T);
+        var type = typeof(TC);
 
         if (!_items.TryGetValue(type, out var result))
-            throw new ComponentNotFoundException<T>(_owner);
+            throw new ComponentNotFoundException<TC>(_owner);
 
-        return (T)result;
+        return (TC)result;
     }
 
-    public bool TryGet<T>(out T result) where T : Component
+    public bool TryGet<TC>([NotNullWhen(true)] out TC? result) 
+        where TC : Component
     {
-        var type = typeof(T);
+        var type = typeof(TC);
         _items.TryGetValue(type, out var tmp);
         
-        result = tmp as T;
+        result = tmp as TC;
         return result != null;
     }
 

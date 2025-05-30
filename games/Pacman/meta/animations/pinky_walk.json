@@ -1,0 +1,19 @@
+{
+  "animationName": "pinky_walk",
+  "spriteSheetName": "spritesheet",
+  "fps": 10,
+  "frames": [
+    {
+      "x": 0,
+      "y": 423,
+      "width": 84,
+      "height": 84
+    },
+    {
+      "x": 84,
+      "y": 423,
+      "width": 84,
+      "height": 84
+    }
+  ]
+}

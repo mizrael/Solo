@@ -17,7 +17,7 @@ public class BoardRenderer : Component, IRenderable
 
     protected override void InitCore()
     {
-        var renderService = GameServicesManager.Instance.GetService<RenderService>();
+        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
         
         _texture = renderService.CreateTexture(1, 1, Color.White);
 

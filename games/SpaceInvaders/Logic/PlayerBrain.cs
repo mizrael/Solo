@@ -20,7 +20,7 @@ public class PlayerBrain : Component
     protected override void InitCore()
     {
         _transform = Owner.Components.Get<TransformComponent>();
-        _renderService = GameServicesManager.Instance.GetService<RenderService>();
+        _renderService = GameServicesManager.Instance.GetRequired<RenderService>();
         _weapon = Owner.Components.Get<Weapon>();
         base.InitCore();
     }

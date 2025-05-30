@@ -18,7 +18,7 @@ public class GameUIComponent : Component, IRenderable
 
     protected override void InitCore()
     {
-        _renderService = GameServicesManager.Instance.GetService<RenderService>();
+        _renderService = GameServicesManager.Instance.GetRequired<RenderService>();
         _texture = _renderService.CreateTexture(Constants.TileTextureSize.Width, Constants.TileTextureSize.Height, Constants.TileTextureData);
     }
 

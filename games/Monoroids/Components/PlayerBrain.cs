@@ -23,7 +23,7 @@ public class PlayerBrain : Component
 
     protected override void InitCore()
     {
-        _renderService = GameServicesManager.Instance.GetService<RenderService>();
+        _renderService = GameServicesManager.Instance.GetRequired<RenderService>();
 
         _movingBody = Owner.Components.Get<MovingBody>();
         _transform = Owner.Components.Get<TransformComponent>();
@@ -31,7 +31,7 @@ public class PlayerBrain : Component
         _weapon = Owner.Components.Get<Weapon>();
 
         var boundingBox = Owner.Components.Get<BoundingBoxComponent>();
-        boundingBox.OnCollision += (sender, collidedWith) =>
+        boundingBox.OnCollision += (collidedWith) =>
         {
             if (collidedWith.Owner.Components.Has<AsteroidBrain>())
             {

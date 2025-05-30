@@ -28,7 +28,7 @@ public class MainTitleScene : Scene
         var transform = mainTitle.Components.Add<TransformComponent>();
         this.Root.AddChild(mainTitle);
 
-        var renderService = GameServicesManager.Instance.GetService<RenderService>();
+        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
         var refreshMainTitleTransform = new Action(() =>
         {
             transform.Local.Position = new Vector2(
@@ -46,7 +46,7 @@ public class MainTitleScene : Scene
         var keyboardState = Keyboard.GetState();
         var canStart = _prevKeyState.IsKeyDown(Keys.Enter) && keyboardState.IsKeyUp(Keys.Enter);
         if (canStart)
-            GameServicesManager.Instance.GetService<SceneManager>().SetCurrentScene(SceneNames.Play);
+            GameServicesManager.Instance.GetRequired<SceneManager>().SetCurrentScene(SceneNames.Play);
         _prevKeyState = keyboardState;
     }
 }

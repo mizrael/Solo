@@ -5,8 +5,6 @@ namespace Solo;
 
 public class GameObject
 {
-    private static int _lastId = 0;
-
     private readonly IList<GameObject> _children;
     private readonly Queue<GameObject> _childrenToRemove = new();
     private readonly Queue<GameObject> _childrenToAdd = new();
@@ -14,7 +12,7 @@ public class GameObject
 
     public GameObject()
     {
-        Id = ++_lastId;
+        Id = IdGenerator<GameObject>.Next();
 
         _children = new List<GameObject>();
 
@@ -98,5 +96,5 @@ public class GameObject
 
     public override bool Equals(object obj) => obj is GameObject node && Id.Equals(node.Id);
 
-    public override string ToString() => $"GameObject {Id}";
+    public override string ToString() => $"[{this.GetType().Name}] #{Id}";
 }

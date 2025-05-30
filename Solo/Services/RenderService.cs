@@ -30,7 +30,7 @@ public class RenderService : IGameService
 
     public void Initialize()
     {
-        _sceneManager = GameServicesManager.Instance.GetService<SceneManager>();
+        _sceneManager = GameServicesManager.Instance.GetRequired<SceneManager>();
     }
 
     public void SetLayerConfig(int index, RenderLayerConfig? layerConfig)
