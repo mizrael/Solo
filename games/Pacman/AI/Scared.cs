@@ -36,7 +36,9 @@ public record Scared : State
         _mapLogic = _map.Components.Get<MapLogicComponent>();
         _ownerTransform = Owner.Components.Get<TransformComponent>();
 
-        this.Owner.Components.Get<GhostBrainComponent>().SetAnimation(GhostAnimations.Scared1, game);
+        var brain = Owner.Components.Get<GhostBrainComponent>();
+        brain.State = GhostStates.Scared;
+        brain.SetAnimation(GhostAnimations.Scared1, game);
     }
 
     protected override void OnExecute(Game game, GameTime gameTime)
@@ -52,30 +54,8 @@ public record Scared : State
             this.Owner.Components.Get<GhostBrainComponent>().SetAnimation(GhostAnimations.Scared2, game);
         }
 
-        var currTile = _mapLogic.GetTileAt(_ownerTransform.World.Position);
-        if (_destTile == currTile || _destTile is null)
-        {
-            _destTile = null;
-            var start = Random.Shared.Next(0, _directions.Length);
-            var end = start + _directions.Length;
-            for (int i = start; i != end; i++)
-            {
-                var dir = _directions[i % _directions.Length];
-                if (_currDir is not null && IsOpposite(_currDir.Value, dir))
-                    continue;
-
-                var nextTilePos = currTile.Add(1, dir);
-                var nextTile = _mapLogic.GetTileAt(nextTilePos);
-                if (nextTile is not null && nextTile.IsWalkable && nextTile != currTile)
-                {
-                    _currDir = dir; 
-                    _destTile = nextTile; 
-                    break;
-                }
-            }
-        }
-
-        if (_destTile is null) 
+        FindDestination();
+        if (_destTile is null)
             return;
 
         var tilePos = _mapLogic.GetTileCenter(_destTile);
@@ -83,6 +63,35 @@ public record Scared : State
         _ownerTransform.Local.Position = newPos;
 
         base.OnExecute(game, gameTime);
+    }
+
+    private void FindDestination()
+    {
+        var currTile = _mapLogic.GetTileAt(_ownerTransform.World.Position);
+        if(currTile is null)
+            return;
+
+        if (_destTile != currTile && _destTile is not null)        
+            return;
+        
+        _destTile = null;
+        var start = Random.Shared.Next(0, _directions.Length);
+        var end = start + _directions.Length;
+        for (int i = start; i != end; i++)
+        {
+            var dir = _directions[i % _directions.Length];
+            if (_currDir is not null && IsOpposite(_currDir.Value, dir))
+                continue;
+
+            var nextTilePos = currTile.Add(1, dir);
+            var nextTile = _mapLogic.GetTileAt(nextTilePos);
+            if (nextTile is not null && nextTile.IsWalkable && nextTile != currTile)
+            {
+                _currDir = dir;
+                _destTile = nextTile;
+                break;
+            }
+        }
     }
 
     private bool IsOpposite(Directions dir1, Directions dir2)
@@ -94,7 +103,7 @@ public record Scared : State
     protected override void OnExit(Game game)
     {
         var brain = Owner.Components.Get<GhostBrainComponent>();
-        brain.IsScared = false;
+        brain.State = GhostStates.Normal;
 
         base.OnExit(game);
     }

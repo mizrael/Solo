@@ -66,10 +66,10 @@ public class GhostBrainComponent : Component
         this.GhostType = ghostType;
         _logic = ghostType switch
         {
-            GhostTypes.Blinky => AI.StateMachines.Blinky(playScene.Game, this.Owner, player, map, 2000f),
-            GhostTypes.Inky => AI.StateMachines.Inky(playScene.Game, this.Owner, player, map, 2000f, playScene),
-            GhostTypes.Pinky => AI.StateMachines.Pinky(playScene.Game, this.Owner, player, map, 2000f),
-            GhostTypes.Clyde => AI.StateMachines.Clyde(playScene.Game, this.Owner, player, map, 2000f),
+            GhostTypes.Blinky => AI.StateMachines.Blinky(playScene.Game, this.Owner, player, map),
+            GhostTypes.Inky => AI.StateMachines.Inky(playScene.Game, this.Owner, player, map, playScene),
+            GhostTypes.Pinky => AI.StateMachines.Pinky(playScene.Game, this.Owner, player, map),
+            GhostTypes.Clyde => AI.StateMachines.Clyde(playScene.Game, this.Owner, player, map),
             _ => throw new NotImplementedException()
         };
     }
@@ -94,7 +94,7 @@ public class GhostBrainComponent : Component
         var ghostTransform = this.Owner.Components.Get<TransformComponent>();
         ghostTransform.Local.Position = mapLogic.GetTileCenter(ghostStartTile);
 
-        this.IsScared = false;
+        this.State = GhostStates.Idle;
         _logic.Reset();
     }
 
@@ -104,5 +104,5 @@ public class GhostBrainComponent : Component
 
     public GameObject Player { get; private set; }
 
-    public bool IsScared { get; internal set; }
+    public GhostStates State { get; set; }
 }

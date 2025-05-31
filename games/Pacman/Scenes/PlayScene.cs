@@ -36,9 +36,9 @@ public class PlayScene : Scene
 
             var player = AddPlayer(spriteSheet, collisionService, map, gameState);
 
-            //AddGhost(spriteSheet, collisionService, map, GhostTypes.Blinky, player, magicPillEatenTopic);
-           // AddGhost(spriteSheet, collisionService, map, GhostTypes.Pinky, player, magicPillEatenTopic);
-           // AddGhost(spriteSheet, collisionService, map, GhostTypes.Inky, player, magicPillEatenTopic);
+            AddGhost(spriteSheet, collisionService, map, GhostTypes.Blinky, player, magicPillEatenTopic);
+            AddGhost(spriteSheet, collisionService, map, GhostTypes.Pinky, player, magicPillEatenTopic);
+            AddGhost(spriteSheet, collisionService, map, GhostTypes.Inky, player, magicPillEatenTopic);
             AddGhost(spriteSheet, collisionService, map, GhostTypes.Clyde, player, magicPillEatenTopic);
         };
 
@@ -81,12 +81,13 @@ public class PlayScene : Scene
                 return;
 
             var collidedWithGhost = collidedWith.Owner.Components.TryGet<GhostBrainComponent>(out var ghostBrain);
-            if (!collidedWithGhost)
+            if (!collidedWithGhost || ghostBrain!.State == GhostStates.Idle)
                 return;
 
-            if (ghostBrain.IsScared)
+            if (ghostBrain.State == GhostStates.Scared)
             {
                 ghostBrain.WasEaten();
+                gameState.IncreaseScore(200u);
             }
             else
             {
@@ -236,7 +237,7 @@ public class PlayScene : Scene
 
         magicPillEatenTopic.Subscribe(ghost, (s, e) =>
         {
-            brain.IsScared = true;
+            brain.State = GhostStates.Scared;
         });
 
         this.Root.AddChild(ghost);

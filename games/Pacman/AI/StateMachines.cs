@@ -8,31 +8,32 @@ namespace Pacman.AI;
 
 public static class StateMachines
 {
+    private const float IdleDuration = 2000f;
     private const float ChaseDuration = 20000f;
     private const float ScatterDuration = 5000f;
+    private const float ScaredDuration = 10000f;
 
     public static StateMachine Blinky(
         Game game,
         GameObject ghost,
         GameObject player,
-        GameObject map,
-        float startDelayMS)
+        GameObject map)
     {
         var transform = ghost.Components.Get<TransformComponent>(); 
         var ghostBrain = ghost.Components.Get<GhostBrainComponent>();
         var mapBrain = map.Components.Get<MapLogicComponent>();
 
-        var idle = new Idle(ghost, startDelayMS);
+        var idle = new Idle(ghost, IdleDuration);
         var chase = new Chase(ghost, player, map);
         var scatter = new Arrive(ghost, mapBrain.GetGhostScatterTile(GhostTypes.Blinky), map);
-        var scared = new Scared(ghost, map);
+        var scared = new Scared(ghost, map, ScaredDuration);
 
         var machine = new StateMachine(game, idle);
 
         machine.AddTransition(idle, chase, _ => idle.IsCompleted);
         machine.AddTransition(chase, scatter, _ => chase.ElapsedMilliseconds > ChaseDuration);
         machine.AddTransition(scatter, chase, _ => scatter.ElapsedMilliseconds > ScatterDuration);
-        machine.AddTransition(chase, scared, _ => ghostBrain.IsScared);
+        machine.AddTransition(chase, scared, _ => ghostBrain.State == GhostStates.Scared);
         machine.AddTransition(scared, chase, _ => scared.IsCompleted);
 
         return machine;
@@ -43,7 +44,6 @@ public static class StateMachines
         GameObject ghost,
         GameObject player,
         GameObject map,
-        float startDelayMS,
         Scenes.PlayScene playScene)
     {
         var transform = ghost.Components.Get<TransformComponent>();
@@ -51,17 +51,17 @@ public static class StateMachines
 
         var mapBrain = map.Components.Get<MapLogicComponent>();
 
-        var idle = new Idle(ghost, startDelayMS);
+        var idle = new Idle(ghost, IdleDuration);
         var chase = new InkyIntercept(ghost, player, map, playScene);
         var scatter = new Arrive(ghost, mapBrain.GetGhostScatterTile(GhostTypes.Inky), map);
-        var scared = new Scared(ghost, map);
+        var scared = new Scared(ghost, map, ScaredDuration);
 
         var machine = new StateMachine(game, idle);
 
         machine.AddTransition(idle, chase, _ => idle.IsCompleted);
         machine.AddTransition(chase, scatter, _ => chase.ElapsedMilliseconds > ChaseDuration);
         machine.AddTransition(scatter, chase, _ => scatter.ElapsedMilliseconds > ScatterDuration);
-        machine.AddTransition(chase, scared, _ => ghostBrain.IsScared);
+        machine.AddTransition(chase, scared, _ => ghostBrain.State == GhostStates.Scared);
         machine.AddTransition(scared, chase, _ => scared.IsCompleted);
 
         return machine;
@@ -71,25 +71,24 @@ public static class StateMachines
         Game game,
         GameObject ghost,
         GameObject player,
-        GameObject map,
-        float startDelayMS)
+        GameObject map)
     {
         var transform = ghost.Components.Get<TransformComponent>();
         var ghostBrain = ghost.Components.Get<GhostBrainComponent>();
 
         var mapBrain = map.Components.Get<MapLogicComponent>();
 
-        var idle = new Idle(ghost, startDelayMS);
+        var idle = new Idle(ghost, IdleDuration);
         var intercept = new Intercept(ghost, player, map);
         var scatter = new Arrive(ghost, mapBrain.GetGhostScatterTile(GhostTypes.Pinky), map);
-        var scared = new Scared(ghost, map);
+        var scared = new Scared(ghost, map, ScaredDuration);
 
         var machine = new StateMachine(game, idle);
 
         machine.AddTransition(idle, intercept, _ => idle.IsCompleted);
         machine.AddTransition(intercept, scatter, _ => intercept.ElapsedMilliseconds > ChaseDuration);
         machine.AddTransition(scatter, intercept, _ => scatter.ElapsedMilliseconds > ScatterDuration);
-        machine.AddTransition(intercept, scared, _ => ghostBrain.IsScared);
+        machine.AddTransition(intercept, scared, _ => ghostBrain.State == GhostStates.Scared);
         machine.AddTransition(scared, intercept, _ => scared.IsCompleted);
 
         return machine;
@@ -99,8 +98,7 @@ public static class StateMachines
         Game game,
         GameObject ghost,
         GameObject player,
-        GameObject map,
-        float startDelayMS)
+        GameObject map)
     {
         var transform = ghost.Components.Get<TransformComponent>();
         var playerTransform = player.Components.Get<TransformComponent>();
@@ -108,11 +106,11 @@ public static class StateMachines
 
         var mapBrain = map.Components.Get<MapLogicComponent>();
 
-        var idle = new Idle(ghost, startDelayMS);
+        var idle = new Idle(ghost, IdleDuration);
         var chase = new Chase(ghost, player, map);
         var arrive = new Arrive(ghost, mapBrain.GetGhostScatterTile(GhostTypes.Clyde), map);
         var scatter = new Arrive(ghost, mapBrain.GetGhostScatterTile(GhostTypes.Clyde), map);
-        var scared = new Scared(ghost, map);
+        var scared = new Scared(ghost, map, ScaredDuration);
 
         var machine = new StateMachine(game, idle);
 
@@ -133,7 +131,7 @@ public static class StateMachines
 
         machine.AddTransition(chase, scatter, _ => chase.ElapsedMilliseconds > ChaseDuration);
         machine.AddTransition(scatter, chase, _ => scatter.ElapsedMilliseconds > ScatterDuration);
-        machine.AddTransition(chase, scared, _ => ghostBrain.IsScared);
+        machine.AddTransition(chase, scared, _ => ghostBrain.State == GhostStates.Scared);
         machine.AddTransition(scared, chase, _ => scared.IsCompleted);
 
         return machine;
