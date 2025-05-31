@@ -39,16 +39,16 @@ public static class StateMachines
 
     public static StateMachine Inky(
         Game game,
-        GameObject owner,
+        GameObject ghost,
         GameObject player,
         GameObject map,
         float startDelayMS,
         Scenes.PlayScene playScene)
     {
-        var transform = owner.Components.Get<TransformComponent>();
+        var transform = ghost.Components.Get<TransformComponent>();
 
-        var idle = new Idle(owner, startDelayMS);
-        var chase = new InkyIntercept(owner, player, map, playScene);
+        var idle = new Idle(ghost, startDelayMS);
+        var chase = new InkyIntercept(ghost, player, map, playScene);
 
         var machine = new StateMachine(
             game,
