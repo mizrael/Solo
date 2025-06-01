@@ -23,6 +23,7 @@ public record Idle : State
     {
         var brain = this.Owner.Components.Get<GhostBrainComponent>();
         brain.SetAnimation(GhostAnimations.Walk);
+        brain.State = GhostStates.Idle;
     }
 
     protected override void OnExecute(GameTime gameTime)

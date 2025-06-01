@@ -37,9 +37,9 @@ public class PlayScene : Scene
             var player = AddPlayer(spriteSheet, collisionService, map, gameState);
 
             AddGhost(GhostTypes.Blinky, spriteSheet, collisionService, map, player, magicPillEatenTopic);
-           // AddGhost(spriteSheet, collisionService, map, GhostTypes.Pinky, player, magicPillEatenTopic);
-          //  AddGhost(spriteSheet, collisionService, map, GhostTypes.Inky, player, magicPillEatenTopic);
-          //  AddGhost(spriteSheet, collisionService, map, GhostTypes.Clyde, player, magicPillEatenTopic);
+            //   AddGhost(GhostTypes.Pinky, spriteSheet, collisionService, map, player, magicPillEatenTopic);
+            AddGhost(GhostTypes.Inky, spriteSheet, collisionService, map, player, magicPillEatenTopic);
+        //    AddGhost(GhostTypes.Clyde, spriteSheet, collisionService, map, player, magicPillEatenTopic);
         };
 
         AddUI(gameState);

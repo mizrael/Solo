@@ -106,7 +106,6 @@ public class GhostBrainComponent : Component
         var ghostTransform = this.Owner.Components.Get<TransformComponent>();
         ghostTransform.Local.Position = mapLogic.GetTileCenter(ghostStartTile);
 
-        this.State = GhostStates.Idle;
         _logic.Reset();
     }
 
