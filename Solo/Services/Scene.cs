@@ -36,24 +36,4 @@ public abstract class Scene
     protected virtual void Update(GameTime gameTime) { }
 
     public GameObject Root { get; private set; }
-
-    public GameObject? FindFirst(Func<GameObject, bool> predicate)
-    {
-        if (Root == null)
-            return null;
-
-        var compiledPredicate = predicate;
-
-        var q = new Queue<GameObject>();
-        q.Enqueue(Root);
-        while (q.Any())
-        {
-            var obj = q.Dequeue();
-            if (compiledPredicate(obj))
-                return obj;
-            foreach (var child in obj.Children)
-                q.Enqueue(child);
-        }
-        return null;
-    }
 }

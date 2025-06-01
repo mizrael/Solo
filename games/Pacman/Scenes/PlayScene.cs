@@ -36,10 +36,10 @@ public class PlayScene : Scene
 
             var player = AddPlayer(spriteSheet, collisionService, map, gameState);
 
-        //    AddGhost(spriteSheet, collisionService, map, GhostTypes.Blinky, player, magicPillEatenTopic);
-       //     AddGhost(spriteSheet, collisionService, map, GhostTypes.Pinky, player, magicPillEatenTopic);
-            AddGhost(spriteSheet, collisionService, map, GhostTypes.Inky, player, magicPillEatenTopic);
-       //     AddGhost(spriteSheet, collisionService, map, GhostTypes.Clyde, player, magicPillEatenTopic);
+            AddGhost(GhostTypes.Blinky, spriteSheet, collisionService, map, player, magicPillEatenTopic);
+            //   AddGhost(GhostTypes.Pinky, spriteSheet, collisionService, map, player, magicPillEatenTopic);
+            AddGhost(GhostTypes.Inky, spriteSheet, collisionService, map, player, magicPillEatenTopic);
+        //    AddGhost(GhostTypes.Clyde, spriteSheet, collisionService, map, player, magicPillEatenTopic);
         };
 
         AddUI(gameState);
@@ -81,12 +81,13 @@ public class PlayScene : Scene
                 return;
 
             var collidedWithGhost = collidedWith.Owner.Components.TryGet<GhostBrainComponent>(out var ghostBrain);
-            if (!collidedWithGhost)
+            if (!collidedWithGhost || ghostBrain!.State == GhostStates.Idle)
                 return;
 
-            if (ghostBrain.IsScared)
+            if (ghostBrain.State == GhostStates.Scared)
             {
-
+                ghostBrain.WasEaten();
+                gameState.IncreaseScore(200u);
             }
             else
             {
@@ -215,12 +216,21 @@ public class PlayScene : Scene
         parent.AddChild(pellet);
     }
 
-    private void AddGhost(SpriteSheet spriteSheet, CollisionService collisionService, GameObject map, GhostTypes ghostType, GameObject player, MessageTopic<MagicPillEaten> magicPillEatenTopic)
+    private void AddGhost(
+        GhostTypes ghostType,
+        SpriteSheet spriteSheet,
+        CollisionService collisionService,
+        GameObject map,
+        GameObject player,
+        MessageTopic<MagicPillEaten> magicPillEatenTopic)
     {
-        var ghost = new GameObject();
-        var transform = ghost.Components.Add<TransformComponent>();
-
         var ghostName = ghostType.ToString().ToLower();
+
+        var ghost = new GameObject();
+
+        ghost.AddTag(ghostName);
+
+        var transform = ghost.Components.Add<TransformComponent>();
 
         var ghostWalkAnim = AnimatedSpriteSheetLoader.Load($"meta/animations/{ghostName}_walk.json", Game);
 
@@ -236,7 +246,7 @@ public class PlayScene : Scene
 
         magicPillEatenTopic.Subscribe(ghost, (s, e) =>
         {
-            brain.IsScared = true;
+            brain.State = GhostStates.Scared;
         });
 
         this.Root.AddChild(ghost);

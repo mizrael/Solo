@@ -92,6 +92,21 @@ public class GameObject
     public void RemoveTag(string tag) => _tags.Remove(tag);
     public bool HasTag(string tag) => _tags.Contains(tag);
 
+    public GameObject? FindFirst(Func<GameObject, bool> predicate)
+    {
+        if (predicate(this))
+            return this;
+
+        foreach (var child in this.Children)
+        {
+            var found = child.FindFirst(predicate);
+            if (found != null)
+                return found;
+        }
+
+        return null;
+    }
+
     public override int GetHashCode() => Id;
 
     public override bool Equals(object obj) => obj is GameObject node && Id.Equals(node.Id);

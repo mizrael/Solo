@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 using Solo.Services;
@@ -32,8 +31,6 @@ public class TetrisGame : Game
 
         _sceneManager = new SceneManager();
         GameServicesManager.Instance.AddService(_sceneManager);
-
-        GameServicesManager.Instance.Initialize();
 
         base.Initialize();
     }

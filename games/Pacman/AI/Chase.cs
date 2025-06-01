@@ -23,7 +23,7 @@ public record Chase : State
         Map = map;
     }
 
-    protected override void OnEnter(Game game)
+    protected override void OnEnter()
     {
         _mapLogic = Map.Components.Get<MapLogicComponent>();
         _targetTransform = Target.Components.Get<TransformComponent>();
@@ -31,10 +31,10 @@ public record Chase : State
         _path = null;
         _currPathNode = null;
 
-        this.Owner.Components.Get<GhostBrainComponent>().SetAnimation(GhostAnimations.Walk, game);
+        this.Owner.Components.Get<GhostBrainComponent>().SetAnimation(GhostAnimations.Walk);
     }
 
-    protected override void OnExecute(Game game, GameTime gameTime)
+    protected override void OnExecute(GameTime gameTime)
     {
         var currTile = _mapLogic.GetTileAt(_ownerTransform.World.Position);
 
@@ -45,7 +45,7 @@ public record Chase : State
         if (!_path.Any() && _currPathNode is null)
             return;
 
-        var shouldRecalcPath = TileInfo.Distance(targetCurrTile, _path.End) > PathRecalcThreshold;
+        var shouldRecalcPath = TileInfo.Distance(targetCurrTile, _path.End!) > PathRecalcThreshold;
         if (shouldRecalcPath)
         {
             _path = null;
@@ -68,7 +68,7 @@ public record Chase : State
             _ownerTransform.Local.Position = newPos;
         }
 
-        base.OnExecute(game, gameTime);
+        base.OnExecute(gameTime);
     }
 
     protected virtual TileInfo FindTargetTile()

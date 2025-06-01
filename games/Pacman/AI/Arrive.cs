@@ -23,17 +23,17 @@ public record Arrive : State
         Map = map;
     }
 
-    protected override void OnEnter(Game game)
+    protected override void OnEnter()
     {
         _mapLogic = Map.Components.Get<MapLogicComponent>();
         _ownerTransform = Owner.Components.Get<TransformComponent>();
         _path = null;
         _currPathNode = null;
 
-        this.Owner.Components.Get<GhostBrainComponent>().SetAnimation(GhostAnimations.Walk, game);
+        this.Owner.Components.Get<GhostBrainComponent>().SetAnimation(GhostAnimations.Walk);
     }
 
-    protected override void OnExecute(Game game, GameTime gameTime)
+    protected override void OnExecute(GameTime gameTime)
     {
         var currTile = _mapLogic.GetTileAt(_ownerTransform.World.Position);
 
@@ -57,7 +57,7 @@ public record Arrive : State
             _ownerTransform.Local.Position = newPos;
         }
 
-        base.OnExecute(game, gameTime);
+        base.OnExecute(gameTime);
     }
 
     public GameObject Map { get; }

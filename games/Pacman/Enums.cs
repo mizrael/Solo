@@ -16,6 +16,13 @@ public enum GhostTypes
     Clyde = 3
 }
 
+public enum GhostStates
+{
+    Idle,
+    Normal,
+    Scared
+}
+
 public enum GhostAnimations
 {
     Walk = 0,

@@ -31,7 +31,7 @@ public sealed class GameServicesManager
         _servicesMap[serviceType] = service;
     }
 
-    public void Initialize()
+    private void Initialize()
     {
         foreach(var service in _services)
             service.Initialize();
@@ -42,7 +42,7 @@ public sealed class GameServicesManager
     public void Step(Microsoft.Xna.Framework.GameTime gameTime)
     {
         if (!_isInitialized)
-            return;
+            Initialize();
 
         foreach (var service in _services)
             service.Step(gameTime);

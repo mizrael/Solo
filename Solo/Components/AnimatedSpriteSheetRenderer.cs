@@ -23,7 +23,8 @@ public class AnimatedSpriteSheetRenderer : Component, IRenderable
 
     protected override void UpdateCore(GameTime gameTime)
     {
-        if (Animation is null) return;
+        if (Animation is null) 
+            return;
 
         var needUpdate = gameTime.TotalGameTime.TotalMilliseconds - _lastUpdate > 1000f / Animation.Fps;
         if (!needUpdate)
@@ -72,8 +73,12 @@ public class AnimatedSpriteSheetRenderer : Component, IRenderable
                 return;
             Reset();
             _animation = value;
+            OnAnimationComplete?.Invoke(this);
         }
     }
+
+    public event OnAnimationSetHandler OnAnimationSet;
+    public delegate void OnAnimationSetHandler(AnimatedSpriteSheetRenderer renderer);
 
     public event OnAnimationCompleteHandler OnAnimationComplete;
     public delegate void OnAnimationCompleteHandler(AnimatedSpriteSheetRenderer renderer);
