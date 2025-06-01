@@ -37,7 +37,6 @@ public record Scared : State
         _ownerTransform = Owner.Components.Get<TransformComponent>();
 
         var brain = Owner.Components.Get<GhostBrainComponent>();
-        brain.State = GhostStates.Scared;
         brain.SetAnimation(GhostAnimations.Scared1, game);
     }
 

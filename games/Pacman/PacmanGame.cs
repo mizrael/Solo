@@ -36,8 +36,6 @@ public class PacmanGame : Game
 
         GameServicesManager.Instance.AddService(new MessageBus());
 
-        GameServicesManager.Instance.Initialize();
-
         base.Initialize();
     }
 

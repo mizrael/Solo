@@ -2,6 +2,7 @@
 using Pacman.Scenes;
 using Solo;
 using Solo.AI;
+using Solo.Assets;
 using Solo.Assets.Loaders;
 using Solo.Components;
 using Solo.Services;
@@ -13,6 +14,10 @@ public class GhostBrainComponent : Component
 {
     private StateMachine _logic;
 
+    private AnimatedSpriteSheet _walkAnim;
+    private AnimatedSpriteSheet _scaredAnim1;
+    private AnimatedSpriteSheet _scaredAnim2;
+
     public GhostBrainComponent(GameObject owner) : base(owner)
     {
     }
@@ -20,9 +25,10 @@ public class GhostBrainComponent : Component
     protected override void InitCore()
     {
         var mapLogic = Map.Components.Get<MapLogicComponent>();
-
         var currTile = mapLogic.GetGhostStartTile(this.GhostType);
+
         var transform = Owner.Components.Get<TransformComponent>();
+        transform.Local.Position = mapLogic.GetTileCenter(currTile);
 
         var renderer = Owner.Components.Get<AnimatedSpriteSheetRenderer>();
         var bbox = Owner.Components.Add<BoundingBoxComponent>();
@@ -36,8 +42,6 @@ public class GhostBrainComponent : Component
             transform.Local.Scale.X = mapLogic.TileSize.X / renderer.CurrentFrame.Bounds.Width;
             transform.Local.Scale.Y = mapLogic.TileSize.Y / renderer.CurrentFrame.Bounds.Height;
 
-            transform.Local.Position = mapLogic.GetTileCenter(currTile);
-
             var bboxSize = new Point(
                  (int)((float)renderer.CurrentFrame.Bounds.Size.X * transform.Local.Scale.X),
                  (int)((float)renderer.CurrentFrame.Bounds.Size.Y * transform.Local.Scale.Y));
@@ -46,6 +50,8 @@ public class GhostBrainComponent : Component
         calculateSize();
 
         renderService.Window.ClientSizeChanged += (s, e) => calculateSize();
+
+        renderer.OnAnimationSet += _ => calculateSize();
 
         base.InitCore();
     }
@@ -64,6 +70,8 @@ public class GhostBrainComponent : Component
         this.Map = map;
         this.Player = player;
         this.GhostType = ghostType;
+        this.State = GhostStates.Idle;
+
         _logic = ghostType switch
         {
             GhostTypes.Blinky => AI.StateMachines.Blinky(playScene.Game, this.Owner, player, map),
@@ -72,17 +80,21 @@ public class GhostBrainComponent : Component
             GhostTypes.Clyde => AI.StateMachines.Clyde(playScene.Game, this.Owner, player, map),
             _ => throw new NotImplementedException()
         };
+
+        var ghostName = GhostType.ToString().ToLower();
+        _walkAnim = AnimatedSpriteSheetLoader.Load($"meta/animations/{ghostName}_walk.json", playScene.Game);
+        _scaredAnim1 = AnimatedSpriteSheetLoader.Load("meta/animations/ghost_frightened1.json", playScene.Game);
+        _scaredAnim2 = AnimatedSpriteSheetLoader.Load("meta/animations/ghost_frightened2.json", playScene.Game);
     }
 
-    public void SetAnimation(GhostAnimations animType, Game game)
-    {
-        var ghostName = this.Owner.Components.Get<GhostBrainComponent>().GhostType.ToString().ToLower();
+    public void SetAnimation(GhostAnimations animType)
+    { 
         var renderer = Owner.Components.Get<AnimatedSpriteSheetRenderer>();
         renderer.Animation = animType switch
         {
-            GhostAnimations.Walk => AnimatedSpriteSheetLoader.Load($"meta/animations/{ghostName}_walk.json", game),
-            GhostAnimations.Scared1 => AnimatedSpriteSheetLoader.Load("meta/animations/ghost_frightened1.json", game),
-            GhostAnimations.Scared2 => AnimatedSpriteSheetLoader.Load("meta/animations/ghost_frightened2.json", game),
+            GhostAnimations.Walk => _walkAnim,
+            GhostAnimations.Scared1 => _scaredAnim1,
+            GhostAnimations.Scared2 => _scaredAnim2,
             _ => throw new NotImplementedException()
         };
     }

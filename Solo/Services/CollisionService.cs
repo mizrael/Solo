@@ -79,9 +79,17 @@ public class CollisionService : IGameService
 
         if (!_bucketsByCollider.ContainsKey(collider.Owner.Id))
             _bucketsByCollider[collider.Owner.Id] = new List<CollisionBucket>();
-        foreach (var bucket in _bucketsByCollider[collider.Owner.Id])
-            bucket.Remove(collider);
-        _bucketsByCollider[collider.Owner.Id].Clear();
+
+        if (!_bucketsByCollider.TryGetValue(collider.Owner.Id, out var colliderBuckets))
+        {
+            _bucketsByCollider[collider.Owner.Id] = colliderBuckets = new List<CollisionBucket>();
+        }
+        else
+        {
+            foreach (var bucket in colliderBuckets)
+                bucket.Remove(collider);
+            colliderBuckets.Clear();
+        }
 
         for (int row = startY; row <= endY; row++)
             for (int col = startX; col <= endX; col++)
@@ -93,7 +101,7 @@ public class CollisionService : IGameService
 
                 if (_buckets[row, col].Bounds.Intersects(collider.Bounds))
                 {
-                    _bucketsByCollider[collider.Owner.Id].Add(_buckets[row, col]);
+                    colliderBuckets.Add(_buckets[row, col]);
                     _buckets[row, col].Add(collider);
                 }
             }

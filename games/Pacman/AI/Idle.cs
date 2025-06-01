@@ -1,28 +1,28 @@
-﻿using Solo.AI;
-using Solo;
-using System;
-using Microsoft.Xna.Framework;
-using Solo.Assets.Loaders;
+﻿using Microsoft.Xna.Framework;
 using Pacman.Components;
-using Solo.Components;
+using Solo;
+using Solo.AI;
+using System;
 
 namespace Pacman.AI;
 
 public record Idle : State
 {
-    private float _durationMs;
-    private bool _hasDuration = false;
+    private readonly float _durationMs;
+    private readonly bool _hasDuration = false;
 
     public Idle(GameObject owner) : this(owner, 0f) { }
 
     public Idle(GameObject owner, float durationMs) : base(owner)
     {
-        SetDuration(durationMs);
+        _durationMs = Math.Abs(durationMs);
+        _hasDuration = _durationMs > 0f;
     }
 
     protected override void OnEnter(Game game)
     {
-        this.Owner.Components.Get<GhostBrainComponent>().SetAnimation(GhostAnimations.Walk, game);
+        var brain = this.Owner.Components.Get<GhostBrainComponent>();
+        brain.SetAnimation(GhostAnimations.Walk, game);
     }
 
     protected override void OnExecute(Game game, GameTime gameTime)
@@ -33,11 +33,5 @@ public record Idle : State
             return;
         }
         base.OnExecute(game, gameTime);
-    }
-
-    public void SetDuration(float milliseconds)
-    {
-        _durationMs = Math.Abs(milliseconds);
-        _hasDuration = _durationMs > 0f;
     }
 }

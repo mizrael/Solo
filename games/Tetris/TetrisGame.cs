@@ -33,8 +33,6 @@ public class TetrisGame : Game
         _sceneManager = new SceneManager();
         GameServicesManager.Instance.AddService(_sceneManager);
 
-        GameServicesManager.Instance.Initialize();
-
         base.Initialize();
     }
 

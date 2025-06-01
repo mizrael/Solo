@@ -3,6 +3,7 @@ using Pacman.Components;
 using Pacman.Scenes;
 using Solo;
 using Solo.Components;
+using System;
 
 namespace Pacman.AI;
 
@@ -29,11 +30,10 @@ public record InkyIntercept : Chase
         _playerTransform = Target.Components.Get<TransformComponent>();
         _mapLogic = Map.Components.Get<MapLogicComponent>();
 
-        var blinky = _playScene.FindFirst(o => o.Components.TryGet<GhostBrainComponent>(out var ghost) && ghost.GhostType == GhostTypes.Blinky);
-        if (blinky is not null)
-        {
-            _blinkyTransform = blinky.Components.Get<TransformComponent>();           
-        }
+        var blinky = _playScene.Root.FindFirst(o => o.HasTag(GhostTypes.Blinky.ToString().ToLower()));
+        if(blinky is null)
+            throw new InvalidOperationException("Blinky ghost not found in the scene.");
+        _blinkyTransform = blinky.Components.Get<TransformComponent>();           
     }
 
     protected override TileInfo FindTargetTile()

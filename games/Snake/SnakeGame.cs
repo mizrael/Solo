@@ -37,8 +37,6 @@ public class SnakeGame : Game
         _sceneManager = new SceneManager();
         GameServicesManager.Instance.AddService(_sceneManager);
 
-        GameServicesManager.Instance.Initialize();
-
         base.Initialize();
     }
 

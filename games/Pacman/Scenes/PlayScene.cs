@@ -36,10 +36,10 @@ public class PlayScene : Scene
 
             var player = AddPlayer(spriteSheet, collisionService, map, gameState);
 
-            AddGhost(spriteSheet, collisionService, map, GhostTypes.Blinky, player, magicPillEatenTopic);
-            AddGhost(spriteSheet, collisionService, map, GhostTypes.Pinky, player, magicPillEatenTopic);
-            AddGhost(spriteSheet, collisionService, map, GhostTypes.Inky, player, magicPillEatenTopic);
-            AddGhost(spriteSheet, collisionService, map, GhostTypes.Clyde, player, magicPillEatenTopic);
+            AddGhost(GhostTypes.Blinky, spriteSheet, collisionService, map, player, magicPillEatenTopic);
+           // AddGhost(spriteSheet, collisionService, map, GhostTypes.Pinky, player, magicPillEatenTopic);
+          //  AddGhost(spriteSheet, collisionService, map, GhostTypes.Inky, player, magicPillEatenTopic);
+          //  AddGhost(spriteSheet, collisionService, map, GhostTypes.Clyde, player, magicPillEatenTopic);
         };
 
         AddUI(gameState);
@@ -216,12 +216,21 @@ public class PlayScene : Scene
         parent.AddChild(pellet);
     }
 
-    private void AddGhost(SpriteSheet spriteSheet, CollisionService collisionService, GameObject map, GhostTypes ghostType, GameObject player, MessageTopic<MagicPillEaten> magicPillEatenTopic)
+    private void AddGhost(
+        GhostTypes ghostType,
+        SpriteSheet spriteSheet,
+        CollisionService collisionService,
+        GameObject map,
+        GameObject player,
+        MessageTopic<MagicPillEaten> magicPillEatenTopic)
     {
-        var ghost = new GameObject();
-        var transform = ghost.Components.Add<TransformComponent>();
-
         var ghostName = ghostType.ToString().ToLower();
+
+        var ghost = new GameObject();
+
+        ghost.AddTag(ghostName);
+
+        var transform = ghost.Components.Add<TransformComponent>();
 
         var ghostWalkAnim = AnimatedSpriteSheetLoader.Load($"meta/animations/{ghostName}_walk.json", Game);
 

@@ -39,8 +39,6 @@ public class MonoroidsGame : Game
 
         GameServicesManager.Instance.AddService(new CollisionService(new Point(64, 64)));
 
-        GameServicesManager.Instance.Initialize();
-
         base.Initialize();
     }
 

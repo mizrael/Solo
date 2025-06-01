@@ -31,7 +31,7 @@ public record Chase : State
         _path = null;
         _currPathNode = null;
 
-        this.Owner.Components.Get<GhostBrainComponent>().SetAnimation(GhostAnimations.Walk, game);
+        this.Owner.Components.Get<GhostBrainComponent>().SetAnimation(GhostAnimations.Walk);
     }
 
     protected override void OnExecute(Game game, GameTime gameTime)
@@ -45,7 +45,7 @@ public record Chase : State
         if (!_path.Any() && _currPathNode is null)
             return;
 
-        var shouldRecalcPath = TileInfo.Distance(targetCurrTile, _path.End) > PathRecalcThreshold;
+        var shouldRecalcPath = TileInfo.Distance(targetCurrTile, _path.End!) > PathRecalcThreshold;
         if (shouldRecalcPath)
         {
             _path = null;
