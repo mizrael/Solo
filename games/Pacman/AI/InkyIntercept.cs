@@ -1,5 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using Pacman.Components;
+﻿using Pacman.Components;
 using Pacman.Scenes;
 using Solo;
 using Solo.Components;
@@ -23,9 +22,9 @@ public record InkyIntercept : Chase
         _playScene = playScene;
     }
 
-    protected override void OnEnter(Game game)
+    protected override void OnEnter()
     {
-        base.OnEnter(game);
+        base.OnEnter();
 
         _playerTransform = Target.Components.Get<TransformComponent>();
         _mapLogic = Map.Components.Get<MapLogicComponent>();

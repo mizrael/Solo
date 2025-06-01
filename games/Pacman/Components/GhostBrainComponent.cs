@@ -74,10 +74,10 @@ public class GhostBrainComponent : Component
 
         _logic = ghostType switch
         {
-            GhostTypes.Blinky => AI.StateMachines.Blinky(playScene.Game, this.Owner, player, map),
-            GhostTypes.Inky => AI.StateMachines.Inky(playScene.Game, this.Owner, player, map, playScene),
-            GhostTypes.Pinky => AI.StateMachines.Pinky(playScene.Game, this.Owner, player, map),
-            GhostTypes.Clyde => AI.StateMachines.Clyde(playScene.Game, this.Owner, player, map),
+            GhostTypes.Blinky => AI.StateMachines.Blinky(this.Owner, player, map),
+            GhostTypes.Inky => AI.StateMachines.Inky(this.Owner, player, map, playScene),
+            GhostTypes.Pinky => AI.StateMachines.Pinky(this.Owner, player, map),
+            GhostTypes.Clyde => AI.StateMachines.Clyde(this.Owner, player, map),
             _ => throw new NotImplementedException()
         };
 

@@ -23,7 +23,7 @@ public record Chase : State
         Map = map;
     }
 
-    protected override void OnEnter(Game game)
+    protected override void OnEnter()
     {
         _mapLogic = Map.Components.Get<MapLogicComponent>();
         _targetTransform = Target.Components.Get<TransformComponent>();
@@ -34,7 +34,7 @@ public record Chase : State
         this.Owner.Components.Get<GhostBrainComponent>().SetAnimation(GhostAnimations.Walk);
     }
 
-    protected override void OnExecute(Game game, GameTime gameTime)
+    protected override void OnExecute(GameTime gameTime)
     {
         var currTile = _mapLogic.GetTileAt(_ownerTransform.World.Position);
 
@@ -68,7 +68,7 @@ public record Chase : State
             _ownerTransform.Local.Position = newPos;
         }
 
-        base.OnExecute(game, gameTime);
+        base.OnExecute(gameTime);
     }
 
     protected virtual TileInfo FindTargetTile()

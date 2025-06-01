@@ -5,15 +5,13 @@ namespace Solo.AI;
 public class StateMachine
 {
     private readonly Dictionary<int, List<IStateTransition>> _transitionsByState;
-    private readonly Game _game;
     private readonly State _startState;
     private State? _currState;
 
-    public StateMachine(Game game, State startState)
+    public StateMachine( State startState)
     {
         _transitionsByState = new ();
         _startState = startState;
-        _game = game;
     }
 
     public void AddTransition<TS1, TS2>(TS1 from, TS2 to, Predicate<TS1> predicate, Action<TS2>? beforeTransition)
@@ -32,10 +30,10 @@ public class StateMachine
 
     public void Reset()
     {
-        _currState?.Exit(_game);
+        _currState?.Exit();
 
         _currState = _startState;
-        _currState?.Enter(_game);
+        _currState?.Enter();
     }
 
     public void Update(GameTime gameTime)
@@ -43,7 +41,7 @@ public class StateMachine
         if (null == _currState)
         {
             _currState = _startState;
-            _currState.Enter(_game);
+            _currState.Enter();
             return;
         }
 
@@ -51,15 +49,15 @@ public class StateMachine
         var validTransition = transitions.FirstOrDefault(t => t.CanTransition());
         if (null != validTransition)
         {
-            _currState.Exit(_game);
+            _currState.Exit();
 
             validTransition.BeforeTransition();
 
             _currState = validTransition.To;
-            _currState.Enter(_game);
+            _currState.Enter();
         }
 
         if (!_currState.IsCompleted)
-            _currState.Execute(_game, gameTime);
+            _currState.Execute(gameTime);
     }
 }

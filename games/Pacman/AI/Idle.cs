@@ -19,19 +19,19 @@ public record Idle : State
         _hasDuration = _durationMs > 0f;
     }
 
-    protected override void OnEnter(Game game)
+    protected override void OnEnter()
     {
         var brain = this.Owner.Components.Get<GhostBrainComponent>();
-        brain.SetAnimation(GhostAnimations.Walk, game);
+        brain.SetAnimation(GhostAnimations.Walk);
     }
 
-    protected override void OnExecute(Game game, GameTime gameTime)
+    protected override void OnExecute(GameTime gameTime)
     {
         if (_hasDuration && ElapsedMilliseconds > _durationMs)
         {
             IsCompleted = true;
             return;
         }
-        base.OnExecute(game, gameTime);
+        base.OnExecute(gameTime);
     }
 }

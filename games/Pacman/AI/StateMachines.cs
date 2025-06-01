@@ -14,7 +14,6 @@ public static class StateMachines
     private const float ScaredDuration = 10000f;
 
     public static StateMachine Blinky(
-        Game game,
         GameObject ghost,
         GameObject player,
         GameObject map)
@@ -28,7 +27,7 @@ public static class StateMachines
         var scatter = new Arrive(ghost, mapBrain.GetGhostScatterTile(GhostTypes.Blinky), map);
         var scared = new Scared(ghost, map, ScaredDuration);
 
-        var machine = new StateMachine(game, idle);
+        var machine = new StateMachine(idle);
 
         machine.AddTransition(idle, chase, _ => idle.IsCompleted);
         machine.AddTransition(chase, scatter, _ => chase.ElapsedMilliseconds > ChaseDuration);
@@ -40,7 +39,6 @@ public static class StateMachines
     }
 
     public static StateMachine Inky(
-        Game game,
         GameObject ghost,
         GameObject player,
         GameObject map,
@@ -56,7 +54,7 @@ public static class StateMachines
         var scatter = new Arrive(ghost, mapBrain.GetGhostScatterTile(GhostTypes.Inky), map);
         var scared = new Scared(ghost, map, ScaredDuration);
 
-        var machine = new StateMachine(game, idle);
+        var machine = new StateMachine(idle);
 
         machine.AddTransition(idle, chase, _ => idle.IsCompleted);
         machine.AddTransition(chase, scatter, _ => chase.ElapsedMilliseconds > ChaseDuration);
@@ -68,7 +66,6 @@ public static class StateMachines
     }
 
     public static StateMachine Pinky(
-        Game game,
         GameObject ghost,
         GameObject player,
         GameObject map)
@@ -83,7 +80,7 @@ public static class StateMachines
         var scatter = new Arrive(ghost, mapBrain.GetGhostScatterTile(GhostTypes.Pinky), map);
         var scared = new Scared(ghost, map, ScaredDuration);
 
-        var machine = new StateMachine(game, idle);
+        var machine = new StateMachine(idle);
 
         machine.AddTransition(idle, intercept, _ => idle.IsCompleted);
         machine.AddTransition(intercept, scatter, _ => intercept.ElapsedMilliseconds > ChaseDuration);
@@ -95,7 +92,6 @@ public static class StateMachines
     }
 
     public static StateMachine Clyde(
-        Game game,
         GameObject ghost,
         GameObject player,
         GameObject map)
@@ -112,7 +108,7 @@ public static class StateMachines
         var scatter = new Arrive(ghost, mapBrain.GetGhostScatterTile(GhostTypes.Clyde), map);
         var scared = new Scared(ghost, map, ScaredDuration);
 
-        var machine = new StateMachine(game, idle);
+        var machine = new StateMachine(idle);
 
         machine.AddTransition(idle, chase, _ => idle.IsCompleted);
 

@@ -29,7 +29,7 @@ public record Scared : State
         _threshold = durationMs * 0.75f;
     }
 
-    protected override void OnEnter(Game game)
+    protected override void OnEnter()
     {
         _isAlmostDone = false;
         _destTile = null;
@@ -37,10 +37,10 @@ public record Scared : State
         _ownerTransform = Owner.Components.Get<TransformComponent>();
 
         var brain = Owner.Components.Get<GhostBrainComponent>();
-        brain.SetAnimation(GhostAnimations.Scared1, game);
+        brain.SetAnimation(GhostAnimations.Scared1);
     }
 
-    protected override void OnExecute(Game game, GameTime gameTime)
+    protected override void OnExecute(GameTime gameTime)
     {
         if (ElapsedMilliseconds > _durationMs)
         {
@@ -50,7 +50,7 @@ public record Scared : State
         else if (ElapsedMilliseconds > _threshold && !_isAlmostDone)
         {
             _isAlmostDone = true;
-            this.Owner.Components.Get<GhostBrainComponent>().SetAnimation(GhostAnimations.Scared2, game);
+            this.Owner.Components.Get<GhostBrainComponent>().SetAnimation(GhostAnimations.Scared2);
         }
 
         FindDestination();
@@ -61,7 +61,7 @@ public record Scared : State
         var newPos = Vector2.Lerp(_ownerTransform.World.Position, tilePos, Speed);
         _ownerTransform.Local.Position = newPos;
 
-        base.OnExecute(game, gameTime);
+        base.OnExecute(gameTime);
     }
 
     private void FindDestination()
@@ -99,12 +99,12 @@ public record Scared : State
         (dir1 == Directions.Left && dir2 == Directions.Right) ||
         (dir1 == Directions.Right && dir2 == Directions.Left);
 
-    protected override void OnExit(Game game)
+    protected override void OnExit()
     {
         var brain = Owner.Components.Get<GhostBrainComponent>();
         brain.State = GhostStates.Normal;
 
-        base.OnExit(game);
+        base.OnExit();
     }
 
     public float Speed = .085f;
