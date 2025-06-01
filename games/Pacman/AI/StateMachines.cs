@@ -22,7 +22,7 @@ public static class StateMachines
         var ghostBrain = ghost.Components.Get<GhostBrainComponent>();
         var mapBrain = map.Components.Get<MapLogicComponent>();
 
-        var idle = new Idle(ghost, IdleDuration);
+        var idle = new Idle(ghost, map, IdleDuration);
         var chase = new Chase(ghost, player, map);
         var scatter = new Arrive(ghost, mapBrain.GetGhostScatterTile(GhostTypes.Blinky), map);
         var scared = new Scared(ghost, map, ScaredDuration);
@@ -33,7 +33,8 @@ public static class StateMachines
         machine.AddTransition(chase, scatter, _ => chase.ElapsedMilliseconds > ChaseDuration);
         machine.AddTransition(scatter, chase, _ => scatter.ElapsedMilliseconds > ScatterDuration);
         machine.AddTransition(chase, scared, _ => ghostBrain.State == GhostStates.Scared);
-        machine.AddTransition(scared, chase, _ => scared.IsCompleted);
+        machine.AddTransition(scared, idle, _ => ghostBrain.State == GhostStates.Eaten);
+        machine.AddTransition(scared, chase, s => s.IsCompleted);
 
         return machine;
     }
@@ -49,7 +50,7 @@ public static class StateMachines
 
         var mapBrain = map.Components.Get<MapLogicComponent>();
 
-        var idle = new Idle(ghost, IdleDuration);
+        var idle = new Idle(ghost, map, IdleDuration);
         var chase = new InkyIntercept(ghost, player, map, playScene);
         var scatter = new Arrive(ghost, mapBrain.GetGhostScatterTile(GhostTypes.Inky), map);
         var scared = new Scared(ghost, map, ScaredDuration);
@@ -60,7 +61,8 @@ public static class StateMachines
         machine.AddTransition(chase, scatter, _ => chase.ElapsedMilliseconds > ChaseDuration);
         machine.AddTransition(scatter, chase, _ => scatter.ElapsedMilliseconds > ScatterDuration);
         machine.AddTransition(chase, scared, _ => ghostBrain.State == GhostStates.Scared);
-        machine.AddTransition(scared, chase, _ => scared.IsCompleted);
+        machine.AddTransition(scared, idle, _ => ghostBrain.State == GhostStates.Eaten);
+        machine.AddTransition(scared, chase, s => s.IsCompleted);
 
         return machine;
     }
@@ -75,7 +77,7 @@ public static class StateMachines
 
         var mapBrain = map.Components.Get<MapLogicComponent>();
 
-        var idle = new Idle(ghost, IdleDuration);
+        var idle = new Idle(ghost, map, IdleDuration);
         var intercept = new Intercept(ghost, player, map);
         var scatter = new Arrive(ghost, mapBrain.GetGhostScatterTile(GhostTypes.Pinky), map);
         var scared = new Scared(ghost, map, ScaredDuration);
@@ -86,7 +88,8 @@ public static class StateMachines
         machine.AddTransition(intercept, scatter, _ => intercept.ElapsedMilliseconds > ChaseDuration);
         machine.AddTransition(scatter, intercept, _ => scatter.ElapsedMilliseconds > ScatterDuration);
         machine.AddTransition(intercept, scared, _ => ghostBrain.State == GhostStates.Scared);
-        machine.AddTransition(scared, intercept, _ => scared.IsCompleted);
+        machine.AddTransition(scared, idle, _ => ghostBrain.State == GhostStates.Eaten);
+        machine.AddTransition(scared, intercept, s => s.IsCompleted);
 
         return machine;
     }
@@ -102,7 +105,7 @@ public static class StateMachines
 
         var mapBrain = map.Components.Get<MapLogicComponent>();
 
-        var idle = new Idle(ghost, IdleDuration);
+        var idle = new Idle(ghost, map, IdleDuration);
         var chase = new Chase(ghost, player, map);
         var arrive = new Arrive(ghost, mapBrain.GetGhostScatterTile(GhostTypes.Clyde), map);
         var scatter = new Arrive(ghost, mapBrain.GetGhostScatterTile(GhostTypes.Clyde), map);
@@ -120,6 +123,7 @@ public static class StateMachines
             return dist < escapeThreshold;
         });
         machine.AddTransition(arrive, chase, _ =>
+
         {
             var dist = Vector2.DistanceSquared(transform.World.Position, playerTransform.World.Position);
             return dist > chaseThreshold;
@@ -128,7 +132,8 @@ public static class StateMachines
         machine.AddTransition(chase, scatter, _ => chase.ElapsedMilliseconds > ChaseDuration);
         machine.AddTransition(scatter, chase, _ => scatter.ElapsedMilliseconds > ScatterDuration);
         machine.AddTransition(chase, scared, _ => ghostBrain.State == GhostStates.Scared);
-        machine.AddTransition(scared, chase, _ => scared.IsCompleted);
+        machine.AddTransition(scared, idle, _ => ghostBrain.State == GhostStates.Eaten);
+        machine.AddTransition(scared, chase, s => s.IsCompleted);
 
         return machine;
     }

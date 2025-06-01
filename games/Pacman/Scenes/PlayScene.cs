@@ -36,10 +36,10 @@ public class PlayScene : Scene
 
             var player = AddPlayer(spriteSheet, collisionService, map, gameState);
 
-            AddGhost(GhostTypes.Blinky, spriteSheet, collisionService, map, player, magicPillEatenTopic);
-            //   AddGhost(GhostTypes.Pinky, spriteSheet, collisionService, map, player, magicPillEatenTopic);
-            AddGhost(GhostTypes.Inky, spriteSheet, collisionService, map, player, magicPillEatenTopic);
-        //    AddGhost(GhostTypes.Clyde, spriteSheet, collisionService, map, player, magicPillEatenTopic);
+            AddGhost(GhostTypes.Blinky, spriteSheet, collisionService, map, player);
+            //   AddGhost(GhostTypes.Pinky, spriteSheet, collisionService, map, player);
+            AddGhost(GhostTypes.Inky, spriteSheet, collisionService, map, player);
+        //    AddGhost(GhostTypes.Clyde, spriteSheet, collisionService, map, player);
         };
 
         AddUI(gameState);
@@ -81,29 +81,25 @@ public class PlayScene : Scene
                 return;
 
             var collidedWithGhost = collidedWith.Owner.Components.TryGet<GhostBrainComponent>(out var ghostBrain);
-            if (!collidedWithGhost || ghostBrain!.State == GhostStates.Idle)
+            if (!collidedWithGhost)
+                return;
+
+            if (ghostBrain.State == GhostStates.Eaten)
                 return;
 
             if (ghostBrain.State == GhostStates.Scared)
             {
                 ghostBrain.WasEaten();
                 gameState.IncreaseScore(200u);
+                return;
             }
-            else
+
+            playerBrain.Enabled = false;
+            playerRenderer.Animation = deathAnim;
+            playerRenderer.OnAnimationComplete += _ =>
             {
-                playerRenderer.Animation = deathAnim;
-                playerBrain.Enabled = false;
-
-                var timer = new System.Timers.Timer(deathAnim.Duration);
-                timer.Elapsed += (s, e) =>
-                {
-                    timer.Stop();
-                    timer.Dispose();
-
-                    GameServicesManager.Instance.GetRequired<SceneManager>().SetCurrentScene(SceneNames.Intro);
-                };
-                timer.Start();
-            }
+                GameServicesManager.Instance.GetRequired<SceneManager>().SetCurrentScene(SceneNames.Intro);
+            };
         };
 
         this.Root.AddChild(player);
@@ -221,8 +217,7 @@ public class PlayScene : Scene
         SpriteSheet spriteSheet,
         CollisionService collisionService,
         GameObject map,
-        GameObject player,
-        MessageTopic<MagicPillEaten> magicPillEatenTopic)
+        GameObject player)
     {
         var ghostName = ghostType.ToString().ToLower();
 
@@ -243,11 +238,6 @@ public class PlayScene : Scene
         
         var brain = ghost.Components.Add<GhostBrainComponent>();
         brain.Setup(this, ghostType, map, player);
-
-        magicPillEatenTopic.Subscribe(ghost, (s, e) =>
-        {
-            brain.State = GhostStates.Scared;
-        });
 
         this.Root.AddChild(ghost);
     }
