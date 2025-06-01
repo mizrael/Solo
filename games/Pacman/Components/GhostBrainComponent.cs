@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Pacman.Messages;
 using Pacman.Scenes;
 using Solo;
 using Solo.AI;
@@ -7,9 +8,7 @@ using Solo.Assets.Loaders;
 using Solo.Components;
 using Solo.Services;
 using Solo.Services.Messaging;
-using SpaceInvaders.Logic.Messages;
 using System;
-using System.Runtime.InteropServices.JavaScript;
 
 namespace Pacman.Components;
 

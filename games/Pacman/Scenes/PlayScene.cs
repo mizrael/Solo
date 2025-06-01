@@ -1,13 +1,13 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Pacman.Components;
+using Pacman.Messages;
 using Solo;
 using Solo.Assets;
 using Solo.Assets.Loaders;
 using Solo.Components;
 using Solo.Services;
 using Solo.Services.Messaging;
-using SpaceInvaders.Logic.Messages;
 using System;
 
 namespace Pacman.Scenes;
@@ -37,9 +37,9 @@ public class PlayScene : Scene
             var player = AddPlayer(spriteSheet, collisionService, map, gameState);
 
             AddGhost(GhostTypes.Blinky, spriteSheet, collisionService, map, player);
-            //   AddGhost(GhostTypes.Pinky, spriteSheet, collisionService, map, player);
+            AddGhost(GhostTypes.Pinky, spriteSheet, collisionService, map, player);
             AddGhost(GhostTypes.Inky, spriteSheet, collisionService, map, player);
-        //    AddGhost(GhostTypes.Clyde, spriteSheet, collisionService, map, player);
+            AddGhost(GhostTypes.Clyde, spriteSheet, collisionService, map, player);
         };
 
         AddUI(gameState);
