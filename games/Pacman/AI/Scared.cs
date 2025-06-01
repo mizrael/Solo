@@ -99,13 +99,5 @@ public record Scared : State
         (dir1 == Directions.Left && dir2 == Directions.Right) ||
         (dir1 == Directions.Right && dir2 == Directions.Left);
 
-    protected override void OnExit()
-    {
-        var brain = Owner.Components.Get<GhostBrainComponent>();
-        brain.State = GhostStates.Normal;
-
-        base.OnExit();
-    }
-
     public float Speed = .085f;
 }

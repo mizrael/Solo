@@ -18,9 +18,9 @@ public enum GhostTypes
 
 public enum GhostStates
 {
-    Idle,
-    Normal,
-    Scared
+    Normal = 0,
+    Scared,
+    Eaten
 }
 
 public enum GhostAnimations

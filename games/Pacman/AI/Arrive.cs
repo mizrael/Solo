@@ -30,7 +30,9 @@ public record Arrive : State
         _path = null;
         _currPathNode = null;
 
-        this.Owner.Components.Get<GhostBrainComponent>().SetAnimation(GhostAnimations.Walk);
+        var brain = Owner.Components.Get<GhostBrainComponent>();
+        brain.SetAnimation(GhostAnimations.Walk);
+        brain.State = GhostStates.Normal;
     }
 
     protected override void OnExecute(GameTime gameTime)

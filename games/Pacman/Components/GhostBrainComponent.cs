@@ -6,7 +6,10 @@ using Solo.Assets;
 using Solo.Assets.Loaders;
 using Solo.Components;
 using Solo.Services;
+using Solo.Services.Messaging;
+using SpaceInvaders.Logic.Messages;
 using System;
+using System.Runtime.InteropServices.JavaScript;
 
 namespace Pacman.Components;
 
@@ -25,10 +28,10 @@ public class GhostBrainComponent : Component
     protected override void InitCore()
     {
         var mapLogic = Map.Components.Get<MapLogicComponent>();
-        var currTile = mapLogic.GetGhostStartTile(this.GhostType);
+      //  var currTile = mapLogic.GetGhostStartTile(this.GhostType);
 
         var transform = Owner.Components.Get<TransformComponent>();
-        transform.Local.Position = mapLogic.GetTileCenter(currTile);
+      //  transform.Local.Position = mapLogic.GetTileCenter(currTile);
 
         var renderer = Owner.Components.Get<AnimatedSpriteSheetRenderer>();
         var bbox = Owner.Components.Add<BoundingBoxComponent>();
@@ -70,7 +73,7 @@ public class GhostBrainComponent : Component
         this.Map = map;
         this.Player = player;
         this.GhostType = ghostType;
-        this.State = GhostStates.Idle;
+        this.State = GhostStates.Normal;
 
         _logic = ghostType switch
         {
@@ -85,6 +88,13 @@ public class GhostBrainComponent : Component
         _walkAnim = AnimatedSpriteSheetLoader.Load($"meta/animations/{ghostName}_walk.json", playScene.Game);
         _scaredAnim1 = AnimatedSpriteSheetLoader.Load("meta/animations/ghost_frightened1.json", playScene.Game);
         _scaredAnim2 = AnimatedSpriteSheetLoader.Load("meta/animations/ghost_frightened2.json", playScene.Game);
+
+        var bus = GameServicesManager.Instance.GetRequired<MessageBus>();
+        var magicPillEatenTopic = bus.GetTopic<MagicPillEaten>();
+        magicPillEatenTopic.Subscribe(this.Owner, (s, e) =>
+        {
+            this.State = GhostStates.Scared;
+        });
     }
 
     public void SetAnimation(GhostAnimations animType)
@@ -101,12 +111,7 @@ public class GhostBrainComponent : Component
 
     public void WasEaten()
     {
-        var mapLogic = this.Map.Components.Get<MapLogicComponent>();
-        var ghostStartTile = mapLogic.GetGhostStartTile(this.GhostType);
-        var ghostTransform = this.Owner.Components.Get<TransformComponent>();
-        ghostTransform.Local.Position = mapLogic.GetTileCenter(ghostStartTile);
-
-        _logic.Reset();
+        this.State = GhostStates.Eaten;
     }
 
     public GameObject Map { get; private set; }
