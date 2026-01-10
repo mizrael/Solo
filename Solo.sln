@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.8.34601.278
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11205.157 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Monoroids", "games\Monoroids\Monoroids.csproj", "{941A73B6-477E-4950-9359-CB10EE0294C7}"
 EndProject
@@ -18,6 +18,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpaceInvaders", "games\SpaceInvaders\SpaceInvaders.csproj", "{B78FC166-3436-4AC9-87FE-39437D135838}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pacman", "games\Pacman\Pacman.csproj", "{A91D6F6D-21F2-4916-937A-1972DBC7E94C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Solocaster", "games\Solocaster\Solocaster.csproj", "{A01921ED-9571-40E2-9ECF-D92FC02A8021}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,6 +51,10 @@ Global
 		{A91D6F6D-21F2-4916-937A-1972DBC7E94C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A91D6F6D-21F2-4916-937A-1972DBC7E94C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A91D6F6D-21F2-4916-937A-1972DBC7E94C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A01921ED-9571-40E2-9ECF-D92FC02A8021}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A01921ED-9571-40E2-9ECF-D92FC02A8021}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A01921ED-9571-40E2-9ECF-D92FC02A8021}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A01921ED-9571-40E2-9ECF-D92FC02A8021}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,6 +66,7 @@ Global
 		{4F3289BC-DF74-4AE3-8AD8-6393CC077BB6} = {523A1367-200D-4197-8F65-5E480ABC0862}
 		{B78FC166-3436-4AC9-87FE-39437D135838} = {523A1367-200D-4197-8F65-5E480ABC0862}
 		{A91D6F6D-21F2-4916-937A-1972DBC7E94C} = {523A1367-200D-4197-8F65-5E480ABC0862}
+		{A01921ED-9571-40E2-9ECF-D92FC02A8021} = {523A1367-200D-4197-8F65-5E480ABC0862}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A8DB24BE-C2CD-4FA8-B4F5-9FEECB8B62BE}
