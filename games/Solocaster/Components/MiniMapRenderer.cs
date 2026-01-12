@@ -1,45 +1,34 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoRaycaster;
+using Solo;
+using Solo.Components;
+using Solo.Services;
 using Solocaster.Entities;
 using System;
 using System.Collections.Generic;
 
-namespace Solocaster;
+namespace Solocaster.Components;
 
-public class MiniMap
+public class MiniMapRenderer : Component, IRenderable
 {
     private readonly Map _map;
     private readonly Camera _camera;
 
-    private readonly int _cellWidth;
-    private readonly int _cellHeight;
-    private readonly Texture2D _texture;
-    private readonly Vector2 _cellCenter;
+    private int _cellWidth;
+    private int _cellHeight;
+    private Texture2D _texture;
+    private Vector2 _cellCenter;
 
     public readonly Color[] CellColors;
 
-    public MiniMap(
+    public MiniMapRenderer(
+        GameObject owner,
         Map map,
-        int screenWidth,
-        int screenHeight,
-        GraphicsDevice graphicsDevice,
-        Camera camera)  
+        Camera camera) : base(owner)
     {
         _map = map;
-        _camera = camera;
-
-        float zoom = 0.25f;
-        int minimapWidth = (int)(screenWidth * zoom);
-        int minimapHeight = (int)(screenHeight * zoom);
-
-        _cellWidth = minimapWidth / _map.Cols;
-        _cellHeight = minimapHeight / _map.Rows;
-
-        _cellCenter = new Vector2(_cellWidth, _cellHeight) * .25f;
-
-        _texture = new Texture2D(graphicsDevice, 1, 1);
-        _texture.SetData([Color.White]);
+        _camera = camera;       
 
         var cellTypes = new HashSet<int>();
         for (int row = 0; row != _map.Rows; row++)
@@ -61,6 +50,25 @@ public class MiniMap
                 (byte)Random.Shared.Next(100, 220),
                 (byte)255);
         }
+    }
+
+    protected override void InitCore()
+    {
+        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
+        var graphicsDevice = renderService.Graphics.GraphicsDevice;
+        float zoom = 0.25f;
+        int minimapWidth = (int)(graphicsDevice.Viewport.Width * zoom);
+        int minimapHeight = (int)(graphicsDevice.Viewport.Height * zoom);
+
+        _cellWidth = minimapWidth / _map.Cols;
+        _cellHeight = minimapHeight / _map.Rows;
+
+        _cellCenter = new Vector2(_cellWidth, _cellHeight) * .25f;
+
+        _texture = new Texture2D(graphicsDevice, 1, 1);
+        _texture.SetData([Color.White]);
+
+        base.InitCore();
     }
 
     public void Render(SpriteBatch spriteBatch)
@@ -132,4 +140,8 @@ public class MiniMap
             effects: SpriteEffects.None,
             layerDepth: 0);
     }
+
+
+    public int LayerIndex { get; set; }
+    public bool Hidden { get; set; }
 }

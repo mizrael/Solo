@@ -21,7 +21,7 @@ public class LevelLoader
         if (levelData == null)
             throw new Exception("Failed to deserialize map data.");
 
-        var map = new Map(levelData.Map.Cells);
+        var map = new Entities.Map(levelData.Map.Cells);
         return new Level(map);
     }
 

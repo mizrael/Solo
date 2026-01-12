@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Solo.Components;
 using System;
 using System.Collections.Generic;
 

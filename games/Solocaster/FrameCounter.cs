@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Xna.Framework;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Solocaster;
@@ -14,8 +15,10 @@ public class FrameCounter
 
     private Queue<float> _sampleBuffer = new();
 
-    public void Update(float deltaTime)
+    public void Update(GameTime gameTime)
     {
+        var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
         CurrentFramesPerSecond = 1.0f / deltaTime;
 
         _sampleBuffer.Enqueue(CurrentFramesPerSecond);
