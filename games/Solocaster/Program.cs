@@ -1,2 +1,2 @@
-﻿using var game = new Solocaster.Game1();
+﻿using var game = new Solocaster.SolocasterGame();
 game.Run();
