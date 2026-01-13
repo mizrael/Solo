@@ -1,0 +1,16 @@
+{
+  "namespace": "misc_items",
+  "items": [
+    {
+      "name": "barrel",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items",
+        "sprite": "barrel",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    }
+  ]
+}

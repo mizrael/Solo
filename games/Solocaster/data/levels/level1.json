@@ -29,17 +29,19 @@
   },
   "Entities": [
     {
-      "name": "barrel1",
+      "tileX": 9,
+      "tileY": 3,
+      "template": "misc_items:barrel"
+    },
+    {
       "tileX": 13,
       "tileY": 3,
-      "type": "sprite",
-      "properties": {
-        "spritesheet": "misc_items",
-        "sprite": "barrel",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
+      "template": "misc_items:barrel"
+    },
+    {
+      "tileX": 14,
+      "tileY": 4,
+      "template": "misc_items:barrel"
     }
   ]
 }

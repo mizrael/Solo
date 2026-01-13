@@ -3,6 +3,7 @@ using Solocaster.Entities;
 using Solocaster.Services;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -15,11 +16,21 @@ public class LevelLoader
         PropertyNameCaseInsensitive = true,
     };
 
+    private static TemplateLoader? _templateLoader;
+
     public static Map LoadFromJson(
         string path,
         Game game,
         EntityManager entityManager)
     {
+        // Load templates if not already loaded
+        if (_templateLoader == null)
+        {
+            _templateLoader = new TemplateLoader();
+            var templatesPath = Path.Combine(Path.GetDirectoryName(path) ?? "", "..", "templates");
+            _templateLoader.LoadAllTemplatesFromFolder(Path.GetFullPath(templatesPath));
+        }
+
         var json = System.IO.File.ReadAllText(path);
         var levelData = JsonSerializer.Deserialize<LevelData>(json, _jsonOptions);
         if (levelData == null)
@@ -29,16 +40,24 @@ public class LevelLoader
 
         foreach (var entityData in levelData.Entities)
         {
-            // Convert JsonElement properties to actual types
+            var template = _templateLoader.Get(entityData.Template);
+
             var properties = new Dictionary<string, object>();
-            foreach (var kvp in entityData.Properties)
+            foreach (var kvp in template.Properties)
             {
                 properties[kvp.Key] = ConvertJsonElement(kvp.Value);
             }
 
+            if (entityData.Properties is not null)
+            {
+                foreach (var kvp in entityData.Properties)
+                {
+                    properties[kvp.Key] = ConvertJsonElement(kvp.Value);
+                }
+            }
+
             var definition = new EntityDefinition(
-                Name: entityData.Name,
-                Type: entityData.Type,
+                Type: template.ItemType,
                 TileX: entityData.TileX,
                 TileY: entityData.TileY,
                 Properties: properties
@@ -79,11 +98,9 @@ public class LevelLoader
 
     private class EntityData
     {
-        [JsonPropertyName("name")]
-        public required string Name { get; set; }
+        [JsonPropertyName("template")]
+        public required string Template { get; set; }
 
-        [JsonPropertyName("type")]
-        public required string Type { get; set; }
         public int TileX { get; set; }
         public int TileY { get; set; }
         public Dictionary<string, object> Properties { get; set; } = new();
