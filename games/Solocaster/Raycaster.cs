@@ -196,6 +196,33 @@ public unsafe class Raycaster : IDisposable
                 // If we hit a partially open door, render it on top
                 if (doorHit != null && doorHit.IsBlocking)
                 {
+                    // Calculate door hit position to check if ray hits the visible door portion
+                    float doorWallX = (doorSide == 0) ?
+                        camera.Position.Y + doorPerpWallDist * rayDirY :
+                        camera.Position.X + doorPerpWallDist * rayDirX;
+                    doorWallX -= MathF.Floor(doorWallX);
+
+                    // Apply door offset
+                    float doorOffset = 0;
+                    if (doorHit.IsVertical)
+                    {
+                        if (doorSide == 0) // Viewing from E-W
+                            doorOffset = doorHit.OpenAmount;
+                    }
+                    else
+                    {
+                        if (doorSide == 1) // Viewing from N-S
+                            doorOffset = doorHit.OpenAmount;
+                    }
+                    doorWallX -= doorOffset;
+
+                    // Only update z-buffer if ray actually hits the visible door portion (not the opening)
+                    if (doorWallX >= 0 && doorWallX <= 1)
+                    {
+                        if (doorPerpWallDist < _zBuffer[y])
+                            _zBuffer[y] = doorPerpWallDist;
+                    }
+
                     int doorLineWidth = (int)(_frameWidth / doorPerpWallDist);
                     int doorDrawStart = (-doorLineWidth + _frameWidth) / 2;
                     if (doorDrawStart < 0)
@@ -207,7 +234,7 @@ public unsafe class Raycaster : IDisposable
 
                     if (doorDrawEnd - doorDrawStart + 1 > 0)
                     {
-                        RenderDoor(columnPtr, camera, doorMapX, doorMapY, doorSide, doorDrawStart, doorDrawEnd, 
+                        RenderDoor(columnPtr, camera, doorMapX, doorMapY, doorSide, doorDrawStart, doorDrawEnd,
                                   doorPerpWallDist, rayDirX, rayDirY, doorLineWidth, doorHit);
                     }
                 }
@@ -255,7 +282,7 @@ public unsafe class Raycaster : IDisposable
         // Only render the visible part of the door
         if (wallY >= 0 && wallY <= 1)
         {
-            UpdateRow(side, drawStart, drawEnd, rayDirX, rayDirY, lineWidth, columnPtr, wallY, texNum: 0);
+           UpdateRow(side, drawStart, drawEnd, rayDirX, rayDirY, lineWidth, columnPtr, wallY, texNum: 0);
         }
     }
 
