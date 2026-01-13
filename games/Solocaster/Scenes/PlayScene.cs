@@ -5,6 +5,7 @@ using Solo;
 using Solo.Services;
 using Solocaster.Components;
 using Solocaster.Persistence;
+using Solocaster.Services;
 using System.Linq;
 
 namespace Solocaster.Scenes;
@@ -20,12 +21,13 @@ public class PlayScene : Scene
     protected override void EnterCore()
     {
         var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
+        var entityManager = GameServicesManager.Instance.GetRequired<EntityManager>();
+        entityManager.Clear();
 
         var frameBufferWidth = renderService.Graphics.GraphicsDevice.Viewport.Height / FrameBufferScale;
         var frameBufferHeight = renderService.Graphics.GraphicsDevice.Viewport.Width / FrameBufferScale;
 
-        var level = LevelLoader.LoadFromJson("./data/levels/level1.json", Game.Content);
-        var map = level.Map;
+        var map = LevelLoader.LoadFromJson("./data/levels/level1.json", Game, entityManager);
 
         var camera = new Camera(map);
 

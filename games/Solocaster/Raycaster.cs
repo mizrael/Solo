@@ -1,8 +1,13 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoRaycaster;
+using Solo.Components;
+using Solo.Services;
+using Solocaster.Components;
 using Solocaster.Entities;
+using Solocaster.Services;
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace Solocaster;
@@ -27,6 +32,9 @@ public unsafe class Raycaster : IDisposable
     private readonly int _frameWidth;
     private readonly int _frameHeight;
 
+    private readonly float[] _zBuffer;
+    private readonly Dictionary<Texture2D, (Color[] data, GCHandle handle)> _spriteTextureCache;
+
     public Raycaster(
         Map map,
         int screenWidth,
@@ -40,6 +48,8 @@ public unsafe class Raycaster : IDisposable
         _map = map;
 
         FrameBuffer = new Color[screenWidth * screenHeight];
+        _zBuffer = new float[screenHeight];
+        _spriteTextureCache = new Dictionary<Texture2D, (Color[], GCHandle)>();
 
         _texWidth = textures[0].Width;
         _texHeight = textures[0].Height;
@@ -163,6 +173,9 @@ public unsafe class Raycaster : IDisposable
                     ? (sideDistX - deltaDistX)
                     : (sideDistY - deltaDistY);
 
+                // Store distance for sprite depth testing (rotated: y acts as ray index)
+                _zBuffer[y] = perpWallDist;
+
                 int lineWidth = (int)(_frameWidth / perpWallDist);
 
                 int drawStart = (-lineWidth + _frameWidth) / 2;
@@ -199,6 +212,9 @@ public unsafe class Raycaster : IDisposable
                     }
                 }
             }
+
+            // Render billboards after walls
+            RenderBillboards(camera, pixels);
         }
     }
 
@@ -348,9 +364,135 @@ public unsafe class Raycaster : IDisposable
         }
     }
 
+    private uint* GetOrCacheSpriteTexture(Texture2D texture)
+    {
+        if (!_spriteTextureCache.TryGetValue(texture, out var cached))
+        {
+            var data = new Color[texture.Width * texture.Height];
+            texture.GetData(data);
+            var handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+            cached = (data, handle);
+            _spriteTextureCache[texture] = cached;
+        }
+        return (uint*)cached.handle.AddrOfPinnedObject();
+    }
+
+    private struct SpriteProjection
+    {
+        public float Distance;
+        public int ScreenY;
+        public int SpriteSize;
+        public int DrawStartY;
+        public int DrawEndY;
+        public int DrawStartX;
+        public int DrawEndX;
+        public uint* TexturePtr;
+        public int TexWidth;
+        public int TexHeight;
+        public Rectangle SpriteBounds;
+    }
+
+    private void RenderBillboards(Camera camera, uint* pixels)
+    {
+        var entityManager = GameServicesManager.Instance.GetRequired<EntityManager>();
+        var billboards = entityManager.GetVisibleEntities(e => e.Components.Has<BillboardComponent>());
+
+        var projections = new List<SpriteProjection>();
+
+        foreach (var entity in billboards)
+        {
+            var transform = entity.Components.Get<TransformComponent>();
+            var billboard = entity.Components.Get<BillboardComponent>();
+            var sprite = billboard.Sprite;
+
+            var spritePos = transform.Local.Position;
+
+            // Relative position
+            var relX = spritePos.X - camera.Position.X;
+            var relY = spritePos.Y - camera.Position.Y;
+
+            // Transform to camera space (accounting for 90° rotation)
+            var invDet = 1.0f / (camera.Plane.X * camera.Direction.Y - camera.Direction.X * camera.Plane.Y);
+            var transformX = invDet * (camera.Direction.Y * relX - camera.Direction.X * relY);
+            var transformY = invDet * (-camera.Plane.Y * relX + camera.Plane.X * relY);
+
+            if (transformY <= 0) continue; // Behind camera
+
+            // Project to screen (rotated: Y is the "column")
+            var screenY = (int)((_frameHeight / 2) * (1 + transformX / transformY));
+            var spriteSize = Math.Abs((int)(_frameHeight / transformY));
+
+            var drawStartY = Math.Max(0, screenY - spriteSize / 2);
+            var drawEndY = Math.Min(_frameHeight - 1, screenY + spriteSize / 2);
+            var drawStartX = Math.Max(0, _frameWidth / 2 - spriteSize / 2);
+            var drawEndX = Math.Min(_frameWidth - 1, _frameWidth / 2 + spriteSize / 2);
+
+            var texturePtr = GetOrCacheSpriteTexture(sprite.Texture);
+
+            projections.Add(new SpriteProjection
+            {
+                Distance = transformY,
+                ScreenY = screenY,
+                SpriteSize = spriteSize,
+                DrawStartY = drawStartY,
+                DrawEndY = drawEndY,
+                DrawStartX = drawStartX,
+                DrawEndX = drawEndX,
+                TexturePtr = texturePtr,
+                TexWidth = sprite.Texture.Width,
+                TexHeight = sprite.Texture.Height,
+                SpriteBounds = sprite.Bounds
+            });
+        }
+
+        // Sort by distance (far to near)
+        projections.Sort((a, b) => b.Distance.CompareTo(a.Distance));
+
+        // Render each sprite
+        foreach (var proj in projections)
+        {
+            for (int y = proj.DrawStartY; y < proj.DrawEndY; y++)
+            {
+                // Depth test: only draw if sprite is closer than wall
+                if (proj.Distance >= _zBuffer[y])
+                    continue;
+
+                uint* rowPtr = pixels + y * _frameWidth;
+
+                // Texture X coordinate within sprite bounds (rotated: y maps to texX)
+                int localTexX = (int)((y - proj.ScreenY + proj.SpriteSize / 2) * proj.SpriteBounds.Width / proj.SpriteSize);
+                if (localTexX < 0 || localTexX >= proj.SpriteBounds.Width) continue;
+                int texX = proj.SpriteBounds.X + localTexX;
+
+                // Render horizontal stripe
+                for (int x = proj.DrawStartX; x < proj.DrawEndX; x++)
+                {
+                    // Texture Y coordinate within sprite bounds (rotated: x maps to texY)
+                    int localTexY = (int)((x - proj.DrawStartX) * proj.SpriteBounds.Height / proj.SpriteSize);
+                    if (localTexY < 0 || localTexY >= proj.SpriteBounds.Height) continue;
+                    int texY = proj.SpriteBounds.Y + localTexY;
+
+                    uint color = proj.TexturePtr[texY * proj.TexWidth + texX];
+
+                    // Skip transparent pixels
+                    if ((color & 0xFF000000) != 0)
+                    {
+                        rowPtr[x] = color;
+                    }
+                }
+            }
+        }
+    }
+
     public void Dispose()
     {
         foreach (var handle in _textureHandles)
+        {
+            if (handle.IsAllocated)
+                handle.Free();
+        }
+
+        foreach (var (_, handle) in _spriteTextureCache.Values)
         {
             if (handle.IsAllocated)
                 handle.Free();

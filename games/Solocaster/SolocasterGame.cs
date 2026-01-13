@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Input;
 using Solo.Services;
 using Solocaster.Scenes;
+using Solocaster.Services;
 
 namespace Solocaster
 {
@@ -32,6 +33,9 @@ namespace Solocaster
 
             _sceneManager = new SceneManager();
             GameServicesManager.Instance.AddService(_sceneManager);
+
+            var entityManager = new EntityManager();
+            GameServicesManager.Instance.AddService(entityManager);
 
             base.Initialize();
         }

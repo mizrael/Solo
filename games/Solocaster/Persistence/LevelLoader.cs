@@ -1,5 +1,6 @@
-﻿using Microsoft.Xna.Framework.Content;
+﻿using Microsoft.Xna.Framework;
 using Solocaster.Entities;
+using Solocaster.Services;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -14,15 +15,32 @@ public class LevelLoader
         PropertyNameCaseInsensitive = true,
     };
 
-    public static Level LoadFromJson(string path, ContentManager contentManager)
+    public static Map LoadFromJson(
+        string path,
+        Game game,
+        EntityManager entityManager)
     {
         var json = System.IO.File.ReadAllText(path);
         var levelData = JsonSerializer.Deserialize<LevelData>(json, _jsonOptions);
         if (levelData == null)
             throw new Exception("Failed to deserialize map data.");
 
-        var map = new Entities.Map(levelData.Map.Cells);
-        return new Level(map);
+        var map = new Map(levelData.Map.Cells);
+
+        foreach (var entityData in levelData.Entities)
+        {
+            var definition = new EntityDefinition(
+                Name: entityData.Name,
+                Type: entityData.Type,
+                TileX: entityData.TileX,
+                TileY: entityData.TileY,
+                Properties: entityData.Properties
+            );
+
+            EntityFactory.CreateEntity(definition, game, entityManager);
+        }
+
+        return map;
     }
 
     private class LevelData
