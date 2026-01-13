@@ -27,20 +27,33 @@ public static class EntityFactory
         Game game,
         EntityManager entityManager)
     {
-        var sheetName = definition.Properties["spritesheet"];
-        var spriteName = definition.Properties["sprite"];
+        var sheetName = definition.Properties["spritesheet"] as string;
+        ArgumentException.ThrowIfNullOrWhiteSpace(sheetName, nameof(definition.Properties));
+
+        var spriteName = definition.Properties["sprite"] as string;
+        ArgumentException.ThrowIfNullOrWhiteSpace(spriteName, nameof(definition.Properties));
+
         var spriteSheet = new SpriteSheetLoader().Load($"data/spritesheets/{sheetName}.json", game);
         var sprite = spriteSheet.Get(spriteName);
 
         var entity = new GameObject();
         var transform = entity.Components.Add<TransformComponent>();
         transform.Local.Position = new Vector2(
-            definition.TileX + 0.5f,  // Center of tile
+            definition.TileX + 0.5f, 
             definition.TileY + 0.5f
         );
 
         var billboard = entity.Components.Add<BillboardComponent>();
         billboard.Sprite = sprite;
+
+        float scaleX = 1f;
+        if (definition.Properties.TryGetValue("scaleX", out var scaleXObj) && scaleXObj is float tmpScaleX)
+            scaleX = tmpScaleX;
+        float scaleY = 1f;
+        if (definition.Properties.TryGetValue("scaleY", out var scaleYObj) && scaleYObj is float tmpScaleY)
+            scaleY = tmpScaleY;
+        billboard.Scale = new Vector2(scaleX, scaleY);
+
         entityManager.Register(entity);
 
         return entity;

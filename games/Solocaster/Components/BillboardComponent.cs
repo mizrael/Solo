@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework;
 using Solo;
 using Solo.Assets;
 using Solo.Components;
@@ -18,4 +19,6 @@ public class BillboardComponent : Component
         get => _sprite;
         set => _sprite = value ?? throw new ArgumentNullException(nameof(value));
     }
+
+    public Vector2 Scale { get; set; } = Vector2.One;
 }

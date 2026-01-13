@@ -29,18 +29,41 @@ public class LevelLoader
 
         foreach (var entityData in levelData.Entities)
         {
+            // Convert JsonElement properties to actual types
+            var properties = new Dictionary<string, object>();
+            foreach (var kvp in entityData.Properties)
+            {
+                properties[kvp.Key] = ConvertJsonElement(kvp.Value);
+            }
+
             var definition = new EntityDefinition(
                 Name: entityData.Name,
                 Type: entityData.Type,
                 TileX: entityData.TileX,
                 TileY: entityData.TileY,
-                Properties: entityData.Properties
+                Properties: properties
             );
 
             EntityFactory.CreateEntity(definition, game, entityManager);
         }
 
         return map;
+    }
+
+    private static object ConvertJsonElement(object value)
+    {
+        if (value is not JsonElement jsonElement)
+            return value;
+
+        return jsonElement.ValueKind switch
+        {
+            JsonValueKind.String => jsonElement.GetString() ?? string.Empty,
+            JsonValueKind.Number => jsonElement.TryGetInt32(out var intVal) ? intVal : jsonElement.GetSingle(),
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            JsonValueKind.Null => null!,
+            _ => value
+        };
     }
 
     private class LevelData
@@ -63,6 +86,6 @@ public class LevelLoader
         public required string Type { get; set; }
         public int TileX { get; set; }
         public int TileY { get; set; }
-        public Dictionary<string, string> Properties { get; set; } = new();
+        public Dictionary<string, object> Properties { get; set; } = new();
     }
 }

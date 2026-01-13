@@ -381,7 +381,8 @@ public unsafe class Raycaster : IDisposable
     {
         public float Distance;
         public int ScreenY;
-        public int SpriteSize;
+        public int SpriteSizeY;
+        public int SpriteSizeX;
         public int DrawStartY;
         public int DrawEndY;
         public int DrawStartX;
@@ -416,16 +417,19 @@ public unsafe class Raycaster : IDisposable
             var transformX = invDet * (camera.Direction.Y * relX - camera.Direction.X * relY);
             var transformY = invDet * (-camera.Plane.Y * relX + camera.Plane.X * relY);
 
-            if (transformY <= 0) continue; // Behind camera
+            if (transformY <= 0) 
+                continue; // Behind camera
 
-            // Project to screen (rotated: Y is the "column")
             var screenY = (int)((_frameHeight / 2) * (1 + transformX / transformY));
-            var spriteSize = Math.Abs((int)(_frameHeight / transformY));
+            var baseSpriteSize = Math.Abs((int)(_frameHeight / transformY));
 
-            var drawStartY = Math.Max(0, screenY - spriteSize / 2);
-            var drawEndY = Math.Min(_frameHeight - 1, screenY + spriteSize / 2);
-            var drawStartX = Math.Max(0, _frameWidth / 2 - spriteSize / 2);
-            var drawEndX = Math.Min(_frameWidth - 1, _frameWidth / 2 + spriteSize / 2);
+            var spriteSizeY = (int)(baseSpriteSize * billboard.Scale.X);
+            var spriteSizeX = (int)(baseSpriteSize * billboard.Scale.Y);
+
+            var drawStartY = Math.Max(0, screenY - spriteSizeY / 2);
+            var drawEndY = Math.Min(_frameHeight - 1, screenY + spriteSizeY / 2);
+            var drawStartX = Math.Max(0, _frameWidth / 2 - spriteSizeX / 2);
+            var drawEndX = Math.Min(_frameWidth - 1, _frameWidth / 2 + spriteSizeX / 2);
 
             var texturePtr = GetOrCacheSpriteTexture(sprite.Texture);
 
@@ -433,7 +437,8 @@ public unsafe class Raycaster : IDisposable
             {
                 Distance = transformY,
                 ScreenY = screenY,
-                SpriteSize = spriteSize,
+                SpriteSizeY = spriteSizeY,
+                SpriteSizeX = spriteSizeX,
                 DrawStartY = drawStartY,
                 DrawEndY = drawEndY,
                 DrawStartX = drawStartX,
@@ -445,10 +450,8 @@ public unsafe class Raycaster : IDisposable
             });
         }
 
-        // Sort by distance (far to near)
         projections.Sort((a, b) => b.Distance.CompareTo(a.Distance));
 
-        // Render each sprite
         foreach (var proj in projections)
         {
             for (int y = proj.DrawStartY; y < proj.DrawEndY; y++)
@@ -460,7 +463,7 @@ public unsafe class Raycaster : IDisposable
                 uint* rowPtr = pixels + y * _frameWidth;
 
                 // Texture X coordinate within sprite bounds (rotated: y maps to texX)
-                int localTexX = (int)((y - proj.ScreenY + proj.SpriteSize / 2) * proj.SpriteBounds.Width / proj.SpriteSize);
+                int localTexX = (int)((y - proj.ScreenY + proj.SpriteSizeY / 2) * proj.SpriteBounds.Width / proj.SpriteSizeY);
                 if (localTexX < 0 || localTexX >= proj.SpriteBounds.Width) continue;
                 int texX = proj.SpriteBounds.X + localTexX;
 
@@ -468,7 +471,7 @@ public unsafe class Raycaster : IDisposable
                 for (int x = proj.DrawStartX; x < proj.DrawEndX; x++)
                 {
                     // Texture Y coordinate within sprite bounds (rotated: x maps to texY)
-                    int localTexY = (int)((x - proj.DrawStartX) * proj.SpriteBounds.Height / proj.SpriteSize);
+                    int localTexY = (int)((x - proj.DrawStartX) * proj.SpriteBounds.Height / proj.SpriteSizeX);
                     if (localTexY < 0 || localTexY >= proj.SpriteBounds.Height) continue;
                     int texY = proj.SpriteBounds.Y + localTexY;
 

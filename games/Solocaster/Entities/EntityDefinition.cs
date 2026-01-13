@@ -7,5 +7,5 @@ public record EntityDefinition(
     string Type,
     int TileX,
     int TileY,
-    IReadOnlyDictionary<string, string> Properties
+    IReadOnlyDictionary<string, object> Properties
 );
