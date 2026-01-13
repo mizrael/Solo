@@ -391,6 +391,7 @@ public unsafe class Raycaster : IDisposable
         public int TexWidth;
         public int TexHeight;
         public Rectangle SpriteBounds;
+        public BillboardAnchor Anchor;
     }
 
     private void RenderBillboards(Camera camera, uint* pixels)
@@ -428,8 +429,30 @@ public unsafe class Raycaster : IDisposable
 
             var drawStartY = Math.Max(0, screenY - spriteSizeY / 2);
             var drawEndY = Math.Min(_frameHeight - 1, screenY + spriteSizeY / 2);
-            var drawStartX = Math.Max(0, _frameWidth / 2 - spriteSizeX / 2);
-            var drawEndX = Math.Min(_frameWidth - 1, _frameWidth / 2 + spriteSizeX / 2);
+
+            // Apply anchor (rotated: X is vertical, _frameWidth/2 is horizon)
+            int drawStartX, drawEndX;
+            switch (billboard.Anchor)
+            {
+                case BillboardAnchor.Bottom:
+                    // Sits on floor (below horizon)
+                    drawStartX = _frameWidth / 2;
+                    drawEndX = _frameWidth / 2 + spriteSizeX;
+                    break;
+                case BillboardAnchor.Top:
+                    // Hangs from ceiling (above horizon)
+                    drawStartX = _frameWidth / 2 - spriteSizeX;
+                    drawEndX = _frameWidth / 2;
+                    break;
+                case BillboardAnchor.Center:
+                default:
+                    // Centered at horizon
+                    drawStartX = _frameWidth / 2 - spriteSizeX / 2;
+                    drawEndX = _frameWidth / 2 + spriteSizeX / 2;
+                    break;
+            }
+            drawStartX = Math.Max(0, drawStartX);
+            drawEndX = Math.Min(_frameWidth - 1, drawEndX);
 
             var texturePtr = GetOrCacheSpriteTexture(sprite.Texture);
 
@@ -446,7 +469,8 @@ public unsafe class Raycaster : IDisposable
                 TexturePtr = texturePtr,
                 TexWidth = sprite.Texture.Width,
                 TexHeight = sprite.Texture.Height,
-                SpriteBounds = sprite.Bounds
+                SpriteBounds = sprite.Bounds,
+                Anchor = billboard.Anchor
             });
         }
 
@@ -456,28 +480,22 @@ public unsafe class Raycaster : IDisposable
         {
             for (int y = proj.DrawStartY; y < proj.DrawEndY; y++)
             {
-                // Depth test: only draw if sprite is closer than wall
                 if (proj.Distance >= _zBuffer[y])
                     continue;
 
                 uint* rowPtr = pixels + y * _frameWidth;
 
-                // Texture X coordinate within sprite bounds (rotated: y maps to texX)
                 int localTexX = (int)((y - proj.ScreenY + proj.SpriteSizeY / 2) * proj.SpriteBounds.Width / proj.SpriteSizeY);
                 if (localTexX < 0 || localTexX >= proj.SpriteBounds.Width) continue;
                 int texX = proj.SpriteBounds.X + localTexX;
 
-                // Render horizontal stripe
                 for (int x = proj.DrawStartX; x < proj.DrawEndX; x++)
                 {
-                    // Texture Y coordinate within sprite bounds (rotated: x maps to texY)
                     int localTexY = (int)((x - proj.DrawStartX) * proj.SpriteBounds.Height / proj.SpriteSizeX);
                     if (localTexY < 0 || localTexY >= proj.SpriteBounds.Height) continue;
                     int texY = proj.SpriteBounds.Y + localTexY;
 
                     uint color = proj.TexturePtr[texY * proj.TexWidth + texX];
-
-                    // Skip transparent pixels
                     if ((color & 0xFF000000) != 0)
                     {
                         rowPtr[x] = color;

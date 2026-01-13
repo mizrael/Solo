@@ -54,6 +54,18 @@ public static class EntityFactory
             scaleY = tmpScaleY;
         billboard.Scale = new Vector2(scaleX, scaleY);
 
+        // Set anchor
+        if (definition.Properties.TryGetValue("anchor", out var anchorObj) && anchorObj is string anchorStr)
+        {
+            billboard.Anchor = anchorStr.ToLowerInvariant() switch
+            {
+                "bottom" => BillboardAnchor.Bottom,
+                "center" => BillboardAnchor.Center,
+                "top" => BillboardAnchor.Top,
+                _ => BillboardAnchor.Center
+            };
+        }
+
         entityManager.Register(entity);
 
         return entity;

@@ -6,6 +6,13 @@ using System;
 
 namespace Solocaster.Components;
 
+public enum BillboardAnchor
+{
+    Bottom, 
+    Center,  
+    Top      
+}
+
 public class BillboardComponent : Component
 {
     private Sprite _sprite;
@@ -21,4 +28,5 @@ public class BillboardComponent : Component
     }
 
     public Vector2 Scale { get; set; } = Vector2.One;
+    public BillboardAnchor Anchor { get; set; } = BillboardAnchor.Center;
 }
