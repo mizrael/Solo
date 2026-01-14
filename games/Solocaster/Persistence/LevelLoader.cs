@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Solo.AI;
 using Solocaster.DungeonGenerator;
 using Solocaster.Entities;
 using Solocaster.Services;
@@ -17,36 +18,28 @@ public class LevelLoader
         PropertyNameCaseInsensitive = true,
     };
 
-    private static TemplateLoader? _templateLoader;
+    private readonly static TemplateLoader _templateLoader;
+
+    static LevelLoader()
+    {
+        _templateLoader = new TemplateLoader();
+        var templatesPath = Path.Combine("..", "templates");
+        _templateLoader.LoadAllTemplatesFromFolder(Path.GetFullPath(templatesPath));
+    }
 
     public static Entities.Map LoadFromJson(
         string path,
         Game game,
         EntityManager entityManager)
     {
-        // Load templates if not already loaded
-        if (_templateLoader == null)
-        {
-            _templateLoader = new TemplateLoader();
-            var templatesPath = Path.Combine(Path.GetDirectoryName(path) ?? "", "..", "templates");
-            _templateLoader.LoadAllTemplatesFromFolder(Path.GetFullPath(templatesPath));
-        }
-
         var json = System.IO.File.ReadAllText(path);
         var levelData = JsonSerializer.Deserialize<LevelData>(json, _jsonOptions);
         if (levelData == null)
             throw new Exception("Failed to deserialize map data.");
 
-        // Generate or load map cells
         int[][] cells;
-        if (levelData.Map.Cells != null && levelData.Map.Cells.Length > 0)
+        if (levelData.Map.Cells == null || levelData.Map.Cells.Length == 0)
         {
-            // Use provided cells
-            cells = levelData.Map.Cells;
-        }
-        else
-        {
-            // Generate random dungeon
             var generator = new DungeonGenerator.DungeonGenerator(
                 width: 25,
                 height: 25,
@@ -59,6 +52,10 @@ public class LevelLoader
             var dungeon = generator.Generate();
             var tiles = dungeon.ExpandToTiles(1);
             cells = ConvertTilesToCells(tiles);
+        }
+        else
+        {
+            cells = levelData.Map.Cells;
         }
 
         var map = new Entities.Map(cells);
@@ -154,7 +151,8 @@ public class LevelLoader
     private class LevelData
     {
         public required MapData Map { get; set; }
-        public required List<EntityData> Entities { get; set; }
+
+        public List<EntityData>? Entities { get; set; } = new();
     }
 
     private class MapData
