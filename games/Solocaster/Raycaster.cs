@@ -25,6 +25,10 @@ public unsafe class Raycaster : IDisposable
     private const uint floorColor = 0xFF707070;   // Lighter gray floor
     private const float stepTreshold = 0.15f;
 
+    // Distance-based shading parameters
+    private const float fogDistance = 15.0f; // Distance at which objects fade to black
+    private const float fogStart = 1.0f;     // Distance at which fog starts
+
     public readonly Color[] FrameBuffer;
 
     private readonly Map _map;
@@ -278,11 +282,12 @@ public unsafe class Raycaster : IDisposable
         }
 
         wallY -= doorOffset;
-        
+
         // Only render the visible part of the door
         if (wallY >= 0 && wallY <= 1)
         {
-           UpdateRow(side, drawStart, drawEnd, rayDirX, rayDirY, lineWidth, columnPtr, wallY, texNum: 0);
+            float shadingFactor = CalculateShadingFactor(perpWallDist);
+            UpdateRow(side, drawStart, drawEnd, rayDirX, rayDirY, lineWidth, columnPtr, wallY, texNum: 0, shadingFactor);
         }
     }
 
@@ -309,11 +314,12 @@ public unsafe class Raycaster : IDisposable
         wallY -= MathF.Floor(wallY);
 
         int tileType = _map.Cells[mapY][mapX];
-        
+
         // Regular wall rendering (doors are handled separately now)
         if (tileType != TileTypes.Floor && tileType != TileTypes.Door)
         {
-            UpdateRow(side, drawStart, drawEnd, rayDirX, rayDirY, lineWidth, columnPtr, wallY, texNum: tileType - 1);
+            float shadingFactor = CalculateShadingFactor(perpWallDist);
+            UpdateRow(side, drawStart, drawEnd, rayDirX, rayDirY, lineWidth, columnPtr, wallY, texNum: tileType - 1, shadingFactor);
         }
 
         // Render floor (from wall end to bottom of screen)
@@ -323,7 +329,7 @@ public unsafe class Raycaster : IDisposable
             new Span<uint>(columnPtr + floorStart, floorCount).Fill(floorColor);
     }
 
-    private void UpdateRow(int side, int drawStart, int drawEnd, float rayDirX, float rayDirY, int lineWidth, uint* columnPtr, float wallY, int texNum)
+    private void UpdateRow(int side, int drawStart, int drawEnd, float rayDirX, float rayDirY, int lineWidth, uint* columnPtr, float wallY, int texNum, float shadingFactor = 1.0f)
     {
         uint* texturePtr = _texturePointers[texNum];
 
@@ -350,6 +356,7 @@ public unsafe class Raycaster : IDisposable
             {
                 int currentTexX = ((int)texPos) & _mask;
                 uint color = sourcePtr[currentTexX];
+                uint shadedColor = ApplyShading(color, shadingFactor);
 
                 // Calculate how many pixels will use this same texel
                 int nextTexX = ((int)(texPos + step)) & _mask;
@@ -359,7 +366,7 @@ public unsafe class Raycaster : IDisposable
                 // Fill multiple pixels with the same color
                 int fillEnd = Math.Min(i + pixelsToFill, drawLen);
                 for (int j = i; j < fillEnd; j++)
-                    destPtr[j] = color;
+                    destPtr[j] = shadedColor;
 
                 i = fillEnd;
                 texPos += step * pixelsToFill;
@@ -372,23 +379,49 @@ public unsafe class Raycaster : IDisposable
             int i = 0;
             for (; i < unrollCount; i += 4)
             {
-                destPtr[i] = sourcePtr[((int)texPos) & _mask];
+                destPtr[i] = ApplyShading(sourcePtr[((int)texPos) & _mask], shadingFactor);
                 texPos += step;
-                destPtr[i + 1] = sourcePtr[((int)texPos) & _mask];
+                destPtr[i + 1] = ApplyShading(sourcePtr[((int)texPos) & _mask], shadingFactor);
                 texPos += step;
-                destPtr[i + 2] = sourcePtr[((int)texPos) & _mask];
+                destPtr[i + 2] = ApplyShading(sourcePtr[((int)texPos) & _mask], shadingFactor);
                 texPos += step;
-                destPtr[i + 3] = sourcePtr[((int)texPos) & _mask];
+                destPtr[i + 3] = ApplyShading(sourcePtr[((int)texPos) & _mask], shadingFactor);
                 texPos += step;
             }
 
             // Handle remaining pixels
             for (; i < drawLen; i++)
             {
-                destPtr[i] = sourcePtr[((int)texPos) & _mask];
+                destPtr[i] = ApplyShading(sourcePtr[((int)texPos) & _mask], shadingFactor);
                 texPos += step;
             }
         }
+    }
+
+    private float CalculateShadingFactor(float distance)
+    {
+        if (distance <= fogStart)
+            return 1.0f;
+        if (distance >= fogDistance)
+            return 0.0f;
+
+        // Linear interpolation between fogStart and fogDistance
+        return 1.0f - ((distance - fogStart) / (fogDistance - fogStart));
+    }
+
+    private uint ApplyShading(uint color, float shadingFactor)
+    {
+        if (shadingFactor >= 1.0f)
+            return color;
+        if (shadingFactor <= 0.0f)
+            return 0xFF000000; // Black with full alpha
+
+        byte a = (byte)((color >> 24) & 0xFF);
+        byte r = (byte)(((color >> 16) & 0xFF) * shadingFactor);
+        byte g = (byte)(((color >> 8) & 0xFF) * shadingFactor);
+        byte b = (byte)((color & 0xFF) * shadingFactor);
+
+        return ((uint)a << 24) | ((uint)r << 16) | ((uint)g << 8) | b;
     }
 
     private uint* GetOrCacheSpriteTexture(Texture2D texture)
