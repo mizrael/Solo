@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MonoRaycaster;
 using Solo.Components;
 using Solo.Services;
 using Solocaster.Components;
@@ -74,7 +73,7 @@ public unsafe class Raycaster : IDisposable
         }
     }
 
-    public void Update(Camera camera)
+    public void Update(TransformComponent playerTransform, PlayerBrain playerBrain)
     {
         fixed (Color* frameBufferPtr = FrameBuffer)
         {
@@ -86,12 +85,12 @@ public unsafe class Raycaster : IDisposable
 
                 //calculate ray position and direction
                 float cameraY = 2 * y / (float)_frameHeight - 1; //y-coordinate in camera space
-                float rayDirX = camera.Direction.X + camera.Plane.X * cameraY;
-                float rayDirY = camera.Direction.Y + camera.Plane.Y * cameraY;
+                float rayDirX = playerTransform.World.Direction.X + playerBrain.Plane.X * cameraY;
+                float rayDirY = playerTransform.World.Direction.Y + playerBrain.Plane.Y * cameraY;
 
                 //which box of the map we're in
-                int mapX = (int)camera.Position.X;
-                int mapY = (int)camera.Position.Y;
+                int mapX = (int)playerTransform.World.Position.X;
+                int mapY = (int)playerTransform.World.Position.Y;
 
                 float deltaDistX = (rayDirX == 0) ? 1e30f : Math.Abs(1 / rayDirX);
                 float deltaDistY = (rayDirY == 0) ? 1e30f : Math.Abs(1 / rayDirY);
@@ -104,23 +103,23 @@ public unsafe class Raycaster : IDisposable
                 if (rayDirX < 0)
                 {
                     stepX = -1;
-                    sideDistX = (camera.Position.X - mapX) * deltaDistX;
+                    sideDistX = (playerTransform.World.Position.X - mapX) * deltaDistX;
                 }
                 else
                 {
                     stepX = 1;
-                    sideDistX = (mapX + 1.0f - camera.Position.X) * deltaDistX;
+                    sideDistX = (mapX + 1.0f - playerTransform.World.Position.X) * deltaDistX;
                 }
 
                 if (rayDirY < 0)
                 {
                     stepY = -1;
-                    sideDistY = (camera.Position.Y - mapY) * deltaDistY;
+                    sideDistY = (playerTransform.World.Position.Y - mapY) * deltaDistY;
                 }
                 else
                 {
                     stepY = 1;
-                    sideDistY = (mapY + 1.0f - camera.Position.Y) * deltaDistY;
+                    sideDistY = (mapY + 1.0f - playerTransform.World.Position.Y) * deltaDistY;
                 }
 
                 // Store door hit info for later rendering
@@ -194,7 +193,7 @@ public unsafe class Raycaster : IDisposable
                 int length = drawEnd - drawStart + 1;
                 if (length > 0)
                 {
-                    UpdateRow(columnPtr, camera, mapX, mapY, side, drawStart, drawEnd, perpWallDist, rayDirX, rayDirY, lineWidth);
+                    UpdateRow(columnPtr, playerTransform, mapX, mapY, side, drawStart, drawEnd, perpWallDist, rayDirX, rayDirY, lineWidth);
                 }
 
                 // If we hit a partially open door, render it on top
@@ -202,8 +201,8 @@ public unsafe class Raycaster : IDisposable
                 {
                     // Calculate door hit position to check if ray hits the visible door portion
                     float doorWallX = (doorSide == 0) ?
-                        camera.Position.Y + doorPerpWallDist * rayDirY :
-                        camera.Position.X + doorPerpWallDist * rayDirX;
+                        playerTransform.World.Position.Y + doorPerpWallDist * rayDirY :
+                        playerTransform.World.Position.X + doorPerpWallDist * rayDirX;
                     doorWallX -= MathF.Floor(doorWallX);
 
                     // Apply door offset
@@ -238,20 +237,20 @@ public unsafe class Raycaster : IDisposable
 
                     if (doorDrawEnd - doorDrawStart + 1 > 0)
                     {
-                        RenderDoor(columnPtr, camera, doorMapX, doorMapY, doorSide, doorDrawStart, doorDrawEnd,
+                        RenderDoor(columnPtr, playerTransform, doorMapX, doorMapY, doorSide, doorDrawStart, doorDrawEnd,
                                   doorPerpWallDist, rayDirX, rayDirY, doorLineWidth, doorHit);
                     }
                 }
             }
 
             // Render billboards after walls
-            RenderBillboards(camera, pixels);
+            RenderBillboards(playerTransform, playerBrain, pixels);
         }
     }
 
     private void RenderDoor(
         uint* columnPtr,
-        Camera camera,
+        TransformComponent playerTransform,
         int mapX,
         int mapY,
         int side,
@@ -264,8 +263,8 @@ public unsafe class Raycaster : IDisposable
         Door door)
     {
         float wallY = (side == 0) ?
-            camera.Position.Y + perpWallDist * rayDirY :
-            camera.Position.X + perpWallDist * rayDirX;
+            playerTransform.World.Position.Y + perpWallDist * rayDirY :
+            playerTransform.World.Position.X + perpWallDist * rayDirX;
         wallY -= MathF.Floor(wallY);
 
         // Apply door sliding offset based on which side we're viewing from
@@ -293,7 +292,7 @@ public unsafe class Raycaster : IDisposable
 
     private void UpdateRow(
         uint* columnPtr,
-        Camera camera,
+        TransformComponent playerTransform,
         int mapX,
         int mapY,
         int side,
@@ -309,8 +308,8 @@ public unsafe class Raycaster : IDisposable
             new Span<uint>(columnPtr, drawStart).Fill(ceilingColor);
 
         float wallY = (side == 0) ?
-            camera.Position.Y + perpWallDist * rayDirY :
-            camera.Position.X + perpWallDist * rayDirX;
+            playerTransform.World.Position.Y + perpWallDist * rayDirY :
+            playerTransform.World.Position.X + perpWallDist * rayDirX;
         wallY -= MathF.Floor(wallY);
 
         int tileType = _map.Cells[mapY][mapX];
@@ -454,7 +453,7 @@ public unsafe class Raycaster : IDisposable
         public BillboardAnchor Anchor;
     }
 
-    private void RenderBillboards(Camera camera, uint* pixels)
+    private void RenderBillboards(TransformComponent playerTransform, PlayerBrain playerBrain, uint* pixels)
     {
         var entityManager = GameServicesManager.Instance.GetRequired<EntityManager>();
         var billboards = entityManager.GetVisibleEntities(e => e.Components.Has<BillboardComponent>());
@@ -470,13 +469,13 @@ public unsafe class Raycaster : IDisposable
             var spritePos = transform.Local.Position;
 
             // Relative position
-            var relX = spritePos.X - camera.Position.X;
-            var relY = spritePos.Y - camera.Position.Y;
+            var relX = spritePos.X - playerTransform.World.Position.X;
+            var relY = spritePos.Y - playerTransform.World.Position.Y;
 
             // Transform to camera space (accounting for 90° rotation)
-            var invDet = 1.0f / (camera.Plane.X * camera.Direction.Y - camera.Direction.X * camera.Plane.Y);
-            var transformX = invDet * (camera.Direction.Y * relX - camera.Direction.X * relY);
-            var transformY = invDet * (-camera.Plane.Y * relX + camera.Plane.X * relY);
+            var invDet = 1.0f / (playerBrain.Plane.X * playerTransform.World.Direction.Y - playerTransform.World.Direction.X * playerBrain.Plane.Y);
+            var transformX = invDet * (playerTransform.World.Direction.Y * relX - playerTransform.World.Direction.X * relY);
+            var transformY = invDet * (-playerBrain.Plane.Y * relX + playerBrain.Plane.X * relY);
 
             if (transformY <= 0) 
                 continue; // Behind camera

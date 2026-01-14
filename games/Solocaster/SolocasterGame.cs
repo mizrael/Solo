@@ -4,63 +4,62 @@ using Solo.Services;
 using Solocaster.Scenes;
 using Solocaster.Services;
 
-namespace Solocaster
+namespace Solocaster;
+
+public class SolocasterGame : Game
 {
-    public class SolocasterGame : Game
+    private GraphicsDeviceManager _graphics;
+    private SceneManager _sceneManager;
+    private RenderService _renderService;
+
+    private const int ScreenWidth = 2048;
+    private const int ScreenHeight = 1536;
+
+    public SolocasterGame()
     {
-        private GraphicsDeviceManager _graphics;
-        private SceneManager _sceneManager;
-        private RenderService _renderService;
+        _graphics = new GraphicsDeviceManager(this);
+        Content.RootDirectory = "Content";
+        IsMouseVisible = true;
+    }
 
-        private const int ScreenWidth = 2048;
-        private const int ScreenHeight = 1536;
+    protected override void Initialize()
+    {
+        _graphics.PreferredBackBufferWidth = ScreenWidth;
+        _graphics.PreferredBackBufferHeight = ScreenHeight;
+        _graphics.ApplyChanges();
 
-        public SolocasterGame()
-        {
-            _graphics = new GraphicsDeviceManager(this);
-            Content.RootDirectory = "Content";
-            IsMouseVisible = true;
-        }
+        _renderService = new RenderService(_graphics, Window);
+        GameServicesManager.Instance.AddService(_renderService);
 
-        protected override void Initialize()
-        {
-            _graphics.PreferredBackBufferWidth = ScreenWidth;
-            _graphics.PreferredBackBufferHeight = ScreenHeight;
-            _graphics.ApplyChanges();
+        _sceneManager = new SceneManager();
+        GameServicesManager.Instance.AddService(_sceneManager);
 
-            _renderService = new RenderService(_graphics, Window);
-            GameServicesManager.Instance.AddService(_renderService);
+        var entityManager = new EntityManager();
+        GameServicesManager.Instance.AddService(entityManager);
 
-            _sceneManager = new SceneManager();
-            GameServicesManager.Instance.AddService(_sceneManager);
+        base.Initialize();
+    }
 
-            var entityManager = new EntityManager();
-            GameServicesManager.Instance.AddService(entityManager);
+    protected override void LoadContent()
+    {
+        _sceneManager.AddScene(SceneNames.Play, new PlayScene(this));
+        _sceneManager.SetCurrentScene(SceneNames.Play);
+    }
 
-            base.Initialize();
-        }
+    protected override void Update(GameTime gameTime)
+    {
+        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            Exit();
 
-        protected override void LoadContent()
-        {
-            _sceneManager.AddScene(SceneNames.Play, new PlayScene(this));
-            _sceneManager.SetCurrentScene(SceneNames.Play);
-        }
+        GameServicesManager.Instance.Step(gameTime);
 
-        protected override void Update(GameTime gameTime)
-        {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
+        base.Update(gameTime);
+    }
 
-            GameServicesManager.Instance.Step(gameTime);
+    protected override void Draw(GameTime gameTime)
+    {
+        _renderService.Render();
 
-            base.Update(gameTime);
-        }
-
-        protected override void Draw(GameTime gameTime)
-        {
-            _renderService.Render();
-
-            base.Draw(gameTime);
-        }
+        base.Draw(gameTime);
     }
 }

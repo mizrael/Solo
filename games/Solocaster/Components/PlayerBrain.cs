@@ -1,24 +1,33 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using Solo;
+using Solo.Components;
 using Solocaster.Entities;
 using System;
 
-namespace MonoRaycaster;
+namespace Solocaster.Components;
 
-public class Camera
+public class PlayerBrain : Component
 {
-    private Vector2 _position = new(18, 3); 
-    private Vector2 _direction = new(-1, 0);
     private Vector2 _plane = new(0, .45f);
+
+    private TransformComponent _transform;
 
     private readonly Map _map;
 
-    public Camera(Map map)
+    public PlayerBrain(GameObject owner, Map map) : base(owner)
     {
         _map = map;
     }
 
-    public void Update(GameTime gameTime)
+    protected override void InitCore()
+    {
+        _transform = this.Owner.Components.Get<TransformComponent>();
+
+        base.InitCore();
+    }
+
+    protected override void UpdateCore(GameTime gameTime)
     {
         float ms = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
         float moveSpeed = ms * .015f;
@@ -37,22 +46,23 @@ public class Camera
 
         if (moveAmount != 0)
         {
-            var moveStep = _direction * moveAmount;
-            if (!_map.IsBlocked((int)(_position.X + moveStep.X), (int)_position.Y))
-                _position.X += moveStep.X;
+            var moveStep = _transform.World.Direction * moveAmount;
+            if (!_map.IsBlocked((int)(_transform.World.Position.X + moveStep.X), (int)_transform.World.Position.Y))
+                _transform.Local.Position.X += moveStep.X;
 
-            if (!_map.IsBlocked((int)_position.X, (int)(_position.Y + moveStep.Y)))
-                _position.Y += moveStep.Y;
+            if (!_map.IsBlocked((int)_transform.World.Position.X, (int)(_transform.World.Position.Y + moveStep.Y)))
+                _transform.Local.Position.Y += moveStep.Y;
         }
 
         if (keyboardState.IsKeyDown(Keys.A))
         {
-            Vector2 oldDirection = _direction;
+            Vector2 oldDirection = _transform.Local.Direction;
             var cos = MathF.Cos(-rotSpeed);
             var sin = MathF.Sin(-rotSpeed);
 
-            _direction.X = _direction.X * cos - _direction.Y * sin;
-            _direction.Y = oldDirection.X * sin + _direction.Y * cos;
+            _transform.Local.Direction = new(
+                oldDirection.X * cos - oldDirection.Y * sin,
+                oldDirection.X * sin + oldDirection.Y * cos);
 
             Vector2 oldPlane = _plane;
             _plane.X = _plane.X * cos - _plane.Y * sin;
@@ -60,12 +70,13 @@ public class Camera
         }
         else if (keyboardState.IsKeyDown(Keys.D))
         {
-            Vector2 oldDirection = _direction;
+            Vector2 oldDirection = _transform.Local.Direction;
             var cos = MathF.Cos(rotSpeed);
             var sin = MathF.Sin(rotSpeed);
 
-            _direction.X = _direction.X * cos - _direction.Y * sin;
-            _direction.Y = oldDirection.X * sin + _direction.Y * cos;
+            _transform.Local.Direction = new(
+                oldDirection.X * cos - oldDirection.Y * sin,
+                oldDirection.X * sin + oldDirection.Y * cos);
 
             Vector2 oldPlane = _plane;
             _plane.X = _plane.X * cos - _plane.Y * sin;
@@ -79,8 +90,8 @@ public class Camera
 
         for (float dist = 0.1f; dist <= checkDistance; dist += 0.1f)
         {
-            int checkX = (int)(_position.X + _direction.X * dist);
-            int checkY = (int)(_position.Y + _direction.Y * dist);
+            int checkX = (int)(_transform.World.Position.X + _transform.World.Direction.X * dist);
+            int checkY = (int)(_transform.World.Position.Y + _transform.World.Direction.Y * dist);
 
             var door = _map.GetDoor(checkX, checkY);
             if (door is not null)
@@ -93,8 +104,5 @@ public class Camera
         return false;
     }
 
-
-    public Vector2 Position => _position;
-    public Vector2 Direction => _direction;
     public Vector2 Plane => _plane;
 }

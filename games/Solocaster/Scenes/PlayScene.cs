@@ -1,7 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MonoRaycaster;
 using Solo;
+using Solo.Components;
 using Solo.Services;
 using Solocaster.Components;
 using Solocaster.Persistence;
@@ -27,9 +27,17 @@ public class PlayScene : Scene
         var frameBufferWidth = renderService.Graphics.GraphicsDevice.Viewport.Height / FrameBufferScale;
         var frameBufferHeight = renderService.Graphics.GraphicsDevice.Viewport.Width / FrameBufferScale;
 
-        var map = LevelLoader.LoadFromJson("./data/levels/level1.json", Game, entityManager);
+        var map = LevelLoader.LoadFromJson("./data/levels/level2.json", Game, entityManager);
 
-        var camera = new Camera(map);
+        var player = new GameObject();
+        var playerTransform = player.Components.Add<TransformComponent>();
+        playerTransform.Local.Position = new Vector2(18, 3);
+        playerTransform.Local.Direction = new Vector2(-1, 0);
+
+        var playerBrain = new PlayerBrain(player, map);
+        player.Components.Add(playerBrain);
+
+        this.Root.AddChild(player);
 
         var mainTexture = Game.Content.Load<Texture2D>("wolftextures");
         var textures = mainTexture.Split(64, 64)
@@ -40,13 +48,13 @@ public class PlayScene : Scene
         var frameTexture = new Texture2D(renderService.Graphics.GraphicsDevice, frameBufferWidth, frameBufferHeight);
 
         var mapEntity = new GameObject();
-        var mapRenderer = new MapRenderer(mapEntity, camera, map, raycaster, frameTexture);
+        var mapRenderer = new MapRenderer(mapEntity, player, map, raycaster, frameTexture);
         mapEntity.Components.Add(mapRenderer);
         mapRenderer.LayerIndex = 0;
         Root.AddChild(mapEntity);
 
         var miniMapEntity = new GameObject();
-        var miniMapRenderer = new MiniMapRenderer(miniMapEntity, map, camera);
+        var miniMapRenderer = new MiniMapRenderer(miniMapEntity, map, player);
         miniMapEntity.Components.Add(miniMapRenderer);
         miniMapRenderer.LayerIndex = 1;
         mapEntity.AddChild(miniMapEntity);
@@ -54,7 +62,7 @@ public class PlayScene : Scene
         var font = Game.Content.Load<SpriteFont>("Font");
 
         var debugUIEntity = new GameObject();
-        var debugUI = new DebugUIRenderer(debugUIEntity, font, camera);
+        var debugUI = new DebugUIRenderer(debugUIEntity, font, player);
         debugUIEntity.Components.Add(debugUI);
         debugUI.LayerIndex = 2;
         Root.AddChild(debugUIEntity);

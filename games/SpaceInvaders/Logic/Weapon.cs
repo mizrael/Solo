@@ -36,7 +36,7 @@ public class Weapon : Component
     }
 
     private Vector2 GetBulletStartPosition() => _ownerTransform.World.Position +
-                                                _ownerTransform.Local.GetDirection() * Offset;
+                                                _ownerTransform.Local.Direction * Offset;
 
     public Spawner Spawner;
 

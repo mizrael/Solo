@@ -1,6 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MonoRaycaster;
 using Solo;
 using Solo.Components;
 using Solo.Services;
@@ -13,7 +12,9 @@ namespace Solocaster.Components;
 public class MiniMapRenderer : Component, IRenderable
 {
     private readonly Map _map;
-    private readonly Camera _camera;
+    private readonly GameObject _player;
+
+    private TransformComponent _playerTransform;
 
     private int _cellWidth;
     private int _cellHeight;
@@ -25,10 +26,10 @@ public class MiniMapRenderer : Component, IRenderable
     public MiniMapRenderer(
         GameObject owner,
         Map map,
-        Camera camera) : base(owner)
+        GameObject player) : base(owner)
     {
         _map = map;
-        _camera = camera;       
+        _player = player;
 
         var cellTypes = new HashSet<int>();
         for (int row = 0; row != _map.Rows; row++)
@@ -67,6 +68,8 @@ public class MiniMapRenderer : Component, IRenderable
 
         _texture = new Texture2D(graphicsDevice, 1, 1);
         _texture.SetData([Color.White]);
+        
+        _playerTransform = _player.Components.Get<TransformComponent>();
 
         base.InitCore();
     }
@@ -98,15 +101,15 @@ public class MiniMapRenderer : Component, IRenderable
 
     private void DrawCameraArrow(SpriteBatch spriteBatch)
     {
-        var cameraPos = new Vector2(_camera.Position.X * _cellWidth, _camera.Position.Y * _cellHeight);
+        var cameraPos = new Vector2(_playerTransform.World.Position.X * _cellWidth, _playerTransform.World.Position.Y * _cellHeight);
         var center = cameraPos + _cellCenter;
 
         float arrowSize = _cellWidth * 0.75f; 
-        var arrowTip = center + new Vector2(_camera.Direction.X, _camera.Direction.Y) * arrowSize;
-        var perpDir = new Vector2(-_camera.Direction.Y, _camera.Direction.X);
+        var arrowTip = center + new Vector2(_playerTransform.World.Direction.X, _playerTransform.World.Direction.Y) * arrowSize;
+        var perpDir = new Vector2(-_playerTransform.World.Direction.Y, _playerTransform.World.Direction.X);
 
-        var arrowLeft = center - new Vector2(_camera.Direction.X, _camera.Direction.Y) * (arrowSize * 0.5f) + perpDir * (arrowSize * 0.5f);
-        var arrowRight = center - new Vector2(_camera.Direction.X, _camera.Direction.Y) * (arrowSize * 0.5f) - perpDir * (arrowSize * 0.5f);
+        var arrowLeft = center - new Vector2(_playerTransform.World.Direction.X, _playerTransform.World.Direction.Y) * (arrowSize * 0.5f) + perpDir * (arrowSize * 0.5f);
+        var arrowRight = center - new Vector2(_playerTransform.World.Direction.X, _playerTransform.World.Direction.Y) * (arrowSize * 0.5f) - perpDir * (arrowSize * 0.5f);
 
         int steps = 10;
         for (int i = 0; i <= steps; i++)

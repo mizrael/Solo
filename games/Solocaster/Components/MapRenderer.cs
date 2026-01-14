@@ -1,33 +1,37 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MonoRaycaster;
 using Solo;
 using Solo.Components;
 using Solo.Services;
+using Solocaster.Components;
 using Solocaster.Entities;
 
 namespace Solocaster;
 
 public class MapRenderer : Component, IRenderable
 {
-    private Camera _camera;
-    private Map _map;
-    private Raycaster _raycaster;
-    private Texture2D _frameTexture;
-    
-    private int _screenWidth;
-    private int _screenHeight;
-    private int _frameBufferWidth;
-    private int _frameBufferHeight;
+    private readonly GameObject _player;
+    private TransformComponent _playerTransform;
+    private PlayerBrain _playerBrain;
 
-    private Vector2 _halfScreenSize;
-    private Vector2 _halfFrameBufferSize;
-    private Vector2 _frameBufferScale;
+    private readonly Map _map;
+    private readonly Raycaster _raycaster;
+    private readonly Texture2D _frameTexture;
+    
+    private readonly int _screenWidth;
+    private readonly int _screenHeight;
+    private readonly int _frameBufferWidth;
+    private readonly int _frameBufferHeight;
+
+    private readonly Vector2 _halfScreenSize;
+    private readonly Vector2 _halfFrameBufferSize;
+    private readonly Vector2 _frameBufferScale;
 
     public MapRenderer(GameObject owner,
-                      Camera camera, Map map, Raycaster raycaster, Texture2D frameTexture) : base(owner)
+                      GameObject player, 
+                      Map map, Raycaster raycaster, Texture2D frameTexture) : base(owner)
     {
-        _camera = camera;
+        _player = player;
         _map = map;
         _raycaster = raycaster;
 
@@ -46,11 +50,18 @@ public class MapRenderer : Component, IRenderable
             (float)_screenWidth / _frameBufferHeight);
     }
 
+    protected override void InitCore()
+    {
+        _playerTransform = _player.Components.Get<TransformComponent>();
+        _playerBrain = _player.Components.Get<PlayerBrain>();
+
+        base.InitCore();
+    }
+
     protected override void UpdateCore(GameTime gameTime)
     {
-        _camera.Update(gameTime);
         _map.Update(gameTime);
-        _raycaster.Update(_camera);
+        _raycaster.Update(_playerTransform, _playerBrain);
         _frameTexture.SetData(_raycaster.FrameBuffer);
     }
 

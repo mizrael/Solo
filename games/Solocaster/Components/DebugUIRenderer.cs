@@ -1,9 +1,9 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MonoRaycaster;
 using Solo;
 using Solo.Components;
 using Solo.Services;
+using Solocaster.Components;
 
 namespace Solocaster;
 
@@ -11,12 +11,21 @@ public class DebugUIRenderer : Component, IRenderable
 {
     private readonly SpriteFont _font;
     private readonly FrameCounter _frameCounter = new();
-    private readonly Camera _camera;
 
-    public DebugUIRenderer(GameObject owner, SpriteFont font, Camera camera) : base(owner)
+    private readonly GameObject _player;
+    private TransformComponent _playerTransform;
+
+    public DebugUIRenderer(GameObject owner, SpriteFont font, GameObject player) : base(owner)
     {
         _font = font;
-        _camera = camera;
+
+        _player = player;
+    }
+
+    protected override void InitCore()
+    {
+        _playerTransform = _player.Components.Get<TransformComponent>();
+        base.InitCore();
     }
 
     protected override void UpdateCore(GameTime gameTime)
@@ -28,8 +37,8 @@ public class DebugUIRenderer : Component, IRenderable
     {
         var text = string.Format("FPS: {0}\nCamera {1:F2} - {2:F2}\nTile {3},{4}",
                                 _frameCounter.AverageFramesPerSecond,
-                                _camera.Position.X, _camera.Position.Y,
-                                (int)_camera.Position.X, (int)_camera.Position.Y);
+                                _playerTransform.World.Position.X, _playerTransform.World.Position.Y,
+                                (int)_playerTransform.World.Position.X, (int)_playerTransform.World.Position.Y);
         spriteBatch.DrawString(_font, text, Vector2.Zero, Color.White,
                                0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
     }

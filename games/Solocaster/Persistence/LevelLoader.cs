@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Solocaster.DungeonGenerator;
 using Solocaster.Entities;
 using Solocaster.Services;
 using System;
@@ -18,7 +19,7 @@ public class LevelLoader
 
     private static TemplateLoader? _templateLoader;
 
-    public static Map LoadFromJson(
+    public static Entities.Map LoadFromJson(
         string path,
         Game game,
         EntityManager entityManager)
@@ -36,7 +37,31 @@ public class LevelLoader
         if (levelData == null)
             throw new Exception("Failed to deserialize map data.");
 
-        var map = new Map(levelData.Map.Cells);
+        // Generate or load map cells
+        int[][] cells;
+        if (levelData.Map.Cells != null && levelData.Map.Cells.Length > 0)
+        {
+            // Use provided cells
+            cells = levelData.Map.Cells;
+        }
+        else
+        {
+            // Generate random dungeon
+            var generator = new DungeonGenerator.DungeonGenerator(
+                width: 25,
+                height: 25,
+                changeDirectionModifier: 30,
+                sparsenessModifier: 70,
+                deadEndRemovalModifier: 50,
+                roomGenerator: new RoomGenerator(10, 1, 5, 1, 5)
+            );
+
+            var dungeon = generator.Generate();
+            var tiles = dungeon.ExpandToTiles(1);
+            cells = ConvertTilesToCells(tiles);
+        }
+
+        var map = new Entities.Map(cells);
 
         foreach (var entityData in levelData.Entities)
         {
@@ -69,6 +94,47 @@ public class LevelLoader
         return map;
     }
 
+    private static int[][] ConvertTilesToCells(TileType[,] tiles)
+    {
+        int height = tiles.GetLength(1);
+        int width = tiles.GetLength(0);
+
+        int[][] cells = new int[height][];
+        for (int row = 0; row < height; row++)
+        {
+            cells[row] = new int[width];
+            for (int col = 0; col < width; col++)
+            {
+                cells[row][col] = MapTileTypeToCell(tiles[col, row]);
+            }
+        }
+
+        return cells;
+    }
+
+    private static int MapTileTypeToCell(TileType tileType)
+    {
+        return tileType switch
+        {
+            TileType.Empty => TileTypes.Floor,
+            TileType.Void => TileTypes.Floor,
+            TileType.Door => TileTypes.Door,
+            TileType.Wall => 1,
+            TileType.WallSE => 1,
+            TileType.WallSO => 1,
+            TileType.WallNE => 1,
+            TileType.WallNO => 1,
+            TileType.WallNS => 1,
+            TileType.WallEO => 1,
+            TileType.WallESO => 1,
+            TileType.WallNEO => 1,
+            TileType.WallNES => 1,
+            TileType.WallNSO => 1,
+            TileType.WallNESO => 1,
+            _ => TileTypes.Floor
+        };
+    }
+
     private static object ConvertJsonElement(object value)
     {
         if (value is not JsonElement jsonElement)
@@ -93,7 +159,7 @@ public class LevelLoader
 
     private class MapData
     {
-        public required int[][] Cells { get; set; }
+        public int[][]? Cells { get; set; }
     }
 
     private class EntityData
