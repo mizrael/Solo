@@ -11,11 +11,18 @@ using System.Text.Json.Serialization;
 
 namespace Solocaster.Persistence;
 
+public enum MapType
+{
+    Static,
+    Random
+}
+
 public class LevelLoader
 {
     private readonly static JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
     };
 
     private readonly static TemplateLoader _templateLoader;
@@ -38,25 +45,37 @@ public class LevelLoader
             throw new Exception("Failed to deserialize map data.");
 
         int[][] cells;
-        if (levelData.Map.Cells == null || levelData.Map.Cells.Length == 0)
-        {
-            var generator = new DungeonGenerator.DungeonGenerator(
-                width: 25,
-                height: 25,
-                changeDirectionModifier: 30,
-                sparsenessModifier: 70,
-                deadEndRemovalModifier: 50,
-                roomGenerator: new RoomGenerator(10, 1, 5, 1, 5)
-            );
 
-            var dungeon = generator.Generate();
-            var tiles = dungeon.ExpandToTiles(1);
-            cells = ConvertTilesToCells(tiles);
-        }
-        else
+        switch (levelData.Map.Type)
         {
-            cells = levelData.Map.Cells;
+            case MapType.Random:
+                var generator = new DungeonGenerator.DungeonGenerator(
+                    width: 25,
+                    height: 25,
+                    changeDirectionModifier: 30,
+                    sparsenessModifier: 70,
+                    deadEndRemovalModifier: 50,
+                    roomGenerator: new RoomGenerator(10, 1, 5, 1, 5)
+                );
+
+                var dungeon = generator.Generate();
+                var tiles = dungeon.ExpandToTiles(1);
+                cells = ConvertTilesToCells(tiles);
+                break;
+
+            case MapType.Static:
+                if (levelData.Map.Cells == null || levelData.Map.Cells.Length == 0)
+                    throw new InvalidOperationException("Map type is 'static' but no Cells data provided");
+
+                cells = levelData.Map.Cells;
+                break;
+
+            default:
+                throw new InvalidOperationException($"Invalid map type '{levelData.Map.Type}'");
         }
+
+        // Ensure perimeter is closed to prevent out-of-bounds access
+        EnsurePerimeterClosed(cells);
 
         var map = new Entities.Map(cells);
 
@@ -132,6 +151,29 @@ public class LevelLoader
         };
     }
 
+    private static void EnsurePerimeterClosed(int[][] cells)
+    {
+        if (cells == null || cells.Length == 0)
+            return;
+
+        int height = cells.Length;
+        int width = cells[0].Length;
+
+        // Top and bottom rows
+        for (int col = 0; col < width; col++)
+        {
+            cells[0][col] = 1; // Top row
+            cells[height - 1][col] = 1; // Bottom row
+        }
+
+        // Left and right columns
+        for (int row = 0; row < height; row++)
+        {
+            cells[row][0] = 1; // Left column
+            cells[row][width - 1] = 1; // Right column
+        }
+    }
+
     private static object ConvertJsonElement(object value)
     {
         if (value is not JsonElement jsonElement)
@@ -157,6 +199,7 @@ public class LevelLoader
 
     private class MapData
     {
+        public MapType Type { get; set; } = MapType.Static;
         public int[][]? Cells { get; set; }
     }
 

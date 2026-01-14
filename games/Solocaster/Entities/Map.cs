@@ -159,8 +159,15 @@ public class Map
                 isHorizontalWall = true;
             }
 
-            if (this.Cells[mapY][mapX] > 0)
+            // Check bounds - treat out of bounds as hitting a wall
+            if (mapX < 0 || mapX >= Cols || mapY < 0 || mapY >= Rows)
+            {
                 hit = true;
+            }
+            else if (this.Cells[mapY][mapX] > 0)
+            {
+                hit = true;
+            }
         }
 
         float perpWallDist = isHorizontalWall == false

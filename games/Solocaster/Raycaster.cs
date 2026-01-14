@@ -146,6 +146,12 @@ public unsafe class Raycaster : IDisposable
                         side = 1;
                     }
 
+                    if (mapY < 0 || mapY >= _map.Cells.Length || mapX < 0 || mapX >= _map.Cells[mapY].Length)
+                    {
+                        hit = true;
+                        break;
+                    }
+
                     var cell = _map.Cells[mapY][mapX];
                     if (cell == TileTypes.Floor || cell == TileTypes.StartingPosition)
                         continue;
@@ -153,7 +159,7 @@ public unsafe class Raycaster : IDisposable
                     if (cell == TileTypes.Door)
                     {
                         var door = _map.GetDoor(mapX, mapY);
-                        
+
                         // Store door information if it's not fully open
                         if (door != null && door.IsBlocking && doorHit == null)
                         {
@@ -477,7 +483,7 @@ public unsafe class Raycaster : IDisposable
             var transformX = invDet * (playerTransform.World.Direction.Y * relX - playerTransform.World.Direction.X * relY);
             var transformY = invDet * (-playerBrain.Plane.Y * relX + playerBrain.Plane.X * relY);
 
-            if (transformY <= 0) 
+            if (transformY <= 0)
                 continue; // Behind camera
 
             var screenY = (int)((_frameHeight / 2) * (1 + transformX / transformY));
