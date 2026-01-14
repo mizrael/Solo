@@ -147,7 +147,7 @@ public unsafe class Raycaster : IDisposable
                     }
 
                     var cell = _map.Cells[mapY][mapX];
-                    if (cell == TileTypes.Floor)
+                    if (cell == TileTypes.Floor || cell == TileTypes.StartingPosition)
                         continue;
 
                     if (cell == TileTypes.Door)
@@ -315,7 +315,7 @@ public unsafe class Raycaster : IDisposable
         int tileType = _map.Cells[mapY][mapX];
 
         // Regular wall rendering (doors are handled separately now)
-        if (tileType != TileTypes.Floor && tileType != TileTypes.Door)
+        if (tileType != TileTypes.Floor && tileType != TileTypes.Door && tileType != TileTypes.StartingPosition)
         {
             float shadingFactor = CalculateShadingFactor(perpWallDist);
             UpdateRow(side, drawStart, drawEnd, rayDirX, rayDirY, lineWidth, columnPtr, wallY, texNum: tileType - 1, shadingFactor);

@@ -80,7 +80,7 @@ public class MiniMapRenderer : Component, IRenderable
             for (int col = 0; col != _map.Cols; col++)
             {
                 var cell = _map.Cells[row][col];
-                if (cell == TileTypes.Floor) continue;
+                if (cell == TileTypes.Floor || cell == TileTypes.StartingPosition) continue;
 
                 var color = cell switch
                 {

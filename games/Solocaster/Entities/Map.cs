@@ -8,6 +8,7 @@ namespace Solocaster.Entities;
 public static class TileTypes
 {
     public const int Floor = 0;
+    public const int StartingPosition = 99;
     public const int Door = 100;
 }
 
@@ -18,6 +19,7 @@ public class Map
     public readonly int Rows;
 
     private readonly Dictionary<(int, int), Door> _doors = new();
+    private readonly (int col, int row) _startingTile;
 
     public Map(int[][] cells)
     {
@@ -25,17 +27,56 @@ public class Map
         Rows = Cells.Length;
         Cols = Cells.Length;
 
+        (int col, int row)? startingTile = null;
+
         for (int row = 0; row != Rows; row++)
+        {
             for (int col = 0; col != Cols; col++)
             {
                 var cell = Cells[row][col];
-                if(cell == TileTypes.Door)
+
+                if (cell == TileTypes.StartingPosition)
+                {
+                    startingTile = (col, row);
+                    // Convert the starting position to a floor tile
+                    Cells[row][col] = TileTypes.Floor;
+                }
+                else if (cell == TileTypes.Door)
                 {
                     var door = new Door(row, col, true);
                     _doors[(col, row)] = door;
                 }
             }
+        }
+
+        // If no explicit starting position found, pick a random empty tile
+        if (startingTile == null)
+        {
+            var random = new Random();
+            var emptyTiles = new List<(int col, int row)>();
+
+            for (int row = 0; row < Rows; row++)
+            {
+                for (int col = 0; col < Cols; col++)
+                {
+                    if (Cells[row][col] == TileTypes.Floor)
+                    {
+                        emptyTiles.Add((col, row));
+                    }
+                }
+            }
+
+            if (emptyTiles.Count == 0)
+                throw new InvalidOperationException("Map has no starting position and no empty floor tiles");
+
+            startingTile = emptyTiles[random.Next(emptyTiles.Count)];
+        }
+
+        _startingTile = startingTile.Value;
     }
+
+    public Vector2 GetStartingPosition()
+    => new Vector2(_startingTile.col + 0.5f, _startingTile.row + 0.5f);
 
     public bool IsBlocked(int x, int y)
     {
@@ -43,7 +84,7 @@ public class Map
             return true;
 
         var cell = Cells[y][x];
-        if (cell == TileTypes.Floor)
+        if (cell == TileTypes.Floor || cell == TileTypes.StartingPosition)
             return false;
 
         if (cell == TileTypes.Door)
@@ -57,7 +98,7 @@ public class Map
 
     public Door? GetDoor(int x, int y)
     => _doors.TryGetValue((x, y), out var door) ? door : null;
-    
+
     public void Update(GameTime gameTime)
     {
         foreach (var door in _doors.Values)

@@ -31,7 +31,7 @@ public class PlayScene : Scene
 
         var player = new GameObject();
         var playerTransform = player.Components.Add<TransformComponent>();
-        playerTransform.Local.Position = new Vector2(18, 3);
+        playerTransform.Local.Position = map.GetStartingPosition();
         playerTransform.Local.Direction = new Vector2(-1, 0);
 
         var playerBrain = new PlayerBrain(player, map);
