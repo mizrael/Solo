@@ -127,7 +127,7 @@ public class DungeonGenerator
 
     public bool ShouldRemoveDeadend()
     {
-        return Random.Instance.Next(1, 99) < deadEndRemovalModifier;
+        return Random.Shared.Next(1, 99) < deadEndRemovalModifier;
     }
 
     #endregion

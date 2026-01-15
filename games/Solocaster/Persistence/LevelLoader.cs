@@ -150,14 +150,14 @@ public class LevelLoader
             var properties = new Dictionary<string, object>();
             foreach (var kvp in template.Properties)
             {
-                properties[kvp.Key] = ConvertJsonElement(kvp.Value);
+                properties[kvp.Key] = JsonUtils.ConvertJsonElement(kvp.Value);
             }
 
             if (entityData.Properties is not null)
             {
                 foreach (var kvp in entityData.Properties)
                 {
-                    properties[kvp.Key] = ConvertJsonElement(kvp.Value);
+                    properties[kvp.Key] = JsonUtils.ConvertJsonElement(kvp.Value);
                 }
             }
 
@@ -187,7 +187,7 @@ public class LevelLoader
                 int cellId = MapTileTypeToCell(tileType);
 
                 // For walls with weighted sprites, apply neighbor-based consistency
-                if (IsWallTileType(tileType) && weightedWallCellIds != null && weightedWallCellIds.Count > 0)
+                if (tileType.IsWall() && weightedWallCellIds != null && weightedWallCellIds.Count > 0)
                 {
                     cellId = PickWallCellId(cells, row, col, weightedWallCellIds);
                 }
@@ -197,17 +197,6 @@ public class LevelLoader
         }
 
         return cells;
-    }
-
-    private static bool IsWallTileType(TileType tileType)
-    {
-        return tileType switch
-        {
-            TileType.Wall or TileType.WallSE or TileType.WallSO or TileType.WallNE or
-            TileType.WallNO or TileType.WallNS or TileType.WallEO or TileType.WallESO or
-            TileType.WallNEO or TileType.WallNES or TileType.WallNSO or TileType.WallNESO => true,
-            _ => false
-        };
     }
 
     private static int PickWallCellId(int[][] cells, int row, int col, Dictionary<int, int> weightedCellIds)
@@ -231,7 +220,7 @@ public class LevelLoader
         }
 
         // Pick new weighted random cell ID
-        return WeightedRandom(weightedCellIds);
+        return weightedCellIds.WeightedRandom();
     }
 
     private static int MapTileTypeToCell(TileType tileType)
@@ -280,22 +269,6 @@ public class LevelLoader
         }
     }
 
-    private static T WeightedRandom<T>(Dictionary<T, int> weightedItems) where T : notnull
-    {
-        int totalWeight = weightedItems.Values.Sum();
-        int randomValue = Random.Shared.Next(totalWeight);
-
-        int cumulative = 0;
-        foreach (var kvp in weightedItems)
-        {
-            cumulative += kvp.Value;
-            if (randomValue < cumulative)
-                return kvp.Key;
-        }
-
-        return weightedItems.Keys.First();
-    }
-
     private static Dictionary<int, int>? ResolveWallSprites(
         Dictionary<string, int>? wallSpritesConfig,
         Solo.Assets.SpriteSheet[] spritesheets)
@@ -332,22 +305,6 @@ public class LevelLoader
         }
 
         return weightedCellIds;
-    }
-
-    private static object ConvertJsonElement(object value)
-    {
-        if (value is not JsonElement jsonElement)
-            return value;
-
-        return jsonElement.ValueKind switch
-        {
-            JsonValueKind.String => jsonElement.GetString() ?? string.Empty,
-            JsonValueKind.Number => jsonElement.TryGetInt32(out var intVal) ? intVal : jsonElement.GetSingle(),
-            JsonValueKind.True => true,
-            JsonValueKind.False => false,
-            JsonValueKind.Null => null!,
-            _ => value
-        };
     }
 
     private class LevelData

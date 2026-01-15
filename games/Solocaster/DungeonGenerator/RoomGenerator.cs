@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 
 namespace Solocaster.DungeonGenerator;
@@ -65,7 +66,7 @@ public class RoomGenerator
 
     public Room CreateRoom()
     {
-        Room room = new Room(Random.Instance.Next(minRoomWidth, maxRoomWidth), Random.Instance.Next(minRoomHeight, maxRoomHeight));
+        Room room = new Room(Random.Shared.Next(minRoomWidth, maxRoomWidth), Random.Shared.Next(minRoomHeight, maxRoomHeight));
         room.InitializeRoomCells();
         return room;
     }
