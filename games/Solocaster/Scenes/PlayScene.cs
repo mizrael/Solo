@@ -28,14 +28,14 @@ public class PlayScene : Scene
         var frameBufferWidth = renderService.Graphics.GraphicsDevice.Viewport.Height / FrameBufferScale;
         var frameBufferHeight = renderService.Graphics.GraphicsDevice.Viewport.Width / FrameBufferScale;
 
-        var map = LevelLoader.LoadFromJson("./data/levels/level1.json", Game, entityManager);
+        var level = LevelLoader.LoadFromJson("./data/levels/level2.json", Game, entityManager);
 
         var player = new GameObject();
         var playerTransform = player.Components.Add<TransformComponent>();
-        playerTransform.Local.Position = map.GetStartingPosition();
+        playerTransform.Local.Position = level.Map.GetStartingPosition();
         playerTransform.Local.Direction = new Vector2(-1, 0);
 
-        var playerBrain = new PlayerBrain(player, map);
+        var playerBrain = new PlayerBrain(player, level.Map);
         player.Components.Add(playerBrain);
 
         this.Root.AddChild(player);
@@ -44,18 +44,18 @@ public class PlayScene : Scene
         var textures = levelSpritesheet.Texture.Split(64, 64)
             .Select(t => t.Rotate90(RotationDirection.CounterClockwise))
             .ToArray();
-        var raycaster = new Raycaster(map, frameBufferWidth, frameBufferHeight, textures);
+        var raycaster = new Raycaster(level.Map, frameBufferWidth, frameBufferHeight, textures);
 
         var frameTexture = new Texture2D(renderService.Graphics.GraphicsDevice, frameBufferWidth, frameBufferHeight);
 
         var mapEntity = new GameObject();
-        var mapRenderer = new MapRenderer(mapEntity, player, map, raycaster, frameTexture);
+        var mapRenderer = new MapRenderer(mapEntity, player, level.Map, raycaster, frameTexture);
         mapEntity.Components.Add(mapRenderer);
         mapRenderer.LayerIndex = 0;
         Root.AddChild(mapEntity);
 
         var miniMapEntity = new GameObject();
-        var miniMapRenderer = new MiniMapRenderer(miniMapEntity, map, player);
+        var miniMapRenderer = new MiniMapRenderer(miniMapEntity, level.Map, player);
         miniMapEntity.Components.Add(miniMapRenderer);
         miniMapRenderer.LayerIndex = 1;
         mapEntity.AddChild(miniMapEntity);

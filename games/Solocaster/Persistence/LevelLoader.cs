@@ -1,11 +1,13 @@
 ﻿using Microsoft.Xna.Framework;
 using Solo.AI;
+using Solo.Assets.Loaders;
 using Solocaster.DungeonGenerator;
 using Solocaster.Entities;
 using Solocaster.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -25,16 +27,16 @@ public class LevelLoader
         Converters = { new JsonStringEnumConverter() }
     };
 
-    private readonly static TemplateLoader _templateLoader;
+    private readonly static EntityTemplateLoader _templateLoader;
 
     static LevelLoader()
     {
-        _templateLoader = new TemplateLoader();
-        var templatesPath = Path.Combine("..", "templates");
+        _templateLoader = new EntityTemplateLoader();
+        var templatesPath = Path.Combine("./data", "templates");
         _templateLoader.LoadAllTemplatesFromFolder(Path.GetFullPath(templatesPath));
     }
 
-    public static Entities.Map LoadFromJson(
+    public static Entities.Level LoadFromJson(
         string path,
         Game game,
         EntityManager entityManager)
@@ -44,6 +46,29 @@ public class LevelLoader
         if (levelData == null)
             throw new Exception("Failed to deserialize map data.");
 
+        var spritesheets = LoadSpritesheets(path, game, levelData);
+
+        var map = LoadMap(levelData);
+
+        LoadEntities(game, entityManager, levelData);
+
+        return new()
+        {
+            Map = map,
+            SpriteSheets = spritesheets
+        };
+    }
+
+    private static Solo.Assets.SpriteSheet[] LoadSpritesheets(string path, Game game, LevelData levelData)
+    {
+        if (levelData.Spritesheets is null || !levelData.Spritesheets.Any())
+            throw new InvalidOperationException($"no spritesheets defined in level {path}");
+        var spritesheets = levelData.Spritesheets.Select(s => SpriteSheetLoader.Get(s, game)).ToArray();
+        return spritesheets;
+    }
+
+    private static Entities.Map LoadMap(LevelData levelData)
+    {
         int[][] cells;
 
         switch (levelData.Map.Type)
@@ -78,6 +103,13 @@ public class LevelLoader
         EnsurePerimeterClosed(cells);
 
         var map = new Entities.Map(cells);
+        return map;
+    }
+
+    private static void LoadEntities(Game game, EntityManager entityManager, LevelData levelData)
+    {
+        if (levelData.Entities is null)
+            return;
 
         foreach (var entityData in levelData.Entities)
         {
@@ -106,8 +138,6 @@ public class LevelLoader
 
             EntityFactory.CreateEntity(definition, game, entityManager);
         }
-
-        return map;
     }
 
     private static int[][] ConvertTilesToCells(TileType[,] tiles)
@@ -192,24 +222,25 @@ public class LevelLoader
 
     private class LevelData
     {
-        public required MapData Map { get; set; }
+        public required string[] Spritesheets { get; init; }
+        public required MapData Map { get; init; }
 
-        public List<EntityData>? Entities { get; set; } = new();
+        public List<EntityData>? Entities { get; init; } = new();
     }
 
     private class MapData
     {
-        public MapType Type { get; set; } = MapType.Static;
-        public int[][]? Cells { get; set; }
+        public required MapType Type { get; init; } = MapType.Static;
+        public int[][]? Cells { get; init; }
     }
 
     private class EntityData
     {
         [JsonPropertyName("template")]
-        public required string Template { get; set; }
+        public required string Template { get; init; }
 
-        public int TileX { get; set; }
-        public int TileY { get; set; }
-        public Dictionary<string, object> Properties { get; set; } = new();
+        public int TileX { get; init; }
+        public int TileY { get; init; }
+        public Dictionary<string, object> Properties { get; init; } = new();
     }
 }

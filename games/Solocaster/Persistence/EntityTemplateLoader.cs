@@ -1,19 +1,18 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.Json;
 
 namespace Solocaster.Persistence;
 
-public class TemplateLoader
+public class EntityTemplateLoader
 {
     private readonly Dictionary<string, TemplateDefinition> _cache = new();
 
     public void LoadAllTemplatesFromFolder(string templatesDirectory)
     {
         if (!Directory.Exists(templatesDirectory))
-            return;
+            throw new ArgumentException($"templates directory not found {templatesDirectory}", nameof(templatesDirectory));
 
         var templateFiles = Directory.GetFiles(templatesDirectory, "*.json");
         foreach (var file in templateFiles)

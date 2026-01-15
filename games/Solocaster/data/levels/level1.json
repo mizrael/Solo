@@ -1,4 +1,7 @@
 {
+  "spritesheets": [
+    "wolfenstein"
+  ],
   "Map": {
     "type": "random"
   }

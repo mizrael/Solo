@@ -1,5 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
-using Solo.Components;
+using Solo.Assets;
 using System;
 using System.Collections.Generic;
 
@@ -188,4 +188,11 @@ public class Map
 
         return pointOnWall;
     }
+}
+
+public class Level
+{
+    public required Map Map { get; init; }
+
+    public required SpriteSheet[] SpriteSheets { get; init; }
 }
