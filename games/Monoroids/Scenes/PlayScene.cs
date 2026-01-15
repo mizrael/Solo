@@ -29,7 +29,8 @@ internal class PlayScene : Scene
 
     protected override void EnterCore()
     {
-        var spriteSheet = SpriteSheetLoader.Load("meta/sheet.json", Game);
+        SpriteSheetLoader.BasePath = "./meta";
+        var spriteSheet = SpriteSheetLoader.Get("sheet", Game);
 
         var collisionService = GameServicesManager.Instance.GetRequired<CollisionService>();
         var renderService = GameServicesManager.Instance.GetRequired<RenderService>();

@@ -33,7 +33,7 @@ public static class EntityFactory
         var spriteName = definition.Properties["sprite"] as string;
         ArgumentException.ThrowIfNullOrWhiteSpace(spriteName, nameof(definition.Properties));
 
-        var spriteSheet = SpriteSheetLoader.Load($"data/spritesheets/{sheetName}.json", game);
+        var spriteSheet = SpriteSheetLoader.Get(sheetName, game);
         var sprite = spriteSheet.Get(spriteName);
 
         var entity = new GameObject();

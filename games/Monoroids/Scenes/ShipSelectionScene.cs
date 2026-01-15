@@ -34,7 +34,8 @@ public class ShipSelectionScene : Scene
         var background = BuildBackground();
         this.Root.AddChild(background);
 
-        var spriteSheet = SpriteSheetLoader.Load("meta/sheet.json", Game);
+        SpriteSheetLoader.BasePath = "./meta";
+        var spriteSheet = SpriteSheetLoader.Get("sheet", Game);
                      
         BuildShips(spriteSheet);
         

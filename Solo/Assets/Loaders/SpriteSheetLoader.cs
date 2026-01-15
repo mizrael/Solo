@@ -11,8 +11,25 @@ public class SpriteSheetLoader
         NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
     };
 
-    public static SpriteSheet Load(string assetPath, Game game)
+    private static Dictionary<string, SpriteSheet> _cache = new();
+
+    public static SpriteSheet Get(string name, Game game)
     {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        if (!_cache.TryGetValue(name, out var spriteSheet))
+        {
+            spriteSheet = LoadInternal(name, game);
+            _cache[name] = spriteSheet;
+        }
+
+        return _cache[name];
+    }
+
+    private static SpriteSheet LoadInternal(string name, Game game)
+    {
+        var assetPath = Path.Combine(BasePath, name + ".json");
+
         var json = File.ReadAllText(assetPath);
         var dto = JsonSerializer.Deserialize<SpriteSheetDTO>(json, options);
 
@@ -40,4 +57,6 @@ public class SpriteSheetLoader
             public int height { get; set; }
         }
     }
+
+    public static string BasePath = "./data/spritesheets/";
 }

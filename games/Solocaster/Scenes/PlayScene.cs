@@ -40,7 +40,7 @@ public class PlayScene : Scene
 
         this.Root.AddChild(player);
 
-        var levelSpritesheet = SpriteSheetLoader.Load("./data/spritesheets/wolfenstein.json", this.Game);
+        var levelSpritesheet = SpriteSheetLoader.Get("wolfenstein", this.Game);
         var textures = levelSpritesheet.Texture.Split(64, 64)
             .Select(t => t.Rotate90(RotationDirection.CounterClockwise))
             .ToArray();
