@@ -6,13 +6,15 @@ namespace Solo.Assets.Loaders;
 
 public class SpriteSheetLoader
 {
-    public SpriteSheet Load(string assetPath, Game game)
+    private static JsonSerializerOptions options = new()
+    {
+        NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
+    };
+
+    public static SpriteSheet Load(string assetPath, Game game)
     {
         var json = File.ReadAllText(assetPath);
-        var dto = JsonSerializer.Deserialize<SpriteSheetDTO>(json, new JsonSerializerOptions()
-        {
-            NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
-        });
+        var dto = JsonSerializer.Deserialize<SpriteSheetDTO>(json, options);
 
         var texture = game.Content.Load<Texture2D>(dto!.spriteSheetName);
 
@@ -20,7 +22,7 @@ public class SpriteSheetLoader
             .Select(s => new Sprite(s.name, texture, new Rectangle(s.x, s.y, s.width, s.height)))
             .ToArray();
 
-        return new SpriteSheet(assetPath, dto.spriteSheetName, sprites);
+        return new SpriteSheet(assetPath, dto.spriteSheetName, texture, sprites);
     }
 
     internal class SpriteSheetDTO

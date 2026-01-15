@@ -1,22 +1,22 @@
-﻿namespace Solo.Assets;
+﻿using Microsoft.Xna.Framework.Graphics;
+
+namespace Solo.Assets;
 
 public record SpriteSheet
 {
     private readonly Dictionary<string, Sprite> _sprites = new();
 
-    public SpriteSheet(string name, string spriteSheetName, IEnumerable<Sprite> sprites)
+    public SpriteSheet(string name, string spriteSheetName, Texture2D texture, IEnumerable<Sprite> sprites)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentNullException(nameof(name));
-        if (string.IsNullOrWhiteSpace(spriteSheetName))
-            throw new ArgumentNullException(nameof(spriteSheetName));
+        ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
+        ArgumentException.ThrowIfNullOrEmpty(spriteSheetName, nameof(spriteSheetName));
 
         if (sprites is null || !sprites.Any())
             throw new ArgumentNullException(nameof(sprites));
 
         this.Name = name;
         this.ImagePath = spriteSheetName;
-
+        this.Texture = texture ?? throw new ArgumentNullException(nameof(texture));
         foreach (var sprite in sprites)
         {
             if(_sprites.ContainsKey(sprite.Name))
@@ -34,4 +34,5 @@ public record SpriteSheet
 
     public string Name { get; }
     public string ImagePath { get; }
+    public Texture2D Texture { get; }
 }

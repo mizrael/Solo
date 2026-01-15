@@ -22,7 +22,7 @@ public class PlayScene : Scene
     {
         var gameState = new GameState();
 
-        var spriteSheet = new SpriteSheetLoader().Load("meta/spritesheet.json", Game);
+        var spriteSheet = SpriteSheetLoader.Load("meta/spritesheet.json", Game);
         var collisionService = GameServicesManager.Instance.GetRequired<CollisionService>();
 
         var bus = GameServicesManager.Instance.GetRequired<MessageBus>();

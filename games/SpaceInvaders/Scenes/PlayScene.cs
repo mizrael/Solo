@@ -22,7 +22,7 @@ public class PlayScene : Scene
 
     protected override void EnterCore()
     {
-        var spriteSheet = new SpriteSheetLoader().Load("meta/spritesheet.json", Game);        
+        var spriteSheet = SpriteSheetLoader.Load("meta/spritesheet.json", Game);        
         var collisionService = GameServicesManager.Instance.GetRequired<CollisionService>();
 
         var bulletSpawner = BuildBulletSpawner(spriteSheet, collisionService);

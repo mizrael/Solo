@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Solo;
+using Solo.Assets.Loaders;
 using Solo.Components;
 using Solo.Services;
 using Solocaster.Components;
@@ -39,8 +40,8 @@ public class PlayScene : Scene
 
         this.Root.AddChild(player);
 
-        var mainTexture = Game.Content.Load<Texture2D>("wolftextures");
-        var textures = mainTexture.Split(64, 64)
+        var levelSpritesheet = SpriteSheetLoader.Load("./data/spritesheets/wolfenstein.json", this.Game);
+        var textures = levelSpritesheet.Texture.Split(64, 64)
             .Select(t => t.Rotate90(RotationDirection.CounterClockwise))
             .ToArray();
         var raycaster = new Raycaster(map, frameBufferWidth, frameBufferHeight, textures);
