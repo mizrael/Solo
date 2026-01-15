@@ -36,7 +36,7 @@ public class DirectionPicker
         {
             // changeDirectionModifier of 100 will always change direction
             // value of 0 will never change direction
-            return ((directionsPicked.Count > 0) || (changeDirectionModifier > Random.Shared.Next(0, 99)));
+            return ((directionsPicked.Count > 0) || (changeDirectionModifier > Random.Instance.Next(0, 99)));
         }
     }
     #endregion
@@ -48,7 +48,7 @@ public class DirectionPicker
         DirectionType directionPicked;
         do
         {
-            directionPicked = (DirectionType)Random.Shared.Next(3);
+            directionPicked = (DirectionType)Random.Instance.Next(3);
         } while ((directionPicked == previousDirection) && (directionsPicked.Count < 3));
 
         return directionPicked;

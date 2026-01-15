@@ -1,13 +1,16 @@
 {
   "spritesheets": [
-    "wolfenstein"
+    "dungeon1"
   ],
-  "Map": {
+  "map": {
     "type": "random",
     "wallSprites": {
-      "wolfenstein:brick_wall": 50,
-      "wolfenstein:stone_wall": 30,
-      "wolfenstein:moss_wall": 20
+      "base": {
+        "stone_wall_clean": 50,
+        "brick_wall_gray": 10,
+        "wood_wall_gray": 40
+      },
+      "accent": [ "stone_wall_bloodstained", "brick_wall_aged", "wood_wall_dusty", "wood_wall_bloodstained" ]
     }
   }
 }

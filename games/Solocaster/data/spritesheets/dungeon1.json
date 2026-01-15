@@ -1,0 +1,120 @@
+{
+  "spriteSheetName": "dungeon1",
+  "sprites": [
+    {
+      "name": "stone_wall_clean",
+      "x": 0,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "stone_wall_mossy",
+      "x": 128,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "stone_wall_heavy_moss",
+      "x": 256,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "stone_wall_bloodstained",
+      "x": 384,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    },
+
+    {
+      "name": "brick_wall_gray",
+      "x": 0,
+      "y": 128,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "brick_wall_red",
+      "x": 128,
+      "y": 128,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "brick_wall_aged",
+      "x": 256,
+      "y": 128,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "brick_wall_bloodstained",
+      "x": 384,
+      "y": 128,
+      "width": 128,
+      "height": 128
+    },
+
+    {
+      "name": "wood_wall_gray",
+      "x": 0,
+      "y": 256,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "wood_wall_brown",
+      "x": 128,
+      "y": 256,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "wood_wall_dusty",
+      "x": 256,
+      "y": 256,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "wood_wall_bloodstained",
+      "x": 384,
+      "y": 256,
+      "width": 128,
+      "height": 128
+    },
+
+    {
+      "name": "stone_wall_large_clean",
+      "x": 0,
+      "y": 384,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "stone_wall_large_mossy",
+      "x": 128,
+      "y": 384,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "stone_wall_large_aged",
+      "x": 256,
+      "y": 384,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "stone_wall_large_brown",
+      "x": 384,
+      "y": 384,
+      "width": 128,
+      "height": 128
+    }
+  ]
+}

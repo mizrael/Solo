@@ -48,11 +48,18 @@ public class LevelLoader
 
         var spritesheets = LoadSpritesheets(path, game, levelData);
 
-        var map = LoadMap(levelData, spritesheets);
+        // For random maps, resolve wall sprites first
+        WallSpritesResult? wallSpritesResult = null;
+        if (levelData.Map.Type == MapType.Random)
+        {
+            wallSpritesResult = ResolveWallSprites(levelData.Map.WallSprites, spritesheets);
+        }
+
+        var map = LoadMap(levelData, spritesheets, wallSpritesResult);
 
         LoadEntities(game, entityManager, levelData);
 
-        var sprites = BuildSprites(levelData, spritesheets);
+        var sprites = BuildSprites(levelData, spritesheets, wallSpritesResult);
 
         return new()
         {
@@ -72,7 +79,8 @@ public class LevelLoader
 
     private static Solo.Assets.Sprite[] BuildSprites(
         LevelData levelData,
-        Solo.Assets.SpriteSheet[] spritesheets)
+        Solo.Assets.SpriteSheet[] spritesheets,
+        WallSpritesResult? wallSpritesResult)
     {
         if (levelData.Map.Type == MapType.Static)
         {
@@ -89,20 +97,22 @@ public class LevelLoader
             return sprites.ToArray();
         }
 
-        // Random maps: use all sprites from first spritesheet
+        // Random maps: use sprites from wallSprites configuration
+        if (wallSpritesResult != null)
+        {
+            return wallSpritesResult.Sprites;
+        }
+
+        // Fallback: use all sprites from first spritesheet
         return spritesheets[0].Sprites.ToArray();
     }
 
-    private static Entities.Map LoadMap(LevelData levelData, Solo.Assets.SpriteSheet[] spritesheets)
+    private static Entities.Map LoadMap(
+        LevelData levelData,
+        Solo.Assets.SpriteSheet[] spritesheets,
+        WallSpritesResult? wallSpritesResult)
     {
         int[][] cells;
-
-        // Resolve wall sprites if configured (only for random maps)
-        Dictionary<int, int>? weightedWallCellIds = null;
-        if (levelData.Map.Type == MapType.Random && levelData.Map.WallSprites != null)
-        {
-            weightedWallCellIds = ResolveWallSprites(levelData.Map.WallSprites, spritesheets);
-        }
 
         switch (levelData.Map.Type)
         {
@@ -118,7 +128,7 @@ public class LevelLoader
 
                 var dungeon = generator.Generate();
                 var tiles = dungeon.ExpandToTiles(1);
-                cells = ConvertTilesToCells(tiles, weightedWallCellIds);
+                cells = ConvertTilesToCells(tiles, wallSpritesResult?.Weights);
                 break;
 
             case MapType.Static:
@@ -269,42 +279,124 @@ public class LevelLoader
         }
     }
 
-    private static Dictionary<int, int>? ResolveWallSprites(
-        Dictionary<string, int>? wallSpritesConfig,
+    private static WallSpritesResult? ResolveWallSprites(
+        JsonElement? wallSpritesJson,
         Solo.Assets.SpriteSheet[] spritesheets)
     {
-        if (wallSpritesConfig == null || wallSpritesConfig.Count == 0)
+        if (wallSpritesJson == null || wallSpritesJson.Value.ValueKind == JsonValueKind.Null)
             return null;
 
-        // Assign unique cell IDs to each sprite reference
-        int nextCellId = 1;
-        var weightedCellIds = new Dictionary<int, int>();
+        var sprites = new List<Solo.Assets.Sprite>();
+        var weights = new Dictionary<int, int>();
 
-        foreach (var kvp in wallSpritesConfig)
+        // Try to detect format by checking for "base" or "accent" properties
+        bool isHybridFormat = wallSpritesJson.Value.ValueKind == JsonValueKind.Object &&
+                               (wallSpritesJson.Value.TryGetProperty("base", out _) ||
+                                wallSpritesJson.Value.TryGetProperty("accent", out _));
+
+        if (isHybridFormat)
         {
-            string spriteRef = kvp.Key; // e.g., "wolfenstein:brick_wall"
-            int weight = kvp.Value;
+            // New hybrid format
+            var hybrid = wallSpritesJson.Value.Deserialize<WallSpritesHybrid>(_jsonOptions);
+            if (hybrid == null)
+                throw new InvalidOperationException("Failed to parse hybrid wallSprites format");
 
-            // Parse spritesheet:sprite format
-            var parts = spriteRef.Split(':', 2);
-            if (parts.Length != 2)
-                throw new InvalidOperationException($"Invalid sprite reference '{spriteRef}'. Expected format: 'spritesheet:sprite'");
+            // Process base sprites
+            if (hybrid.Base != null)
+            {
+                foreach (var kvp in hybrid.Base)
+                {
+                    string spriteName = kvp.Key;
+                    int weight = kvp.Value;
 
-            string spritesheetName = parts[0];
-            string spriteName = parts[1];
+                    var sprite = FindSpriteInSheets(spriteName, spritesheets);
+                    sprites.Add(sprite);
+                    weights[sprites.Count - 1] = weight;
+                }
+            }
 
-            // Find the spritesheet
-            var spritesheet = spritesheets.FirstOrDefault(s => s.Name == spritesheetName);
-            if (spritesheet == null)
-                throw new InvalidOperationException($"Spritesheet '{spritesheetName}' not found in loaded spritesheets");
+            // Process accent sprites (auto-weight as 10% of total base weight)
+            if (hybrid.Accent != null && hybrid.Accent.Length > 0)
+            {
+                int totalBaseWeight = hybrid.Base?.Values.Sum() ?? 100;
+                int accentTotalWeight = (int)(totalBaseWeight * 0.10);
+                int accentWeightEach = Math.Max(1, accentTotalWeight / hybrid.Accent.Length);
 
-            var sprite = spritesheet.Get(spriteName);
+                foreach (var spriteName in hybrid.Accent)
+                {
+                    var sprite = FindSpriteInSheets(spriteName, spritesheets);
+                    sprites.Add(sprite);
+                    weights[sprites.Count - 1] = accentWeightEach;
+                }
+            }
+        }
+        else
+        {
+            // Old format: "spritesheet:sprite_name" → weight
+            var oldFormat = wallSpritesJson.Value.Deserialize<Dictionary<string, int>>(_jsonOptions);
+            if (oldFormat == null || oldFormat.Count == 0)
+                return null;
 
-            int cellId = nextCellId++;
-            weightedCellIds[cellId] = weight;
+            foreach (var kvp in oldFormat)
+            {
+                string spriteRef = kvp.Key; // e.g., "wolfenstein:brick_wall"
+                int weight = kvp.Value;
+
+                // Parse spritesheet:sprite format
+                var parts = spriteRef.Split(':', 2);
+                if (parts.Length != 2)
+                    throw new InvalidOperationException($"Invalid sprite reference '{spriteRef}'. Expected format: 'spritesheet:sprite'");
+
+                string spritesheetName = parts[0];
+                string spriteName = parts[1];
+
+                var spritesheet = spritesheets.FirstOrDefault(s => s.Name == spritesheetName);
+                if (spritesheet == null)
+                    throw new InvalidOperationException($"Spritesheet '{spritesheetName}' not found in loaded spritesheets");
+
+                var sprite = spritesheet.Get(spriteName);
+                sprites.Add(sprite);
+                weights[sprites.Count - 1] = weight;
+            }
         }
 
-        return weightedCellIds;
+        if (sprites.Count == 0)
+            return null;
+
+        return new WallSpritesResult
+        {
+            Sprites = sprites.ToArray(),
+            Weights = weights
+        };
+    }
+
+    private static Solo.Assets.Sprite FindSpriteInSheets(string spriteName, Solo.Assets.SpriteSheet[] spritesheets)
+    {
+        foreach (var sheet in spritesheets)
+        {
+            try
+            {
+                return sheet.Get(spriteName);
+            }
+            catch
+            {
+                // Not in this sheet, try next
+            }
+        }
+
+        throw new InvalidOperationException($"Sprite '{spriteName}' not found in any loaded spritesheet");
+    }
+
+    private class WallSpritesResult
+    {
+        public required Solo.Assets.Sprite[] Sprites { get; init; }
+        public required Dictionary<int, int> Weights { get; init; }
+    }
+
+    private class WallSpritesHybrid
+    {
+        public Dictionary<string, int>? Base { get; init; }
+        public string[]? Accent { get; init; }
     }
 
     private class LevelData
@@ -319,7 +411,7 @@ public class LevelLoader
     {
         public required MapType Type { get; init; } = MapType.Static;
         public int[][]? Cells { get; init; }
-        public Dictionary<string, int>? WallSprites { get; init; }
+        public JsonElement? WallSprites { get; init; }
     }
 
     private class EntityData

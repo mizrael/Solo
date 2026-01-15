@@ -38,7 +38,7 @@ public class Dungeon : Map
 
     public Point PickRandomCellAndFlagItAsVisited()
     {
-        Point randomLocation = new Point(Random.Shared.Next(Width - 1), Random.Shared.Next(Height - 1));
+        Point randomLocation = new Point(Random.Instance.Next(Width - 1), Random.Instance.Next(Height - 1));
         FlagCellAsVisited(randomLocation);
         return randomLocation;
     }
@@ -100,11 +100,11 @@ public class Dungeon : Map
     {
         if (visitedCells.Count == 0) throw new InvalidOperationException("There are no visited cells to return.");
 
-        int index = Random.Shared.Next(visitedCells.Count - 1);
+        int index = Random.Instance.Next(visitedCells.Count - 1);
 
         // Loop while the current cell is the visited cell
         while (visitedCells[index] == location)
-            index = Random.Shared.Next(visitedCells.Count - 1);
+            index = Random.Instance.Next(visitedCells.Count - 1);
 
         return visitedCells[index];
     }

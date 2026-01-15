@@ -26,7 +26,7 @@ public class PlayScene : Scene
         var frameBufferWidth = renderService.Graphics.GraphicsDevice.Viewport.Height / FrameBufferScale;
         var frameBufferHeight = renderService.Graphics.GraphicsDevice.Viewport.Width / FrameBufferScale;
 
-        var level = LevelLoader.LoadFromJson("./data/levels/level2.json", Game, entityManager);
+        var level = LevelLoader.LoadFromJson("./data/levels/level1.json", Game, entityManager);
 
         var player = new GameObject();
         var playerTransform = player.Components.Add<TransformComponent>();

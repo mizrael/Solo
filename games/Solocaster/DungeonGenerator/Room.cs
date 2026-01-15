@@ -47,8 +47,8 @@ public class Room : Map
     public (int row, int col) GetRandomTile(int tileStep)
     {
         var (min, max) = GetBounds(tileStep);
-        var row = Random.Shared.Next(min.X, max.X);
-        var col = Random.Shared.Next(min.Y, max.Y);
+        var row = Random.Instance.Next(min.X, max.X);
+        var col = Random.Instance.Next(min.Y, max.Y);
         return (row, col);
     }
 
