@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using Solo.AI;
 using Solo.Assets.Loaders;
 using Solocaster.DungeonGenerator;
 using Solocaster.Entities;
@@ -10,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Random = System.Random;
 
 namespace Solocaster.Persistence;
 
@@ -48,14 +48,17 @@ public class LevelLoader
 
         var spritesheets = LoadSpritesheets(path, game, levelData);
 
-        var map = LoadMap(levelData);
+        var map = LoadMap(levelData, spritesheets);
 
         LoadEntities(game, entityManager, levelData);
+
+        var sprites = BuildSprites(levelData, spritesheets);
 
         return new()
         {
             Map = map,
-            SpriteSheets = spritesheets
+            SpriteSheets = spritesheets,
+            Sprites = sprites
         };
     }
 
@@ -67,9 +70,39 @@ public class LevelLoader
         return spritesheets;
     }
 
-    private static Entities.Map LoadMap(LevelData levelData)
+    private static Solo.Assets.Sprite[] BuildSprites(
+        LevelData levelData,
+        Solo.Assets.SpriteSheet[] spritesheets)
+    {
+        if (levelData.Map.Type == MapType.Static)
+        {
+            var sprites = new List<Solo.Assets.Sprite>();
+
+            foreach (var spritesheet in spritesheets)
+            {
+                foreach (var sprite in spritesheet.Sprites)
+                {
+                    sprites.Add(sprite);
+                }
+            }
+
+            return sprites.ToArray();
+        }
+
+        // Random maps: use all sprites from first spritesheet
+        return spritesheets[0].Sprites.ToArray();
+    }
+
+    private static Entities.Map LoadMap(LevelData levelData, Solo.Assets.SpriteSheet[] spritesheets)
     {
         int[][] cells;
+
+        // Resolve wall sprites if configured (only for random maps)
+        Dictionary<int, int>? weightedWallCellIds = null;
+        if (levelData.Map.Type == MapType.Random && levelData.Map.WallSprites != null)
+        {
+            weightedWallCellIds = ResolveWallSprites(levelData.Map.WallSprites, spritesheets);
+        }
 
         switch (levelData.Map.Type)
         {
@@ -85,7 +118,7 @@ public class LevelLoader
 
                 var dungeon = generator.Generate();
                 var tiles = dungeon.ExpandToTiles(1);
-                cells = ConvertTilesToCells(tiles);
+                cells = ConvertTilesToCells(tiles, weightedWallCellIds);
                 break;
 
             case MapType.Static:
@@ -99,7 +132,6 @@ public class LevelLoader
                 throw new InvalidOperationException($"Invalid map type '{levelData.Map.Type}'");
         }
 
-        // Ensure perimeter is closed to prevent out-of-bounds access
         EnsurePerimeterClosed(cells);
 
         var map = new Entities.Map(cells);
@@ -140,7 +172,7 @@ public class LevelLoader
         }
     }
 
-    private static int[][] ConvertTilesToCells(TileType[,] tiles)
+    private static int[][] ConvertTilesToCells(TileType[,] tiles, Dictionary<int, int>? weightedWallCellIds = null)
     {
         int height = tiles.GetLength(1);
         int width = tiles.GetLength(0);
@@ -151,11 +183,55 @@ public class LevelLoader
             cells[row] = new int[width];
             for (int col = 0; col < width; col++)
             {
-                cells[row][col] = MapTileTypeToCell(tiles[col, row]);
+                var tileType = tiles[col, row];
+                int cellId = MapTileTypeToCell(tileType);
+
+                // For walls with weighted sprites, apply neighbor-based consistency
+                if (IsWallTileType(tileType) && weightedWallCellIds != null && weightedWallCellIds.Count > 0)
+                {
+                    cellId = PickWallCellId(cells, row, col, weightedWallCellIds);
+                }
+
+                cells[row][col] = cellId;
             }
         }
 
         return cells;
+    }
+
+    private static bool IsWallTileType(TileType tileType)
+    {
+        return tileType switch
+        {
+            TileType.Wall or TileType.WallSE or TileType.WallSO or TileType.WallNE or
+            TileType.WallNO or TileType.WallNS or TileType.WallEO or TileType.WallESO or
+            TileType.WallNEO or TileType.WallNES or TileType.WallNSO or TileType.WallNESO => true,
+            _ => false
+        };
+    }
+
+    private static int PickWallCellId(int[][] cells, int row, int col, Dictionary<int, int> weightedCellIds)
+    {
+        // Collect wall neighbors that have already been assigned
+        var neighborWallIds = new List<int>();
+
+        // Check left neighbor
+        if (col > 0 && cells[row][col - 1] > 0 && cells[row][col - 1] != TileTypes.Door)
+            neighborWallIds.Add(cells[row][col - 1]);
+
+        // Check top neighbor
+        if (row > 0 && cells[row - 1][col] > 0 && cells[row - 1][col] != TileTypes.Door)
+            neighborWallIds.Add(cells[row - 1][col]);
+
+        // 80% chance: copy from a neighbor (if any exist)
+        // 20% chance: pick new weighted random
+        if (neighborWallIds.Count > 0 && Random.Shared.Next(100) < 80)
+        {
+            return neighborWallIds[Random.Shared.Next(neighborWallIds.Count)];
+        }
+
+        // Pick new weighted random cell ID
+        return WeightedRandom(weightedCellIds);
     }
 
     private static int MapTileTypeToCell(TileType tileType)
@@ -204,6 +280,60 @@ public class LevelLoader
         }
     }
 
+    private static T WeightedRandom<T>(Dictionary<T, int> weightedItems) where T : notnull
+    {
+        int totalWeight = weightedItems.Values.Sum();
+        int randomValue = Random.Shared.Next(totalWeight);
+
+        int cumulative = 0;
+        foreach (var kvp in weightedItems)
+        {
+            cumulative += kvp.Value;
+            if (randomValue < cumulative)
+                return kvp.Key;
+        }
+
+        return weightedItems.Keys.First();
+    }
+
+    private static Dictionary<int, int>? ResolveWallSprites(
+        Dictionary<string, int>? wallSpritesConfig,
+        Solo.Assets.SpriteSheet[] spritesheets)
+    {
+        if (wallSpritesConfig == null || wallSpritesConfig.Count == 0)
+            return null;
+
+        // Assign unique cell IDs to each sprite reference
+        int nextCellId = 1;
+        var weightedCellIds = new Dictionary<int, int>();
+
+        foreach (var kvp in wallSpritesConfig)
+        {
+            string spriteRef = kvp.Key; // e.g., "wolfenstein:brick_wall"
+            int weight = kvp.Value;
+
+            // Parse spritesheet:sprite format
+            var parts = spriteRef.Split(':', 2);
+            if (parts.Length != 2)
+                throw new InvalidOperationException($"Invalid sprite reference '{spriteRef}'. Expected format: 'spritesheet:sprite'");
+
+            string spritesheetName = parts[0];
+            string spriteName = parts[1];
+
+            // Find the spritesheet
+            var spritesheet = spritesheets.FirstOrDefault(s => s.Name == spritesheetName);
+            if (spritesheet == null)
+                throw new InvalidOperationException($"Spritesheet '{spritesheetName}' not found in loaded spritesheets");
+
+            var sprite = spritesheet.Get(spriteName);
+
+            int cellId = nextCellId++;
+            weightedCellIds[cellId] = weight;
+        }
+
+        return weightedCellIds;
+    }
+
     private static object ConvertJsonElement(object value)
     {
         if (value is not JsonElement jsonElement)
@@ -232,6 +362,7 @@ public class LevelLoader
     {
         public required MapType Type { get; init; } = MapType.Static;
         public int[][]? Cells { get; init; }
+        public Dictionary<string, int>? WallSprites { get; init; }
     }
 
     private class EntityData

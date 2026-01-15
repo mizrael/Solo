@@ -39,7 +39,7 @@ public class SpriteSheetLoader
             .Select(s => new Sprite(s.name, texture, new Rectangle(s.x, s.y, s.width, s.height)))
             .ToArray();
 
-        return new SpriteSheet(assetPath, dto.spriteSheetName, texture, sprites);
+        return new SpriteSheet(name: dto.spriteSheetName, imagePath: assetPath, texture, sprites);
     }
 
     internal class SpriteSheetDTO

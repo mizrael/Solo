@@ -1,13 +1,11 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Solo;
-using Solo.Assets.Loaders;
 using Solo.Components;
 using Solo.Services;
 using Solocaster.Components;
 using Solocaster.Persistence;
 using Solocaster.Services;
-using System.Linq;
 
 namespace Solocaster.Scenes;
 
@@ -40,11 +38,7 @@ public class PlayScene : Scene
 
         this.Root.AddChild(player);
 
-        var levelSpritesheet = SpriteSheetLoader.Get("wolfenstein", this.Game);
-        var textures = levelSpritesheet.Texture.Split(64, 64)
-            .Select(t => t.Rotate90(RotationDirection.CounterClockwise))
-            .ToArray();
-        var raycaster = new Raycaster(level.Map, frameBufferWidth, frameBufferHeight, textures);
+        var raycaster = new Raycaster(level, frameBufferWidth, frameBufferHeight);
 
         var frameTexture = new Texture2D(renderService.Graphics.GraphicsDevice, frameBufferWidth, frameBufferHeight);
 

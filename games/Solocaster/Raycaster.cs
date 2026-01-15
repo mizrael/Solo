@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Solo.Components;
 using Solo.Services;
+using Solo;
 using Solocaster.Components;
 using Solocaster.Entities;
 using Solocaster.Services;
@@ -13,12 +14,12 @@ namespace Solocaster;
 
 public unsafe class Raycaster : IDisposable
 {
-    private readonly Color[][] _texturesData;
+    private readonly Color[][] _rotatedSpriteData;
+    private readonly GCHandle[] _spriteHandles;
+    private readonly uint*[] _spritePointers;
     private readonly int _texWidth;
     private readonly int _texHeight;
     private readonly int _mask;
-    private readonly GCHandle[] _textureHandles;
-    private readonly uint*[] _texturePointers;
 
     private const uint ceilingColor = 0xFF383838; // Dark gray ceiling
     private const uint floorColor = 0xFF707070;   // Lighter gray floor
@@ -39,39 +40,43 @@ public unsafe class Raycaster : IDisposable
     private readonly Dictionary<Texture2D, (Color[] data, GCHandle handle)> _spriteTextureCache;
 
     public Raycaster(
-        Map map,
+        Level level,
         int screenWidth,
-        int screenHeight,
-        Texture2D[] textures
-        )
+        int screenHeight)
     {
         _frameWidth = screenWidth;
         _frameHeight = screenHeight;
 
-        _map = map;
+        _map = level.Map;
 
         FrameBuffer = new Color[screenWidth * screenHeight];
         _zBuffer = new float[screenHeight];
         _spriteTextureCache = new Dictionary<Texture2D, (Color[], GCHandle)>();
 
-        _texWidth = textures[0].Width;
-        _texHeight = textures[0].Height;
+        // Assume all sprites are the same size (first sprite's bounds)
+        var sprites = level.Sprites;
+        _texWidth = sprites[0].Bounds.Width;
+        _texHeight = sprites[0].Bounds.Height;
         _mask = _texWidth - 1;
 
-        _texturesData = new Color[textures.Length][];
-        _textureHandles = new GCHandle[textures.Length];
-        _texturePointers = new uint*[textures.Length];
+        _rotatedSpriteData = new Color[sprites.Length][];
+        _spriteHandles = new GCHandle[sprites.Length];
+        _spritePointers = new uint*[sprites.Length];
 
-        for (int i = 0; i != textures.Length; i++)
+        for (int i = 0; i < sprites.Length; i++)
         {
-            _texturesData[i] = new Color[_texWidth * _texHeight];
-            textures[i].GetData(_texturesData[i]);
+            var sprite = sprites[i];
 
-            // Pin the array and get a pointer
-            _textureHandles[i] = GCHandle.Alloc(_texturesData[i], GCHandleType.Pinned);
-            _texturePointers[i] = (uint*)_textureHandles[i].AddrOfPinnedObject();
+            var spriteData = new Color[sprite.Bounds.Width * sprite.Bounds.Height];
+            sprite.Texture.GetData(0, sprite.Bounds, spriteData, 0, spriteData.Length);
+
+            _rotatedSpriteData[i] = spriteData.Rotate90(sprite.Bounds.Width, sprite.Bounds.Height);
+            _spriteHandles[i] = GCHandle.Alloc(_rotatedSpriteData[i], GCHandleType.Pinned);
+            _spritePointers[i] = (uint*)_spriteHandles[i].AddrOfPinnedObject();
         }
     }
+
+   
 
     public void Update(TransformComponent playerTransform, PlayerBrain playerBrain)
     {
@@ -324,7 +329,7 @@ public unsafe class Raycaster : IDisposable
         if (tileType != TileTypes.Floor && tileType != TileTypes.Door && tileType != TileTypes.StartingPosition)
         {
             float shadingFactor = CalculateShadingFactor(perpWallDist);
-            UpdateRow(side, drawStart, drawEnd, rayDirX, rayDirY, lineWidth, columnPtr, wallY, texNum: tileType - 1, shadingFactor);
+            UpdateRow(side, drawStart, drawEnd, rayDirX, rayDirY, lineWidth, columnPtr, wallY, texNum: tileType, shadingFactor);
         }
 
         // Render floor (from wall end to bottom of screen)
@@ -336,7 +341,7 @@ public unsafe class Raycaster : IDisposable
 
     private void UpdateRow(int side, int drawStart, int drawEnd, float rayDirX, float rayDirY, int lineWidth, uint* columnPtr, float wallY, int texNum, float shadingFactor = 1.0f)
     {
-        uint* texturePtr = _texturePointers[texNum];
+        uint* texturePtr = _spritePointers[texNum];
 
         int texY = (int)(wallY * _texWidth);
 
@@ -572,7 +577,7 @@ public unsafe class Raycaster : IDisposable
 
     public void Dispose()
     {
-        foreach (var handle in _textureHandles)
+        foreach (var handle in _spriteHandles)
         {
             if (handle.IsAllocated)
                 handle.Free();

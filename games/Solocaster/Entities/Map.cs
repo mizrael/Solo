@@ -7,7 +7,7 @@ namespace Solocaster.Entities;
 
 public static class TileTypes
 {
-    public const int Floor = 0;
+    public const int Floor = -1;
     public const int StartingPosition = 99;
     public const int Door = 100;
 }
@@ -164,7 +164,7 @@ public class Map
             {
                 hit = true;
             }
-            else if (this.Cells[mapY][mapX] > 0)
+            else if (this.Cells[mapY][mapX] >= 0)
             {
                 hit = true;
             }
@@ -195,4 +195,6 @@ public class Level
     public required Map Map { get; init; }
 
     public required SpriteSheet[] SpriteSheets { get; init; }
+
+    public required Sprite[] Sprites { get; init; }
 }

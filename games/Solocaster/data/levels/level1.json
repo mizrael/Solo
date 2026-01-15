@@ -3,6 +3,11 @@
     "wolfenstein"
   ],
   "Map": {
-    "type": "random"
+    "type": "random",
+    "wallSprites": {
+      "wolfenstein:brick_wall": 50,
+      "wolfenstein:stone_wall": 30,
+      "wolfenstein:moss_wall": 20
+    }
   }
 }

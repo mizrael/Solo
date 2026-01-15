@@ -26,7 +26,7 @@ public static class Texture2DExtensions
         return textures;
     }
 
-    public static Texture2D Rotate90(this Texture2D source, RotationDirection direction = RotationDirection.Clockwise)
+    public static Texture2D Rotate90(this Texture2D source, RotationDirection direction = RotationDirection.CounterClockwise)
     {
         Texture2D rotated = new Texture2D(
             source.GraphicsDevice,
@@ -36,33 +36,7 @@ public static class Texture2DExtensions
         var originalData = new Color[source.Width * source.Height];
         source.GetData(originalData);
 
-        var rotatedData = new Color[source.Width * source.Height];
-
-        for (int y = 0; y < source.Height; y++)
-        {
-            for (int x = 0; x < source.Width; x++)
-            {
-                int newX, newY;
-
-                if (direction == RotationDirection.Clockwise)
-                {
-                    newX = source.Height - 1 - y;
-                    newY = x;
-                }
-                else
-                {
-                    newX = y;
-                    newY = source.Width - 1 - x;
-                }
-
-                int originalIndex = y * source.Width + x;
-                int rotatedIndex = newY * source.Height + newX;
-
-                rotatedData[rotatedIndex] = originalData[originalIndex];
-            }
-        }
-
-        rotated.SetData(rotatedData);
+        rotated.SetData(originalData.Rotate90(source.Width, source.Height));
 
         return rotated;
     }
