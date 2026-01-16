@@ -365,7 +365,7 @@ public unsafe class Raycaster : IDisposable
 
         // Apply door sliding offset based on which side we're viewing from
         float doorOffset = 0;
-        if (door.IsVertical)
+        if (!door.IsVertical)
         {
             if (side == 0) // Viewing from E-W
                 doorOffset = door.OpenAmount;

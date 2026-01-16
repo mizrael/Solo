@@ -3,7 +3,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Solo;
 using Solo.Components;
 using Solo.Services;
-using Solocaster.Components;
 
 namespace Solocaster;
 

@@ -82,6 +82,11 @@ public class MiniMapRenderer : Component, IRenderable
                 var cell = _map.Cells[row][col];
                 if (cell == TileTypes.Floor || cell == TileTypes.StartingPosition) continue;
 
+                if(_map.GetDoor(col, row) is Door door && !door.IsBlocking)
+                {
+                    continue;
+                }
+
                 var color = cell switch
                 {
                     TileTypes.Door => Color.Brown,
