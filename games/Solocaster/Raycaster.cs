@@ -339,7 +339,8 @@ public unsafe class Raycaster : IDisposable
     {
         // Render ceiling (from top of screen to wall start)
         if (drawStart > 0)
-            new Span<uint>(columnPtr, drawStart).Fill(ceilingColor);
+            // new Span<uint>(columnPtr, drawStart).Fill(ceilingColor);
+            RenderFloorCeiling(columnPtr, playerTransform, rayDirX, rayDirY, 0, drawStart, isCeiling: true);
 
         float wallY = (side == 0) ?
             playerTransform.World.Position.Y + perpWallDist * rayDirY :
@@ -359,7 +360,68 @@ public unsafe class Raycaster : IDisposable
         int floorStart = drawEnd + 1;
         int floorCount = _frameWidth - floorStart;
         if (floorCount > 0)
-            new Span<uint>(columnPtr + floorStart, floorCount).Fill(floorColor);
+            //new Span<uint>(columnPtr + floorStart, floorCount).Fill(floorColor);
+            RenderFloorCeiling(columnPtr, playerTransform, rayDirX, rayDirY, floorStart, _frameWidth, isCeiling: false);
+    }
+
+    private void RenderFloorCeiling(
+        uint* columnPtr,
+        TransformComponent playerTransform,
+        float rayDirX,
+        float rayDirY,
+        int startX,
+        int endX,
+        bool isCeiling)
+    {
+        // Use first wall sprite for floor/ceiling
+        uint* texturePtr = _wallSpritePointers[0];
+
+        float posX = playerTransform.World.Position.X;
+        float posY = playerTransform.World.Position.Y;
+
+        // Camera height for floor/ceiling calculation
+        float posZ = _frameWidth * 0.5f;
+
+        // Pre-calculate center offset
+        float centerOffset = _frameWidth * 0.5f;
+
+        for (int x = startX; x < endX; x++)
+        {
+            // Distance to floor/ceiling point
+            float p = x - centerOffset;
+
+            // Avoid division by zero
+            if (MathF.Abs(p) < 0.001f) continue;
+
+            // For ceiling, use negative distance
+            float rowDistance = isCeiling ? -posZ / p : posZ / p;
+
+            // Calculate world coordinates
+            float floorX = posX + rowDistance * rayDirX;
+            float floorY = posY + rowDistance * rayDirY;
+
+            // Get texture coordinates (accounting for 90-degree rotation)
+            // The rotated texture has swapped coordinates
+            int texX = (int)(floorX * _texWidth) & _mask;
+            int texY = (int)(floorY * _texHeight) & _mask;
+
+            // Sample from rotated texture: rotated data is [texHeight][texWidth] -> [y][x]
+            uint color = texturePtr[texY * _texWidth + texX];
+
+            // Apply distance-based shading
+            float distance = MathF.Abs(rowDistance);
+            float shadingFactor = CalculateShadingFactor(distance);
+
+            if (shadingFactor < 1.0f)
+            {
+                uint r = (uint)(((color >> 16) & 0xFF) * shadingFactor);
+                uint g = (uint)(((color >> 8) & 0xFF) * shadingFactor);
+                uint b = (uint)((color & 0xFF) * shadingFactor);
+                color = 0xFF000000 | (r << 16) | (g << 8) | b;
+            }
+
+            columnPtr[x] = color;
+        }
     }
 
     private void UpdateRow(int side, int drawStart, int drawEnd, float rayDirX, float rayDirY, int lineWidth, uint* columnPtr, float wallY, int texNum, float shadingFactor, uint*[] spritePointers)
