@@ -26,8 +26,12 @@ public unsafe class Raycaster : IDisposable
     private readonly int _texHeight;
     private readonly int _mask;
 
-    private const uint ceilingColor = 0xFF383838; // Dark gray ceiling
-    private const uint floorColor = 0xFF707070;   // Lighter gray floor
+    // Pre-computed floor/ceiling data for performance
+    private readonly float[] _floorRowDistances;
+    private readonly float[] _ceilingRowDistances;
+    private readonly float[] _floorShadingFactors;
+    private readonly float[] _ceilingShadingFactors;
+
     private const float stepTreshold = 0.15f;
 
     // Distance-based shading parameters
@@ -98,8 +102,35 @@ public unsafe class Raycaster : IDisposable
             _doorSpriteHandles[i] = GCHandle.Alloc(_rotatedDoorSpriteData[i], GCHandleType.Pinned);
             _doorSpritePointers[i] = (uint*)_doorSpriteHandles[i].AddrOfPinnedObject();
         }
+
+        // Pre-compute floor/ceiling row distances and shading factors
+        _floorRowDistances = new float[screenWidth];
+        _ceilingRowDistances = new float[screenWidth];
+        _floorShadingFactors = new float[screenWidth];
+        _ceilingShadingFactors = new float[screenWidth];
+
+        float posZ = screenWidth * 0.5f;
+        float centerOffset = screenWidth * 0.5f;
+
+        for (int x = 0; x < screenWidth; x++)
+        {
+            float p = x - centerOffset;
+            if (MathF.Abs(p) < 0.001f)
+            {
+                _floorRowDistances[x] = 0;
+                _ceilingRowDistances[x] = 0;
+                _floorShadingFactors[x] = 1.0f;
+                _ceilingShadingFactors[x] = 1.0f;
+            }
+            else
+            {
+                _floorRowDistances[x] = posZ / p;
+                _ceilingRowDistances[x] = -posZ / p;
+                _floorShadingFactors[x] = CalculateShadingFactor(MathF.Abs(_floorRowDistances[x]));
+                _ceilingShadingFactors[x] = CalculateShadingFactor(MathF.Abs(_ceilingRowDistances[x]));
+            }
+        }
     }
-       
 
     public void Update(TransformComponent playerTransform, PlayerBrain playerBrain)
     {
@@ -373,52 +404,38 @@ public unsafe class Raycaster : IDisposable
         int endX,
         bool isCeiling)
     {
-        // Use first wall sprite for floor/ceiling
         uint* texturePtr = _wallSpritePointers[0];
-
         float posX = playerTransform.World.Position.X;
         float posY = playerTransform.World.Position.Y;
 
-        // Camera height for floor/ceiling calculation
-        float posZ = _frameWidth * 0.5f;
-
-        // Pre-calculate center offset
-        float centerOffset = _frameWidth * 0.5f;
+        // Select pre-computed arrays based on floor/ceiling
+        float[] rowDistances = isCeiling ? _ceilingRowDistances : _floorRowDistances;
+        float[] shadingFactors = isCeiling ? _ceilingShadingFactors : _floorShadingFactors;
 
         for (int x = startX; x < endX; x++)
         {
-            // Distance to floor/ceiling point
-            float p = x - centerOffset;
+            float rowDistance = rowDistances[x];
 
-            // Avoid division by zero
-            if (MathF.Abs(p) < 0.001f) continue;
-
-            // For ceiling, use negative distance
-            float rowDistance = isCeiling ? -posZ / p : posZ / p;
+            // Skip center pixel (distance is 0)
+            if (rowDistance == 0) continue;
 
             // Calculate world coordinates
             float floorX = posX + rowDistance * rayDirX;
             float floorY = posY + rowDistance * rayDirY;
 
-            // Get texture coordinates (accounting for 90-degree rotation)
-            // The rotated texture has swapped coordinates
+            // Get texture coordinates
             int texX = (int)(floorX * _texWidth) & _mask;
             int texY = (int)(floorY * _texHeight) & _mask;
 
-            // Sample from rotated texture: rotated data is [texHeight][texWidth] -> [y][x]
+            // Sample texture
             uint color = texturePtr[texY * _texWidth + texX];
 
-            // Apply distance-based shading
-            float distance = MathF.Abs(rowDistance);
-            float shadingFactor = CalculateShadingFactor(distance);
-
-            if (shadingFactor < 1.0f)
-            {
-                uint r = (uint)(((color >> 16) & 0xFF) * shadingFactor);
-                uint g = (uint)(((color >> 8) & 0xFF) * shadingFactor);
-                uint b = (uint)((color & 0xFF) * shadingFactor);
-                color = 0xFF000000 | (r << 16) | (g << 8) | b;
-            }
+            // Apply pre-computed shading
+            float shadingFactor = shadingFactors[x];
+            uint r = (uint)(((color >> 16) & 0xFF) * shadingFactor);
+            uint g = (uint)(((color >> 8) & 0xFF) * shadingFactor);
+            uint b = (uint)((color & 0xFF) * shadingFactor);
+            color = 0xFF000000 | (r << 16) | (g << 8) | b;
 
             columnPtr[x] = color;
         }
