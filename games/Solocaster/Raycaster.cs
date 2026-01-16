@@ -8,7 +8,10 @@ using Solocaster.Entities;
 using Solocaster.Services;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace Solocaster;
 
@@ -26,11 +29,23 @@ public unsafe class Raycaster : IDisposable
     private readonly int _texHeight;
     private readonly int _mask;
 
-    // Pre-computed floor/ceiling data for performance
+    // Pre-computed floor/ceiling data for performance - pinned for direct pointer access
     private readonly float[] _floorRowDistances;
     private readonly float[] _ceilingRowDistances;
-    private readonly float[] _floorShadingFactors;
-    private readonly float[] _ceilingShadingFactors;
+    private readonly uint[] _floorShadingFactors;    // Pre-multiplied as 8.8 fixed point
+    private readonly uint[] _ceilingShadingFactors;  // Pre-multiplied as 8.8 fixed point
+
+    // Pinned handles and pointers for zero-overhead access
+    private readonly GCHandle _floorRowDistancesHandle;
+    private readonly GCHandle _ceilingRowDistancesHandle;
+    private readonly GCHandle _floorShadingHandle;
+    private readonly GCHandle _ceilingShadingHandle;
+    private readonly float* _floorRowDistancesPtr;
+    private readonly float* _ceilingRowDistancesPtr;
+    private readonly uint* _floorShadingPtr;
+    private readonly uint* _ceilingShadingPtr;
+    private readonly uint* _floorCeilTexPtr;  // Cached texture pointer
+    private readonly float _texWidthF;        // Pre-converted to float
 
     private const float stepTreshold = 0.15f;
 
@@ -106,8 +121,8 @@ public unsafe class Raycaster : IDisposable
         // Pre-compute floor/ceiling row distances and shading factors
         _floorRowDistances = new float[screenWidth];
         _ceilingRowDistances = new float[screenWidth];
-        _floorShadingFactors = new float[screenWidth];
-        _ceilingShadingFactors = new float[screenWidth];
+        _floorShadingFactors = new uint[screenWidth];
+        _ceilingShadingFactors = new uint[screenWidth];
 
         float posZ = screenWidth * 0.5f;
         float centerOffset = screenWidth * 0.5f;
@@ -119,17 +134,33 @@ public unsafe class Raycaster : IDisposable
             {
                 _floorRowDistances[x] = 0;
                 _ceilingRowDistances[x] = 0;
-                _floorShadingFactors[x] = 1.0f;
-                _ceilingShadingFactors[x] = 1.0f;
+                _floorShadingFactors[x] = 256;  // 1.0 in 8.8 fixed point
+                _ceilingShadingFactors[x] = 256;
             }
             else
             {
                 _floorRowDistances[x] = posZ / p;
                 _ceilingRowDistances[x] = -posZ / p;
-                _floorShadingFactors[x] = CalculateShadingFactor(MathF.Abs(_floorRowDistances[x]));
-                _ceilingShadingFactors[x] = CalculateShadingFactor(MathF.Abs(_ceilingRowDistances[x]));
+                // Convert to 8.8 fixed point (0-256 range)
+                _floorShadingFactors[x] = (uint)(CalculateShadingFactor(MathF.Abs(_floorRowDistances[x])) * 256);
+                _ceilingShadingFactors[x] = (uint)(CalculateShadingFactor(MathF.Abs(_ceilingRowDistances[x])) * 256);
             }
         }
+
+        // Pin arrays and store pointers for zero-overhead access
+        _floorRowDistancesHandle = GCHandle.Alloc(_floorRowDistances, GCHandleType.Pinned);
+        _ceilingRowDistancesHandle = GCHandle.Alloc(_ceilingRowDistances, GCHandleType.Pinned);
+        _floorShadingHandle = GCHandle.Alloc(_floorShadingFactors, GCHandleType.Pinned);
+        _ceilingShadingHandle = GCHandle.Alloc(_ceilingShadingFactors, GCHandleType.Pinned);
+
+        _floorRowDistancesPtr = (float*)_floorRowDistancesHandle.AddrOfPinnedObject();
+        _ceilingRowDistancesPtr = (float*)_ceilingRowDistancesHandle.AddrOfPinnedObject();
+        _floorShadingPtr = (uint*)_floorShadingHandle.AddrOfPinnedObject();
+        _ceilingShadingPtr = (uint*)_ceilingShadingHandle.AddrOfPinnedObject();
+
+        // Cache floor/ceiling texture pointer and float texture width
+        _floorCeilTexPtr = _wallSpritePointers[0];
+        _texWidthF = _texWidth;
     }
 
     public void Update(TransformComponent playerTransform, PlayerBrain playerBrain)
@@ -370,7 +401,6 @@ public unsafe class Raycaster : IDisposable
     {
         // Render ceiling (from top of screen to wall start)
         if (drawStart > 0)
-            // new Span<uint>(columnPtr, drawStart).Fill(ceilingColor);
             RenderFloorCeiling(columnPtr, playerTransform, rayDirX, rayDirY, 0, drawStart, isCeiling: true);
 
         float wallY = (side == 0) ?
@@ -391,10 +421,10 @@ public unsafe class Raycaster : IDisposable
         int floorStart = drawEnd + 1;
         int floorCount = _frameWidth - floorStart;
         if (floorCount > 0)
-            //new Span<uint>(columnPtr + floorStart, floorCount).Fill(floorColor);
             RenderFloorCeiling(columnPtr, playerTransform, rayDirX, rayDirY, floorStart, _frameWidth, isCeiling: false);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void RenderFloorCeiling(
         uint* columnPtr,
         TransformComponent playerTransform,
@@ -404,17 +434,144 @@ public unsafe class Raycaster : IDisposable
         int endX,
         bool isCeiling)
     {
-        uint* texturePtr = _wallSpritePointers[0];
+        // Use cached pointers - no array access overhead
+        uint* texturePtr = _floorCeilTexPtr;
+        float* rowDistPtr = isCeiling ? _ceilingRowDistancesPtr : _floorRowDistancesPtr;
+        uint* shadingPtr = isCeiling ? _ceilingShadingPtr : _floorShadingPtr;
+
         float posX = playerTransform.World.Position.X;
         float posY = playerTransform.World.Position.Y;
 
-        // Select pre-computed arrays based on floor/ceiling
-        float[] rowDistances = isCeiling ? _ceilingRowDistances : _floorRowDistances;
-        float[] shadingFactors = isCeiling ? _ceilingShadingFactors : _floorShadingFactors;
+        // Cache field access in locals
+        int texWidth = _texWidth;
+        int mask = _mask;
+        float texWidthF = _texWidthF;
 
-        for (int x = startX; x < endX; x++)
+        int x = startX;
+
+        // SIMD path using AVX2 for coordinate calculation (8 pixels at a time)
+        if (Avx2.IsSupported && endX - startX >= 8)
         {
-            float rowDistance = rowDistances[x];
+            Vector256<float> vPosX = Vector256.Create(posX);
+            Vector256<float> vPosY = Vector256.Create(posY);
+            Vector256<float> vRayDirX = Vector256.Create(rayDirX);
+            Vector256<float> vRayDirY = Vector256.Create(rayDirY);
+            Vector256<float> vTexWidth = Vector256.Create(texWidthF);
+            Vector256<int> vMask = Vector256.Create(mask);
+            Vector256<int> vTexWidthI = Vector256.Create(texWidth);
+
+            int simdEnd = startX + ((endX - startX) & ~7);  // Round down to multiple of 8
+
+            // Allocate temp buffers once outside loop
+            int* colors = stackalloc int[8];
+            int* shading = stackalloc int[8];
+
+            for (; x < simdEnd; x += 8)
+            {
+                // Load 8 row distances
+                Vector256<float> vRowDist = Avx.LoadVector256(rowDistPtr + x);
+
+                // Calculate world coordinates: posX + rowDistance * rayDirX
+                Vector256<float> vFloorX = Avx.Add(vPosX, Avx.Multiply(vRowDist, vRayDirX));
+                Vector256<float> vFloorY = Avx.Add(vPosY, Avx.Multiply(vRowDist, vRayDirY));
+
+                // Convert to texture coordinates: (int)(floorX * texWidth) & mask
+                Vector256<float> vTexXf = Avx.Multiply(vFloorX, vTexWidth);
+                Vector256<float> vTexYf = Avx.Multiply(vFloorY, vTexWidth);
+
+                Vector256<int> vTexX = Avx2.And(Avx.ConvertToVector256Int32(vTexXf), vMask);
+                Vector256<int> vTexY = Avx2.And(Avx.ConvertToVector256Int32(vTexYf), vMask);
+
+                // Calculate texture offsets: texY * texWidth + texX
+                Vector256<int> vOffset = Avx2.Add(Avx2.MultiplyLow(vTexY, vTexWidthI), vTexX);
+
+                // Gather texture samples using AVX2 gather
+                Vector256<int> vColors = Avx2.GatherVector256((int*)texturePtr, vOffset, 4);
+
+                // Load 8 shading factors (fixed point 8.8)
+                Vector256<int> vShading = Avx.LoadVector256((int*)(shadingPtr + x));
+
+                // Store to temp buffers for per-channel processing
+                Avx.Store(colors, vColors);
+                Avx.Store(shading, vShading);
+
+                // Unrolled loop for 8 pixels
+                uint* destPtr = columnPtr + x;
+                for (int i = 0; i < 8; i++)
+                {
+                    uint color = (uint)colors[i];
+                    uint sf = (uint)shading[i];
+
+                    // Fixed-point multiply: (channel * sf) >> 8
+                    uint r = (((color >> 16) & 0xFF) * sf) >> 8;
+                    uint g = (((color >> 8) & 0xFF) * sf) >> 8;
+                    uint b = ((color & 0xFF) * sf) >> 8;
+
+                    destPtr[i] = 0xFF000000 | (r << 16) | (g << 8) | b;
+                }
+            }
+        }
+        // SSE2 path for 4 pixels at a time (no gather instruction, so scalar texture lookup)
+        else if (Sse2.IsSupported && endX - startX >= 4)
+        {
+            Vector128<float> vPosX = Vector128.Create(posX);
+            Vector128<float> vPosY = Vector128.Create(posY);
+            Vector128<float> vRayDirX = Vector128.Create(rayDirX);
+            Vector128<float> vRayDirY = Vector128.Create(rayDirY);
+            Vector128<float> vTexWidth = Vector128.Create(texWidthF);
+            Vector128<int> vMask = Vector128.Create(mask);
+
+            int simdEnd = startX + ((endX - startX) & ~3);  // Round down to multiple of 4
+
+            // Allocate temp buffers once outside loop
+            int* texXBuf = stackalloc int[4];
+            int* texYBuf = stackalloc int[4];
+
+            for (; x < simdEnd; x += 4)
+            {
+                // Load 4 row distances
+                Vector128<float> vRowDist = Sse.LoadVector128(rowDistPtr + x);
+
+                // Calculate world coordinates: posX + rowDistance * rayDirX
+                Vector128<float> vFloorX = Sse.Add(vPosX, Sse.Multiply(vRowDist, vRayDirX));
+                Vector128<float> vFloorY = Sse.Add(vPosY, Sse.Multiply(vRowDist, vRayDirY));
+
+                // Convert to texture coordinates: (int)(floorX * texWidth) & mask
+                Vector128<float> vTexXf = Sse.Multiply(vFloorX, vTexWidth);
+                Vector128<float> vTexYf = Sse.Multiply(vFloorY, vTexWidth);
+
+                Vector128<int> vTexX = Sse2.And(Sse2.ConvertToVector128Int32(vTexXf), vMask);
+                Vector128<int> vTexY = Sse2.And(Sse2.ConvertToVector128Int32(vTexYf), vMask);
+
+                // Store texture coordinates for scalar lookup (no gather in SSE)
+                Sse2.Store(texXBuf, vTexX);
+                Sse2.Store(texYBuf, vTexY);
+
+                // Scalar texture lookups and shading (4 pixels unrolled)
+                uint* destPtr = columnPtr + x;
+                uint* shadingLocal = shadingPtr + x;
+
+                int offset0 = texYBuf[0] * texWidth + texXBuf[0];
+                int offset1 = texYBuf[1] * texWidth + texXBuf[1];
+                int offset2 = texYBuf[2] * texWidth + texXBuf[2];
+                int offset3 = texYBuf[3] * texWidth + texXBuf[3];
+
+                uint c0 = texturePtr[offset0], sf0 = shadingLocal[0];
+                uint c1 = texturePtr[offset1], sf1 = shadingLocal[1];
+                uint c2 = texturePtr[offset2], sf2 = shadingLocal[2];
+                uint c3 = texturePtr[offset3], sf3 = shadingLocal[3];
+
+                destPtr[0] = 0xFF000000 | ((((c0 >> 16) & 0xFF) * sf0 >> 8) << 16) | ((((c0 >> 8) & 0xFF) * sf0 >> 8) << 8) | (((c0 & 0xFF) * sf0) >> 8);
+                destPtr[1] = 0xFF000000 | ((((c1 >> 16) & 0xFF) * sf1 >> 8) << 16) | ((((c1 >> 8) & 0xFF) * sf1 >> 8) << 8) | (((c1 & 0xFF) * sf1) >> 8);
+                destPtr[2] = 0xFF000000 | ((((c2 >> 16) & 0xFF) * sf2 >> 8) << 16) | ((((c2 >> 8) & 0xFF) * sf2 >> 8) << 8) | (((c2 & 0xFF) * sf2) >> 8);
+                destPtr[3] = 0xFF000000 | ((((c3 >> 16) & 0xFF) * sf3 >> 8) << 16) | ((((c3 >> 8) & 0xFF) * sf3 >> 8) << 8) | (((c3 & 0xFF) * sf3) >> 8);
+            }
+        }
+
+        // Scalar fallback for remaining pixels
+        for (; x < endX; x++)
+        {
+            float rowDistance = rowDistPtr[x];
 
             // Skip center pixel (distance is 0)
             if (rowDistance == 0) continue;
@@ -424,20 +581,19 @@ public unsafe class Raycaster : IDisposable
             float floorY = posY + rowDistance * rayDirY;
 
             // Get texture coordinates
-            int texX = (int)(floorX * _texWidth) & _mask;
-            int texY = (int)(floorY * _texHeight) & _mask;
+            int texX = (int)(floorX * texWidthF) & mask;
+            int texY = (int)(floorY * texWidthF) & mask;
 
             // Sample texture
-            uint color = texturePtr[texY * _texWidth + texX];
+            uint color = texturePtr[texY * texWidth + texX];
 
-            // Apply pre-computed shading
-            float shadingFactor = shadingFactors[x];
-            uint r = (uint)(((color >> 16) & 0xFF) * shadingFactor);
-            uint g = (uint)(((color >> 8) & 0xFF) * shadingFactor);
-            uint b = (uint)((color & 0xFF) * shadingFactor);
-            color = 0xFF000000 | (r << 16) | (g << 8) | b;
+            // Apply pre-computed shading (fixed-point multiply)
+            uint sf = shadingPtr[x];
+            uint r = (((color >> 16) & 0xFF) * sf) >> 8;
+            uint g = (((color >> 8) & 0xFF) * sf) >> 8;
+            uint b = ((color & 0xFF) * sf) >> 8;
 
-            columnPtr[x] = color;
+            columnPtr[x] = 0xFF000000 | (r << 16) | (g << 8) | b;
         }
     }
 
@@ -690,6 +846,16 @@ public unsafe class Raycaster : IDisposable
             if (handle.IsAllocated)
                 handle.Free();
         }
+
+        // Free floor/ceiling pinned handles
+        if (_floorRowDistancesHandle.IsAllocated)
+            _floorRowDistancesHandle.Free();
+        if (_ceilingRowDistancesHandle.IsAllocated)
+            _ceilingRowDistancesHandle.Free();
+        if (_floorShadingHandle.IsAllocated)
+            _floorShadingHandle.Free();
+        if (_ceilingShadingHandle.IsAllocated)
+            _ceilingShadingHandle.Free();
 
         foreach (var (_, handle) in _spriteTextureCache.Values)
         {
