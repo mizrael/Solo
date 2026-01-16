@@ -13,7 +13,7 @@ public class Door
     public int SpriteIndex { get; }
 
     private const float OpenSpeed = 2.0f;
-    private const float OpenTreshold = 0.8f;
+    private const float OpenTreshold = 0.9f;
 
     public Door(int x, int y, bool isVertical, int spriteIndex = 0)
     {

@@ -185,7 +185,6 @@ public class Dungeon : Map
         }
 
         int doorSize = 1;
-        int startStep = (int)Math.Ceiling((decimal)doorSize / 2);
 
         // Loop for each corridor cell and expand it
         foreach (Point cellLocation in this.CorridorCellLocations)
@@ -215,12 +214,19 @@ public class Dungeon : Map
                     for (int y = tileLocation.Y - tileStep - 1; y != tileLocation.Y; ++y)
                         tiles[x, y] = TileType.Empty;
 
-                for (int x = tileLocation.X; x != tileLocation.X + tileStep; ++x)
-                    tiles[x, tileLocation.Y - 1] = TileType.Wall;
+                // Place door in the center of the corridor, with walls on either side
+                int doorX = tileLocation.X + tileStep / 2;
+                int doorY = tileLocation.Y - 1;
 
-                // Horizontal door (spans E-W, player approaches from N or S)
-                for (int x = tileLocation.X + startStep; x != tileLocation.X + startStep + doorSize; ++x)
-                    tiles[x, tileLocation.Y - 1] = TileType.DoorHorizontal;
+                // Ensure walls on left and right of door (door frame)
+                if (doorX > 0)
+                    tiles[doorX - 1, doorY] = TileType.Wall;
+                if (doorX + doorSize < w)
+                    tiles[doorX + doorSize, doorY] = TileType.Wall;
+
+                // Place the horizontal door
+                for (int i = 0; i < doorSize; i++)
+                    tiles[doorX + i, doorY] = TileType.DoorHorizontal;
             }
             if (this[cellLocation].WestSide == SideType.Door)
             {
@@ -228,12 +234,19 @@ public class Dungeon : Map
                     for (int y = tileLocation.Y; y != tileLocation.Y + tileStep; ++y)
                         tiles[x - 1, y] = TileType.Empty;
 
-                for (int y = tileLocation.Y; y != tileLocation.Y + tileStep; ++y)
-                    tiles[tileLocation.X - 1, y] = TileType.Wall;
+                // Place door in the center of the corridor, with walls on either side
+                int doorX = tileLocation.X - 1;
+                int doorY = tileLocation.Y + tileStep / 2;
 
-                // Vertical door (spans N-S, player approaches from E or W)
-                for (int y = tileLocation.Y + startStep; y != tileLocation.Y + startStep + doorSize; ++y)
-                    tiles[tileLocation.X - 1, y] = TileType.DoorVertical;
+                // Ensure walls above and below door (door frame)
+                if (doorY > 0)
+                    tiles[doorX, doorY - 1] = TileType.Wall;
+                if (doorY + doorSize < h)
+                    tiles[doorX, doorY + doorSize] = TileType.Wall;
+
+                // Place the vertical door
+                for (int i = 0; i < doorSize; i++)
+                    tiles[doorX, doorY + i] = TileType.DoorVertical;
             }
             // ******************************* //
             // original code 
