@@ -246,7 +246,7 @@ public unsafe class Raycaster : IDisposable
                     if (cell == TileTypes.Floor || cell == TileTypes.StartingPosition)
                         continue;
 
-                    if (cell == TileTypes.Door)
+                    if (cell == TileTypes.DoorVertical || cell == TileTypes.DoorHorizontal)
                     {
                         var door = _map.GetDoor(mapX, mapY);
 
@@ -301,25 +301,24 @@ public unsafe class Raycaster : IDisposable
                         playerTransform.World.Position.X + doorPerpWallDist * rayDirX;
                     doorWallX -= MathF.Floor(doorWallX);
 
-                    // Apply door offset
-                    float doorOffset = 0;
-                    if (doorHit.IsVertical)
-                    {
-                        if (doorSide == 0) // Viewing from E-W
-                            doorOffset = doorHit.OpenAmount;
-                    }
-                    else
-                    {
-                        if (doorSide == 1) // Viewing from N-S
-                            doorOffset = doorHit.OpenAmount;
-                    }
-                    doorWallX -= doorOffset;
+                    // Determine if viewing from front based on door orientation
+                    // Vertical door: front from E-W (doorSide == 0)
+                    // Horizontal door: front from N-S (doorSide == 1)
+                    bool isViewingFromFront = doorHit.IsVertical ? (doorSide == 0) : (doorSide == 1);
 
-                    // Only update z-buffer if ray actually hits the visible door portion (not the opening)
-                    if (doorWallX >= 0 && doorWallX <= 1)
+                    // Apply door offset only when viewing from front
+                    if (isViewingFromFront)
                     {
-                        if (doorPerpWallDist < _zBuffer[y])
-                            _zBuffer[y] = doorPerpWallDist;
+                        doorWallX -= doorHit.OpenAmount;
+                    }
+
+                    // Update z-buffer:
+                    // - When viewing from front: only if ray hits visible door portion (not the opening)
+                    // - When viewing from side: always (door frame is solid)
+                    bool shouldUpdateZBuffer = !isViewingFromFront || (doorWallX >= 0 && doorWallX <= 1);
+                    if (shouldUpdateZBuffer && doorPerpWallDist < _zBuffer[y])
+                    {
+                        _zBuffer[y] = doorPerpWallDist;
                     }
 
                     int doorLineWidth = (int)(_frameWidth / doorPerpWallDist);
@@ -363,26 +362,30 @@ public unsafe class Raycaster : IDisposable
             playerTransform.World.Position.X + perpWallDist * rayDirX;
         wallY -= MathF.Floor(wallY);
 
-        // Apply door sliding offset based on which side we're viewing from
-        float doorOffset = 0;
-        if (!door.IsVertical)
+        // Determine if viewing from front or side based on door orientation
+        // Vertical door (spans N-S): front view from E-W (side == 0)
+        // Horizontal door (spans E-W): front view from N-S (side == 1)
+        bool isViewingFromFront = door.IsVertical ? (side == 0) : (side == 1);
+
+        float shadingFactor = CalculateShadingFactor(perpWallDist);
+
+        if (isViewingFromFront)
         {
-            if (side == 0) // Viewing from E-W
-                doorOffset = door.OpenAmount;
+            // Viewing door from front - show door texture with sliding
+            float doorOffset = door.OpenAmount;
+            wallY -= doorOffset;
+
+            // Only render the visible part of the door
+            if (wallY >= 0 && wallY <= 1)
+            {
+                UpdateRow(side, drawStart, drawEnd, rayDirX, rayDirY, lineWidth, columnPtr, wallY, texNum: door.SpriteIndex, shadingFactor, _doorSpritePointers);
+            }
         }
         else
         {
-            if (side == 1) // Viewing from N-S
-                doorOffset = door.OpenAmount;
-        }
-
-        wallY -= doorOffset;
-
-        // Only render the visible part of the door
-        if (wallY >= 0 && wallY <= 1)
-        {
-            float shadingFactor = CalculateShadingFactor(perpWallDist);
-            UpdateRow(side, drawStart, drawEnd, rayDirX, rayDirY, lineWidth, columnPtr, wallY, texNum: door.SpriteIndex, shadingFactor, _doorSpritePointers);
+            // Viewing door from side - show wall texture (door frame)
+            // Use first wall sprite as the door frame texture
+            UpdateRow(side, drawStart, drawEnd, rayDirX, rayDirY, lineWidth, columnPtr, wallY, texNum: 0, shadingFactor, _wallSpritePointers);
         }
     }
 
@@ -411,7 +414,7 @@ public unsafe class Raycaster : IDisposable
         int tileType = _map.Cells[mapY][mapX];
 
         // Regular wall rendering (doors are handled separately now)
-        if (tileType != TileTypes.Floor && tileType != TileTypes.Door && tileType != TileTypes.StartingPosition)
+        if (tileType != TileTypes.Floor && tileType != TileTypes.DoorVertical && tileType != TileTypes.DoorHorizontal && tileType != TileTypes.StartingPosition)
         {
             float shadingFactor = CalculateShadingFactor(perpWallDist);
             UpdateRow(side, drawStart, drawEnd, rayDirX, rayDirY, lineWidth, columnPtr, wallY, texNum: tileType, shadingFactor, _wallSpritePointers);

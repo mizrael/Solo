@@ -2,8 +2,8 @@ namespace Solocaster.DungeonGenerator;
 
 public enum TileType
 {
-   
-    Door = 43,
+    DoorVertical = 44,  // Door spanning N-S, player approaches from E or W
+    DoorHorizontal = 45,// Door spanning E-W, player approaches from N or S
 
     Wall = 178,
 

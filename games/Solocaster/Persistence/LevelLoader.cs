@@ -236,13 +236,15 @@ public class LevelLoader
         // Collect wall neighbors that have already been assigned
         var neighborWallIds = new List<int>();
 
-        // Check left neighbor
-        if (col > 0 && cells[row][col - 1] > 0 && cells[row][col - 1] != TileTypes.Door)
-            neighborWallIds.Add(cells[row][col - 1]);
+        // Check left neighbor (exclude doors)
+        int leftCell = col > 0 ? cells[row][col - 1] : 0;
+        if (leftCell > 0 && leftCell != TileTypes.DoorVertical && leftCell != TileTypes.DoorHorizontal)
+            neighborWallIds.Add(leftCell);
 
-        // Check top neighbor
-        if (row > 0 && cells[row - 1][col] > 0 && cells[row - 1][col] != TileTypes.Door)
-            neighborWallIds.Add(cells[row - 1][col]);
+        // Check top neighbor (exclude doors)
+        int topCell = row > 0 ? cells[row - 1][col] : 0;
+        if (topCell > 0 && topCell != TileTypes.DoorVertical && topCell != TileTypes.DoorHorizontal)
+            neighborWallIds.Add(topCell);
 
         // 80% chance: copy from a neighbor (if any exist)
         // 20% chance: pick new weighted random
@@ -261,7 +263,8 @@ public class LevelLoader
         {
             TileType.Empty => TileTypes.Floor,
             TileType.Void => TileTypes.Floor,
-            TileType.Door => TileTypes.Door,
+            TileType.DoorVertical => TileTypes.DoorVertical,
+            TileType.DoorHorizontal => TileTypes.DoorHorizontal,
             TileType.Wall => 1,
             TileType.WallSE => 1,
             TileType.WallSO => 1,

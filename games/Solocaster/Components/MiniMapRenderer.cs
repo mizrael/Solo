@@ -89,7 +89,7 @@ public class MiniMapRenderer : Component, IRenderable
 
                 var color = cell switch
                 {
-                    TileTypes.Door => Color.Brown,
+                    TileTypes.DoorVertical or TileTypes.DoorHorizontal => Color.Brown,
                     _ => CellColors[cell],
                 };
 

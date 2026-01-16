@@ -8,7 +8,8 @@ public static class TileTypes
 {
     public const int Floor = -1;
     public const int StartingPosition = 99;
-    public const int Door = 100;
+    public const int DoorVertical = 101;   // Door spanning N-S, player approaches from E or W
+    public const int DoorHorizontal = 102; // Door spanning E-W, player approaches from N or S
 }
 
 public class Map
@@ -40,14 +41,19 @@ public class Map
                     // Convert the starting position to a floor tile
                     Cells[row][col] = TileTypes.Floor;
                 }
-                else if (cell == TileTypes.Door)
+                else if (cell == TileTypes.DoorVertical || cell == TileTypes.DoorHorizontal)
                 {
                     // Assign random door sprite index if we have door sprites available
                     int spriteIndex = doorSpriteCount > 0
                         ? Random.Shared.Next(doorSpriteCount)
                         : 0;
 
-                    var door = new Door(row, col, true, spriteIndex);
+                    // Determine door orientation from cell type
+                    // Vertical doors span N-S (player approaches from E or W)
+                    // For generic Door type, default to vertical
+                    bool isVertical = cell != TileTypes.DoorHorizontal;
+
+                    var door = new Door(row, col, isVertical, spriteIndex);
                     _doors[(col, row)] = door;
                 }
             }
@@ -91,7 +97,7 @@ public class Map
         if (cell == TileTypes.Floor || cell == TileTypes.StartingPosition)
             return false;
 
-        if (cell == TileTypes.Door)
+        if (cell == TileTypes.DoorVertical || cell == TileTypes.DoorHorizontal)
         {
             var door = GetDoor(x, y);
             return door!.IsBlocking;

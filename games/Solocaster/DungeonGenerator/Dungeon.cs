@@ -218,8 +218,9 @@ public class Dungeon : Map
                 for (int x = tileLocation.X; x != tileLocation.X + tileStep; ++x)
                     tiles[x, tileLocation.Y - 1] = TileType.Wall;
 
+                // Horizontal door (spans E-W, player approaches from N or S)
                 for (int x = tileLocation.X + startStep; x != tileLocation.X + startStep + doorSize; ++x)
-                    tiles[x, tileLocation.Y - 1] = TileType.Door;
+                    tiles[x, tileLocation.Y - 1] = TileType.DoorHorizontal;
             }
             if (this[cellLocation].WestSide == SideType.Door)
             {
@@ -230,8 +231,9 @@ public class Dungeon : Map
                 for (int y = tileLocation.Y; y != tileLocation.Y + tileStep; ++y)
                     tiles[tileLocation.X - 1, y] = TileType.Wall;
 
+                // Vertical door (spans N-S, player approaches from E or W)
                 for (int y = tileLocation.Y + startStep; y != tileLocation.Y + startStep + doorSize; ++y)
-                    tiles[tileLocation.X - 1, y] = TileType.Door;
+                    tiles[tileLocation.X - 1, y] = TileType.DoorVertical;
             }
             // ******************************* //
             // original code 
@@ -414,7 +416,7 @@ public class Dungeon : Map
         {
             for (int y = 0; y < h; y++)
             {
-                if (tiles[x, y] != TileType.Door) continue;
+                if (!TileIsDoor(tiles[x, y])) continue;
 
                 if (tiles[x - 1, y] == TileType.Wall && tiles[x + 1, y] == TileType.Empty)
                 {
@@ -445,6 +447,11 @@ public class Dungeon : Map
     private static bool TileIsWall(TileType tile)
     {
         return (tile >= TileType.Wall && tile <= TileType.WallNESO) || tile == TileType.Void;
+    }
+
+    private static bool TileIsDoor(TileType tile)
+    {
+        return tile is TileType.DoorVertical or TileType.DoorHorizontal;
     }
 
     #endregion
