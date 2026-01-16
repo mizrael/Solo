@@ -14,9 +14,14 @@ namespace Solocaster;
 
 public unsafe class Raycaster : IDisposable
 {
-    private readonly Color[][] _rotatedSpriteData;
-    private readonly GCHandle[] _spriteHandles;
-    private readonly uint*[] _spritePointers;
+    private readonly Color[][] _rotatedWallSpriteData;
+    private readonly GCHandle[] _wallSpriteHandles;
+    private readonly uint*[] _wallSpritePointers;
+
+    private readonly Color[][] _rotatedDoorSpriteData;
+    private readonly GCHandle[] _doorSpriteHandles;
+    private readonly uint*[] _doorSpritePointers;
+
     private readonly int _texWidth;
     private readonly int _texHeight;
     private readonly int _mask;
@@ -54,29 +59,47 @@ public unsafe class Raycaster : IDisposable
         _spriteTextureCache = new Dictionary<Texture2D, (Color[], GCHandle)>();
 
         // Assume all sprites are the same size (first sprite's bounds)
-        var sprites = level.Sprites;
-        _texWidth = sprites[0].Bounds.Width;
-        _texHeight = sprites[0].Bounds.Height;
+        var wallSprites = level.WallSprites;
+        _texWidth = wallSprites[0].Bounds.Width;
+        _texHeight = wallSprites[0].Bounds.Height;
         _mask = _texWidth - 1;
 
-        _rotatedSpriteData = new Color[sprites.Length][];
-        _spriteHandles = new GCHandle[sprites.Length];
-        _spritePointers = new uint*[sprites.Length];
+        // Initialize wall sprites
+        _rotatedWallSpriteData = new Color[wallSprites.Length][];
+        _wallSpriteHandles = new GCHandle[wallSprites.Length];
+        _wallSpritePointers = new uint*[wallSprites.Length];
 
-        for (int i = 0; i < sprites.Length; i++)
+        for (int i = 0; i < wallSprites.Length; i++)
         {
-            var sprite = sprites[i];
+            var sprite = wallSprites[i];
 
             var spriteData = new Color[sprite.Bounds.Width * sprite.Bounds.Height];
             sprite.Texture.GetData(0, sprite.Bounds, spriteData, 0, spriteData.Length);
 
-            _rotatedSpriteData[i] = spriteData.Rotate90(sprite.Bounds.Width, sprite.Bounds.Height);
-            _spriteHandles[i] = GCHandle.Alloc(_rotatedSpriteData[i], GCHandleType.Pinned);
-            _spritePointers[i] = (uint*)_spriteHandles[i].AddrOfPinnedObject();
+            _rotatedWallSpriteData[i] = spriteData.Rotate90(sprite.Bounds.Width, sprite.Bounds.Height);
+            _wallSpriteHandles[i] = GCHandle.Alloc(_rotatedWallSpriteData[i], GCHandleType.Pinned);
+            _wallSpritePointers[i] = (uint*)_wallSpriteHandles[i].AddrOfPinnedObject();
+        }
+
+        // Initialize door sprites
+        var doorSprites = level.DoorSprites;
+        _rotatedDoorSpriteData = new Color[doorSprites.Length][];
+        _doorSpriteHandles = new GCHandle[doorSprites.Length];
+        _doorSpritePointers = new uint*[doorSprites.Length];
+
+        for (int i = 0; i < doorSprites.Length; i++)
+        {
+            var sprite = doorSprites[i];
+
+            var spriteData = new Color[sprite.Bounds.Width * sprite.Bounds.Height];
+            sprite.Texture.GetData(0, sprite.Bounds, spriteData, 0, spriteData.Length);
+
+            _rotatedDoorSpriteData[i] = spriteData.Rotate90(sprite.Bounds.Width, sprite.Bounds.Height);
+            _doorSpriteHandles[i] = GCHandle.Alloc(_rotatedDoorSpriteData[i], GCHandleType.Pinned);
+            _doorSpritePointers[i] = (uint*)_doorSpriteHandles[i].AddrOfPinnedObject();
         }
     }
-
-   
+       
 
     public void Update(TransformComponent playerTransform, PlayerBrain playerBrain)
     {
@@ -297,7 +320,7 @@ public unsafe class Raycaster : IDisposable
         if (wallY >= 0 && wallY <= 1)
         {
             float shadingFactor = CalculateShadingFactor(perpWallDist);
-            UpdateRow(side, drawStart, drawEnd, rayDirX, rayDirY, lineWidth, columnPtr, wallY, texNum: 0, shadingFactor);
+            UpdateRow(side, drawStart, drawEnd, rayDirX, rayDirY, lineWidth, columnPtr, wallY, texNum: door.SpriteIndex, shadingFactor, _doorSpritePointers);
         }
     }
 
@@ -329,7 +352,7 @@ public unsafe class Raycaster : IDisposable
         if (tileType != TileTypes.Floor && tileType != TileTypes.Door && tileType != TileTypes.StartingPosition)
         {
             float shadingFactor = CalculateShadingFactor(perpWallDist);
-            UpdateRow(side, drawStart, drawEnd, rayDirX, rayDirY, lineWidth, columnPtr, wallY, texNum: tileType, shadingFactor);
+            UpdateRow(side, drawStart, drawEnd, rayDirX, rayDirY, lineWidth, columnPtr, wallY, texNum: tileType, shadingFactor, _wallSpritePointers);
         }
 
         // Render floor (from wall end to bottom of screen)
@@ -339,9 +362,9 @@ public unsafe class Raycaster : IDisposable
             new Span<uint>(columnPtr + floorStart, floorCount).Fill(floorColor);
     }
 
-    private void UpdateRow(int side, int drawStart, int drawEnd, float rayDirX, float rayDirY, int lineWidth, uint* columnPtr, float wallY, int texNum, float shadingFactor = 1.0f)
+    private void UpdateRow(int side, int drawStart, int drawEnd, float rayDirX, float rayDirY, int lineWidth, uint* columnPtr, float wallY, int texNum, float shadingFactor, uint*[] spritePointers)
     {
-        uint* texturePtr = _spritePointers[texNum];
+        uint* texturePtr = spritePointers[texNum];
 
         int texY = (int)(wallY * _texWidth);
 
@@ -577,7 +600,13 @@ public unsafe class Raycaster : IDisposable
 
     public void Dispose()
     {
-        foreach (var handle in _spriteHandles)
+        foreach (var handle in _wallSpriteHandles)
+        {
+            if (handle.IsAllocated)
+                handle.Free();
+        }
+
+        foreach (var handle in _doorSpriteHandles)
         {
             if (handle.IsAllocated)
                 handle.Free();

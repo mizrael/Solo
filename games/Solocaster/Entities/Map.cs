@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using Solo.Assets;
 using System;
 using System.Collections.Generic;
 
@@ -21,7 +20,7 @@ public class Map
     private readonly Dictionary<(int, int), Door> _doors = new();
     private readonly (int col, int row) _startingTile;
 
-    public Map(int[][] cells)
+    public Map(int[][] cells, int doorSpriteCount = 0)
     {
         Cells = cells;
         Rows = Cells.Length;
@@ -43,7 +42,12 @@ public class Map
                 }
                 else if (cell == TileTypes.Door)
                 {
-                    var door = new Door(row, col, true);
+                    // Assign random door sprite index if we have door sprites available
+                    int spriteIndex = doorSpriteCount > 0
+                        ? Random.Shared.Next(doorSpriteCount)
+                        : 0;
+
+                    var door = new Door(row, col, true, spriteIndex);
                     _doors[(col, row)] = door;
                 }
             }
@@ -188,13 +192,4 @@ public class Map
 
         return pointOnWall;
     }
-}
-
-public class Level
-{
-    public required Map Map { get; init; }
-
-    public required SpriteSheet[] SpriteSheets { get; init; }
-
-    public required Sprite[] Sprites { get; init; }
 }

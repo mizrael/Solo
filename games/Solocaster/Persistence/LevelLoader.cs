@@ -55,17 +55,19 @@ public class LevelLoader
             wallSpritesResult = ResolveWallSprites(levelData.Map.WallSprites, spritesheets);
         }
 
-        var map = LoadMap(levelData, spritesheets, wallSpritesResult);
+        var wallSprites = BuildWallSprites(levelData, spritesheets, wallSpritesResult);
+        var doorSprites = BuildDoorSprites(levelData, spritesheets);
+
+        var map = LoadMap(levelData, spritesheets, wallSpritesResult, doorSprites.Length);
 
         LoadEntities(game, entityManager, levelData);
-
-        var sprites = BuildSprites(levelData, spritesheets, wallSpritesResult);
 
         return new()
         {
             Map = map,
             SpriteSheets = spritesheets,
-            Sprites = sprites
+            WallSprites = wallSprites,
+            DoorSprites = doorSprites
         };
     }
 
@@ -77,7 +79,7 @@ public class LevelLoader
         return spritesheets;
     }
 
-    private static Solo.Assets.Sprite[] BuildSprites(
+    private static Solo.Assets.Sprite[] BuildWallSprites(
         LevelData levelData,
         Solo.Assets.SpriteSheet[] spritesheets,
         WallSpritesResult? wallSpritesResult)
@@ -107,27 +109,47 @@ public class LevelLoader
         return spritesheets[0].Sprites.ToArray();
     }
 
+    private static Solo.Assets.Sprite[] BuildDoorSprites(
+        LevelData levelData,
+        Solo.Assets.SpriteSheet[] spritesheets)
+    {
+        if (levelData.Map.DoorSprites == null || levelData.Map.DoorSprites.Length == 0)
+            return Array.Empty<Solo.Assets.Sprite>();
+
+        var doorSprites = new List<Solo.Assets.Sprite>();
+
+        foreach (var doorSpriteName in levelData.Map.DoorSprites)
+        {
+            var doorSprite = FindSpriteInSheets(doorSpriteName, spritesheets);
+            doorSprites.Add(doorSprite);
+        }
+
+        return doorSprites.ToArray();
+    }
+
     private static Entities.Map LoadMap(
         LevelData levelData,
         Solo.Assets.SpriteSheet[] spritesheets,
-        WallSpritesResult? wallSpritesResult)
+        WallSpritesResult? wallSpritesResult,
+        int doorSpriteCount)
     {
         int[][] cells;
 
         switch (levelData.Map.Type)
         {
             case MapType.Random:
+                var roomGenerator = new RoomGenerator(5, 2, 3, 2, 3);
                 var generator = new DungeonGenerator.DungeonGenerator(
-                    width: 25,
-                    height: 25,
-                    changeDirectionModifier: 30,
-                    sparsenessModifier: 70,
-                    deadEndRemovalModifier: 50,
-                    roomGenerator: new RoomGenerator(10, 1, 5, 1, 5)
+                    width: 10,
+                    height: 10,
+                    changeDirectionModifier: 70,
+                    sparsenessModifier: 20,
+                    deadEndRemovalModifier: 80,
+                    roomGenerator: roomGenerator
                 );
 
                 var dungeon = generator.Generate();
-                var tiles = dungeon.ExpandToTiles(1);
+                var tiles = dungeon.ExpandToTiles(2);
                 cells = ConvertTilesToCells(tiles, wallSpritesResult?.Weights);
                 break;
 
@@ -144,7 +166,7 @@ public class LevelLoader
 
         EnsurePerimeterClosed(cells);
 
-        var map = new Entities.Map(cells);
+        var map = new Entities.Map(cells, doorSpriteCount);
         return map;
     }
 
@@ -412,6 +434,7 @@ public class LevelLoader
         public required MapType Type { get; init; } = MapType.Static;
         public int[][]? Cells { get; init; }
         public JsonElement? WallSprites { get; init; }
+        public string[]? DoorSprites { get; init; }
     }
 
     private class EntityData

@@ -10,15 +10,17 @@ public class Door
     public float OpenAmount { get; private set; } // 0 = closed, 1 = fully open
     public bool IsVertical { get; } // true for N-S door, false for E-W door
     public bool IsOpening { get; private set; }
-    
+    public int SpriteIndex { get; }
+
     private const float OpenSpeed = 2.0f;
     private const float OpenTreshold = 0.8f;
 
-    public Door(int x, int y, bool isVertical)
+    public Door(int x, int y, bool isVertical, int spriteIndex = 0)
     {
         X = x;
         Y = y;
         IsVertical = isVertical;
+        SpriteIndex = spriteIndex;
         OpenAmount = 0;
         IsOpening = false;
     }

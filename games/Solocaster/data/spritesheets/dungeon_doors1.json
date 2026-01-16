@@ -1,0 +1,33 @@
+{
+  "spriteSheetName": "dungeon_doors1",
+  "sprites": [
+    {
+      "name": "door1",
+      "x": 0,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "door2",
+      "x": 128,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "door3",
+      "x": 256,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "door4",
+      "x": 384,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    }
+  ]
+}

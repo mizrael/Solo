@@ -1,6 +1,7 @@
 {
   "spritesheets": [
-    "dungeon1"
+    "dungeon1",
+    "dungeon_doors1"
   ],
   "map": {
     "type": "random",
@@ -11,6 +12,7 @@
         "wood_wall_gray": 40
       },
       "accent": [ "stone_wall_bloodstained", "brick_wall_aged", "wood_wall_dusty", "wood_wall_bloodstained" ]
-    }
+    },
+    "doorSprites": [ "door1", "door2", "door3", "door4" ] 
   }
 }

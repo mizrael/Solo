@@ -389,55 +389,55 @@ public class Dungeon : Map
         }
 
         // remove the doors in the middle of a room
-        /*  for (int x = 0; x < w; x++)
-          {
-              for (int y = 0; y < h; y++)
-              {
-                  if (tiles[x, y] != TileType.Door) continue;
+        //for (int x = 0; x < w; x++)
+        //{
+        //    for (int y = 0; y < h; y++)
+        //    {
+        //        if (tiles[x, y] != TileType.Door) continue;
 
-                  if (tiles[x - 1, y] == TileType.Wall) continue;
-                  if (tiles[x, y - 1] == TileType.Wall) continue;
-                  if (tiles[x - 1, y - 1] == TileType.Wall) continue;
+        //        if (tiles[x - 1, y] == TileType.Wall) continue;
+        //        if (tiles[x, y - 1] == TileType.Wall) continue;
+        //        if (tiles[x - 1, y - 1] == TileType.Wall) continue;
 
-                  if (tiles[x + 1, y] == TileType.Wall) continue;
-                  if (tiles[x, y + 1] == TileType.Wall) continue;
-                  if (tiles[x + 1, y + 1] == TileType.Wall) continue;
+        //        if (tiles[x + 1, y] == TileType.Wall) continue;
+        //        if (tiles[x, y + 1] == TileType.Wall) continue;
+        //        if (tiles[x + 1, y + 1] == TileType.Wall) continue;
 
-                  if (tiles[x - 1, y + 1] == TileType.Wall) continue;
-                  if (tiles[x + 1, y - 1] == TileType.Wall) continue;
+        //        if (tiles[x - 1, y + 1] == TileType.Wall) continue;
+        //        if (tiles[x + 1, y - 1] == TileType.Wall) continue;
 
-                  tiles[x, y] = TileType.Empty;
-              }
-          }
-          // clean up doors glitches
-          for (int x = 0; x < w; x++)
-          {
-              for (int y = 0; y < h; y++)
-              {
-                  if (tiles[x, y] != TileType.Door) continue;
+        //        tiles[x, y] = TileType.Empty;
+        //    }
+        //}
+        // clean up doors glitches
+        for (int x = 0; x < w; x++)
+        {
+            for (int y = 0; y < h; y++)
+            {
+                if (tiles[x, y] != TileType.Door) continue;
 
-                  if (tiles[x - 1, y] == TileType.Wall && tiles[x + 1, y] == TileType.Empty)
-                  {
-                      tiles[x, y] = TileType.Empty;
-                      continue;
-                  }
-                  if (tiles[x + 1, y] == TileType.Wall && tiles[x - 1, y] == TileType.Empty)
-                  {
-                      tiles[x, y] = TileType.Empty;
-                      continue;
-                  }
-                  if (tiles[x, y - 1] == TileType.Wall && tiles[x, y + 1] == TileType.Empty)
-                  {
-                      tiles[x, y] = TileType.Empty;
-                      continue;
-                  }
-                  if (tiles[x, y + 1] == TileType.Wall && tiles[x, y - 1] == TileType.Empty)
-                  {
-                      tiles[x, y] = TileType.Empty;
-                      continue;
-                  }
-              }
-          }*/
+                if (tiles[x - 1, y] == TileType.Wall && tiles[x + 1, y] == TileType.Empty)
+                {
+                    tiles[x, y] = TileType.Empty;
+                    continue;
+                }
+                if (tiles[x + 1, y] == TileType.Wall && tiles[x - 1, y] == TileType.Empty)
+                {
+                    tiles[x, y] = TileType.Empty;
+                    continue;
+                }
+                if (tiles[x, y - 1] == TileType.Wall && tiles[x, y + 1] == TileType.Empty)
+                {
+                    tiles[x, y] = TileType.Empty;
+                    continue;
+                }
+                if (tiles[x, y + 1] == TileType.Wall && tiles[x, y - 1] == TileType.Empty)
+                {
+                    tiles[x, y] = TileType.Empty;
+                    continue;
+                }
+            }
+        }
 
         return tiles;
     }
