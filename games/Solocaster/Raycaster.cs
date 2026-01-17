@@ -711,6 +711,7 @@ public unsafe class Raycaster : IDisposable
     private struct SpriteProjection
     {
         public float Distance;
+        public float ShadingFactor;
         public int ScreenY;
         public int SpriteSizeY;
         public int SpriteSizeX;
@@ -795,6 +796,7 @@ public unsafe class Raycaster : IDisposable
             projections.Add(new SpriteProjection
             {
                 Distance = transformY,
+                ShadingFactor = CalculateShadingFactor(transformY),
                 ScreenY = screenY,
                 SpriteSizeY = spriteSizeY,
                 SpriteSizeX = spriteSizeX,
@@ -834,7 +836,7 @@ public unsafe class Raycaster : IDisposable
                     uint color = proj.TexturePtr[texY * proj.TexWidth + texX];
                     if ((color & 0xFF000000) != 0)
                     {
-                        rowPtr[x] = color;
+                        rowPtr[x] = ApplyShading(color, proj.ShadingFactor);
                     }
                 }
             }
