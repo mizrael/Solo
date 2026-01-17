@@ -272,6 +272,19 @@ public class LevelLoader
                     properties[kvp.Key] = JsonUtils.ConvertJsonElement(kvp.Value);
                 }
 
+                // For wall decorations, calculate offset toward the adjacent wall
+                if (decoration.Placement == DecorationPlacement.Wall)
+                {
+                    var wallDir = GetAdjacentWallDirection(map, col, row);
+                    if (wallDir.HasValue)
+                    {
+                        // Offset 0.4 units toward the wall (0.5 would be on the wall edge)
+                        const float wallOffset = 0.4f;
+                        properties["offsetX"] = wallDir.Value.colOffset * wallOffset;
+                        properties["offsetY"] = wallDir.Value.rowOffset * wallOffset;
+                    }
+                }
+
                 var definition = new EntityDefinition(
                     Type: templateData.ItemType,
                     TileX: col,
@@ -287,13 +300,22 @@ public class LevelLoader
 
     private static bool IsAdjacentToWall(Entities.Map map, int col, int row)
     {
-        // Check all 4 cardinal directions for walls
-        int[][] directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+        return GetAdjacentWallDirection(map, col, row).HasValue;
+    }
+
+    /// <summary>
+    /// Returns the direction of an adjacent wall as (colOffset, rowOffset), or null if no wall adjacent.
+    /// Prioritizes walls in order: North, South, West, East.
+    /// </summary>
+    private static (int colOffset, int rowOffset)? GetAdjacentWallDirection(Entities.Map map, int col, int row)
+    {
+        // Check all 4 cardinal directions for walls: North, South, West, East
+        (int colOffset, int rowOffset)[] directions = [(0, -1), (0, 1), (-1, 0), (1, 0)];
 
         foreach (var dir in directions)
         {
-            int newCol = col + dir[0];
-            int newRow = row + dir[1];
+            int newCol = col + dir.colOffset;
+            int newRow = row + dir.rowOffset;
 
             if (newCol < 0 || newCol >= map.Cols || newRow < 0 || newRow >= map.Rows)
                 continue;
@@ -301,10 +323,10 @@ public class LevelLoader
             var cell = map.Cells[newRow][newCol];
             // Wall cells are positive integers (sprite indices) that are not doors
             if (cell > 0 && cell != TileTypes.DoorVertical && cell != TileTypes.DoorHorizontal)
-                return true;
+                return dir;
         }
 
-        return false;
+        return null;
     }
 
     private static int[][] ConvertTilesToCells(TileType[,] tiles, Dictionary<int, int>? weightedWallCellIds = null)

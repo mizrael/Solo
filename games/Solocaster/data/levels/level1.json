@@ -20,32 +20,66 @@
         "density": 0.04,
         "placement": "floor",
         "items": {
-          "misc_items2:barrel": 20,
-          "misc_items2:broken_barrel": 10,
-          "misc_items2:closed_crate": 15,
-          "misc_items2:sack": 10,
-          "misc_items2:multiple_sacks": 5
+          "misc_items2:barrel_upright_01": 15,
+          "misc_items2:barrel_upright_02": 15,
+          "misc_items2:barrel_upright_mossy": 10,
+          "misc_items2:barrel_mossy_upright": 10,
+          "misc_items2:barrel_clean_upright": 10,
+          "misc_items2:barrel_side_01": 8,
+          "misc_items2:barrel_side_mossy_01": 6,
+          "misc_items2:barrel_side_mossy_02": 6,
+          "misc_items2:crate_closed_01": 12,
+          "misc_items2:crate_closed_02": 12,
+          "misc_items2:crate_01": 10,
+          "misc_items2:crate_02": 10,
+          "misc_items2:crate_mossy_01": 8,
+          "misc_items2:crate_mossy_02": 8,
+          "misc_items2:crate_cloth_01": 6,
+          "misc_items2:crate_cloth_bloody": 4
         }
       },
       {
         "density": 0.03,
         "placement": "floor",
         "items": {
-          "misc_items2:bones_pile_small": 20,
-          "misc_items2:bones_pile_large": 10,
-          "misc_items2:skull": 15,
-          "misc_items2:bone_single": 10,
-          "misc_items2:rocks_pile": 10,
-          "misc_items2:broken_pot": 5
+          "misc_items2:bones_skull_01": 25,
+          "misc_items2:bones_pile_01": 20,
+          "misc_items2:bones_pile_02": 20,
+          "misc_items2:bones_scattered": 15
         }
       },
       {
-        "density": 0.06,
-        "placement": "wall",
+        "density": 0.02,
+        "placement": "floor",
         "items": {
-          "misc_items2:wall_torch": 30,
-          "misc_items2:brazier": 15,
-          "misc_items2:candelabra": 10
+          "misc_items2:sword_ground_01": 10,
+          "misc_items2:sword_ground_02": 10,
+          "misc_items2:sword_ground_03": 8,
+          "misc_items2:sword_ground_04": 8,
+          "misc_items2:sword_ground_bloody": 5,
+          "misc_items2:sword_ground_broken": 8,
+          "misc_items2:axe_ground_01": 10,
+          "misc_items2:axe_ground_02": 10,
+          "misc_items2:mace_morningstar": 6,
+          "misc_items2:mace_heavy": 6,
+          "misc_items2:shield_wood_01": 8,
+          "misc_items2:shield_buckler": 6,
+          "misc_items2:shield_round_wood": 5
+        }
+      },
+      {
+        "density": 0.01,
+        "placement": "floor",
+        "items": {
+          "misc_items2:armor_chest_rusted": 15,
+          "misc_items2:armor_chest_damaged": 15,
+          "misc_items2:armor_chest_01": 10,
+          "misc_items2:armor_chest_02": 10,
+          "misc_items2:helmet_great_01": 12,
+          "misc_items2:helmet_closed_01": 10,
+          "misc_items2:helmet_broken_01": 15,
+          "misc_items2:helmet_knight_01": 8,
+          "misc_items2:armor_greave_01": 10
         }
       }
     ]

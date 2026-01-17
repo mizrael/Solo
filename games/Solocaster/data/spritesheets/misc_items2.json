@@ -2,56 +2,56 @@
   "spriteSheetName": "misc_items2",
   "sprites": [
     {
-      "name": "barrel",
+      "name": "barrel_upright_mossy",
       "x": 0,
       "y": 0,
       "width": 128,
       "height": 128
     },
     {
-      "name": "broken_barrel",
+      "name": "barrel_side_01",
       "x": 128,
       "y": 0,
       "width": 128,
       "height": 128
     },
     {
-      "name": "open_crate",
+      "name": "barrel_upright_01",
       "x": 256,
       "y": 0,
       "width": 128,
       "height": 128
     },
     {
-      "name": "closed_crate",
+      "name": "crate_cloth_01",
       "x": 384,
       "y": 0,
       "width": 128,
       "height": 128
     },
     {
-      "name": "sack",
+      "name": "crate_cloth_bloody",
       "x": 512,
       "y": 0,
       "width": 128,
       "height": 128
     },
     {
-      "name": "multiple_sacks",
+      "name": "crate_closed_01",
       "x": 640,
       "y": 0,
       "width": 128,
       "height": 128
     },
     {
-      "name": "wooden_chest",
+      "name": "crate_closed_02",
       "x": 768,
       "y": 0,
       "width": 128,
       "height": 128
     },
     {
-      "name": "iron_chest",
+      "name": "armor_chest_rusted",
       "x": 896,
       "y": 0,
       "width": 128,
@@ -59,56 +59,56 @@
     },
 
     {
-      "name": "wall_lantern",
+      "name": "barrel_side_mossy_01",
       "x": 0,
       "y": 128,
       "width": 128,
       "height": 128
     },
     {
-      "name": "hanging_lantern",
+      "name": "barrel_upright_02",
       "x": 128,
       "y": 128,
       "width": 128,
       "height": 128
     },
     {
-      "name": "torch",
+      "name": "bones_skull_01",
       "x": 256,
       "y": 128,
       "width": 128,
       "height": 128
     },
     {
-      "name": "wall_torch",
+      "name": "sword_ground_01",
       "x": 384,
       "y": 128,
       "width": 128,
       "height": 128
     },
     {
-      "name": "brazier",
+      "name": "sword_ground_02",
       "x": 512,
       "y": 128,
       "width": 128,
       "height": 128
     },
     {
-      "name": "crystal_ball",
+      "name": "bones_pile_01",
       "x": 640,
       "y": 128,
       "width": 128,
       "height": 128
     },
     {
-      "name": "candelabra",
+      "name": "bones_scattered",
       "x": 768,
       "y": 128,
       "width": 128,
       "height": 128
     },
     {
-      "name": "candle",
+      "name": "barrel_side_mossy_02",
       "x": 896,
       "y": 128,
       "width": 128,
@@ -116,56 +116,56 @@
     },
 
     {
-      "name": "bones_pile_small",
+      "name": "crate_01",
       "x": 0,
       "y": 256,
       "width": 128,
       "height": 128
     },
     {
-      "name": "bones_pile_large",
+      "name": "crate_02",
       "x": 128,
       "y": 256,
       "width": 128,
       "height": 128
     },
     {
-      "name": "skull",
+      "name": "crate_03",
       "x": 256,
       "y": 256,
       "width": 128,
       "height": 128
     },
     {
-      "name": "skull_helmet",
+      "name": "sword_ground_03",
       "x": 384,
       "y": 256,
       "width": 128,
       "height": 128
     },
     {
-      "name": "ribcage",
+      "name": "crate_04",
       "x": 512,
       "y": 256,
       "width": 128,
       "height": 128
     },
     {
-      "name": "bone_single",
+      "name": "crate_05",
       "x": 640,
       "y": 256,
       "width": 128,
       "height": 128
     },
     {
-      "name": "rocks_pile",
+      "name": "crate_06",
       "x": 768,
       "y": 256,
       "width": 128,
       "height": 128
     },
     {
-      "name": "broken_pot",
+      "name": "barrel_mossy_upright",
       "x": 896,
       "y": 256,
       "width": 128,
@@ -173,56 +173,56 @@
     },
 
     {
-      "name": "sword",
+      "name": "barrel_clean_upright",
       "x": 0,
       "y": 384,
       "width": 128,
       "height": 128
     },
     {
-      "name": "axe",
+      "name": "crate_mossy_01",
       "x": 128,
       "y": 384,
       "width": 128,
       "height": 128
     },
     {
-      "name": "mace",
+      "name": "bones_pile_02",
       "x": 256,
       "y": 384,
       "width": 128,
       "height": 128
     },
     {
-      "name": "spear",
+      "name": "sword_ground_04",
       "x": 384,
       "y": 384,
       "width": 128,
       "height": 128
     },
     {
-      "name": "bow_quiver",
+      "name": "sword_ground_05",
       "x": 512,
       "y": 384,
       "width": 128,
       "height": 128
     },
     {
-      "name": "crossbow",
+      "name": "helmet_great_01",
       "x": 640,
       "y": 384,
       "width": 128,
       "height": 128
     },
     {
-      "name": "shield_wood",
+      "name": "shield_wood_01",
       "x": 768,
       "y": 384,
       "width": 128,
       "height": 128
     },
     {
-      "name": "shield_metal",
+      "name": "armor_chest_damaged",
       "x": 896,
       "y": 384,
       "width": 128,
@@ -230,56 +230,56 @@
     },
 
     {
-      "name": "leather_armor",
+      "name": "sword_ground_bloody",
       "x": 0,
       "y": 512,
       "width": 128,
       "height": 128
     },
     {
-      "name": "chainmail",
+      "name": "axe_ground_01",
       "x": 128,
       "y": 512,
       "width": 128,
       "height": 128
     },
     {
-      "name": "plate_armor",
+      "name": "mace_morningstar",
       "x": 256,
       "y": 512,
       "width": 128,
       "height": 128
     },
     {
-      "name": "helmet",
+      "name": "sword_ground_06",
       "x": 384,
       "y": 512,
       "width": 128,
       "height": 128
     },
     {
-      "name": "gauntlet",
+      "name": "axe_ground_02",
       "x": 512,
       "y": 512,
       "width": 128,
       "height": 128
     },
     {
-      "name": "boots",
+      "name": "shield_buckler",
       "x": 640,
       "y": 512,
       "width": 128,
       "height": 128
     },
     {
-      "name": "cloak",
+      "name": "mace_heavy",
       "x": 768,
       "y": 512,
       "width": 128,
       "height": 128
     },
     {
-      "name": "wizard_hat",
+      "name": "shield_heater_01",
       "x": 896,
       "y": 512,
       "width": 128,
@@ -287,56 +287,56 @@
     },
 
     {
-      "name": "potion",
+      "name": "mace_flail_style",
       "x": 0,
       "y": 640,
       "width": 128,
       "height": 128
     },
     {
-      "name": "scroll",
+      "name": "sword_ground_07",
       "x": 128,
       "y": 640,
       "width": 128,
       "height": 128
     },
     {
-      "name": "spellbook",
+      "name": "sword_ground_08",
       "x": 256,
       "y": 640,
       "width": 128,
       "height": 128
     },
     {
-      "name": "gold_coins",
+      "name": "sword_ground_broken",
       "x": 384,
       "y": 640,
       "width": 128,
       "height": 128
     },
     {
-      "name": "key",
+      "name": "sword_ground_09",
       "x": 512,
       "y": 640,
       "width": 128,
       "height": 128
     },
     {
-      "name": "map",
+      "name": "shield_heater_02",
       "x": 640,
       "y": 640,
       "width": 128,
       "height": 128
     },
     {
-      "name": "goblet",
+      "name": "crate_mossy_02",
       "x": 768,
       "y": 640,
       "width": 128,
       "height": 128
     },
     {
-      "name": "food_plate",
+      "name": "shield_round_wood",
       "x": 896,
       "y": 640,
       "width": 128,
@@ -344,56 +344,56 @@
     },
 
     {
-      "name": "bear_trap",
+      "name": "crate_07",
       "x": 0,
       "y": 768,
       "width": 128,
       "height": 128
     },
     {
-      "name": "spike_trap",
+      "name": "armor_greave_01",
       "x": 128,
       "y": 768,
       "width": 128,
       "height": 128
     },
     {
-      "name": "pressure_plate",
+      "name": "mace_scepter",
       "x": 256,
       "y": 768,
       "width": 128,
       "height": 128
     },
     {
-      "name": "lever",
+      "name": "helmet_closed_01",
       "x": 384,
       "y": 768,
       "width": 128,
       "height": 128
     },
     {
-      "name": "button",
+      "name": "helmet_broken_01",
       "x": 512,
       "y": 768,
       "width": 128,
       "height": 128
     },
     {
-      "name": "rune_stone",
+      "name": "shield_round_01",
       "x": 640,
       "y": 768,
       "width": 128,
       "height": 128
     },
     {
-      "name": "teleport_pad",
+      "name": "crate_08",
       "x": 768,
       "y": 768,
       "width": 128,
       "height": 128
     },
     {
-      "name": "gargoyle_statue",
+      "name": "helmet_knight_01",
       "x": 896,
       "y": 768,
       "width": 128,
@@ -401,56 +401,56 @@
     },
 
     {
-      "name": "chair",
+      "name": "crate_09",
       "x": 0,
       "y": 896,
       "width": 128,
       "height": 128
     },
     {
-      "name": "bench",
+      "name": "crate_10",
       "x": 128,
       "y": 896,
       "width": 128,
       "height": 128
     },
     {
-      "name": "table",
+      "name": "sword_ground_10",
       "x": 256,
       "y": 896,
       "width": 128,
       "height": 128
     },
     {
-      "name": "campfire",
+      "name": "sword_ground_11",
       "x": 384,
       "y": 896,
       "width": 128,
       "height": 128
     },
     {
-      "name": "bed",
+      "name": "sword_ground_12",
       "x": 512,
       "y": 896,
       "width": 128,
       "height": 128
     },
     {
-      "name": "throne",
+      "name": "helmet_open_01",
       "x": 640,
       "y": 896,
       "width": 128,
       "height": 128
     },
     {
-      "name": "weapon_rack",
+      "name": "armor_chest_01",
       "x": 768,
       "y": 896,
       "width": 128,
       "height": 128
     },
     {
-      "name": "training_dummy",
+      "name": "armor_chest_02",
       "x": 896,
       "y": 896,
       "width": 128,

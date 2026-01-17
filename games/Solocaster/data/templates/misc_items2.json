@@ -2,706 +2,713 @@
   "namespace": "misc_items2",
   "items": [
     {
-      "name": "barrel",
+      "name": "barrel_upright_mossy",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "barrel",
+        "sprite": "barrel_upright_mossy",
         "scaleX": 0.5,
         "scaleY": 0.5,
         "anchor": "bottom"
       }
     },
     {
-      "name": "broken_barrel",
+      "name": "barrel_side_01",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "broken_barrel",
+        "sprite": "barrel_side_01",
+        "scaleX": 0.4,
+        "scaleY": 0.4,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "barrel_upright_01",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "barrel_upright_01",
         "scaleX": 0.5,
         "scaleY": 0.5,
         "anchor": "bottom"
       }
     },
     {
-      "name": "open_crate",
+      "name": "crate_cloth_01",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "open_crate",
+        "sprite": "crate_cloth_01",
+        "scaleX": 0.45,
+        "scaleY": 0.45,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "crate_cloth_bloody",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "crate_cloth_bloody",
+        "scaleX": 0.45,
+        "scaleY": 0.45,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "crate_closed_01",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "crate_closed_01",
         "scaleX": 0.5,
         "scaleY": 0.5,
         "anchor": "bottom"
       }
     },
     {
-      "name": "closed_crate",
+      "name": "crate_closed_02",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "closed_crate",
+        "sprite": "crate_closed_02",
         "scaleX": 0.5,
         "scaleY": 0.5,
         "anchor": "bottom"
       }
     },
     {
-      "name": "sack",
+      "name": "armor_chest_rusted",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "sack",
+        "sprite": "armor_chest_rusted",
+        "scaleX": 0.45,
+        "scaleY": 0.45,
+        "anchor": "bottom"
+      }
+    },
+
+    {
+      "name": "barrel_side_mossy_01",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "barrel_side_mossy_01",
+        "scaleX": 0.4,
+        "scaleY": 0.4,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "barrel_upright_02",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "barrel_upright_02",
         "scaleX": 0.5,
         "scaleY": 0.5,
         "anchor": "bottom"
       }
     },
     {
-      "name": "multiple_sacks",
+      "name": "bones_skull_01",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "multiple_sacks",
+        "sprite": "bones_skull_01",
+        "scaleX": 0.25,
+        "scaleY": 0.25,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "sword_ground_01",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "sword_ground_01",
+        "scaleX": 0.35,
+        "scaleY": 0.35,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "sword_ground_02",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "sword_ground_02",
+        "scaleX": 0.35,
+        "scaleY": 0.35,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "bones_pile_01",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "bones_pile_01",
+        "scaleX": 0.35,
+        "scaleY": 0.35,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "bones_scattered",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "bones_scattered",
+        "scaleX": 0.3,
+        "scaleY": 0.3,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "barrel_side_mossy_02",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "barrel_side_mossy_02",
+        "scaleX": 0.4,
+        "scaleY": 0.4,
+        "anchor": "bottom"
+      }
+    },
+
+    {
+      "name": "crate_01",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "crate_01",
+        "scaleX": 0.45,
+        "scaleY": 0.45,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "crate_02",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "crate_02",
+        "scaleX": 0.45,
+        "scaleY": 0.45,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "crate_03",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "crate_03",
+        "scaleX": 0.45,
+        "scaleY": 0.45,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "sword_ground_03",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "sword_ground_03",
+        "scaleX": 0.35,
+        "scaleY": 0.35,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "crate_04",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "crate_04",
+        "scaleX": 0.45,
+        "scaleY": 0.45,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "crate_05",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "crate_05",
+        "scaleX": 0.45,
+        "scaleY": 0.45,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "crate_06",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "crate_06",
+        "scaleX": 0.45,
+        "scaleY": 0.45,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "barrel_mossy_upright",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "barrel_mossy_upright",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+
+    {
+      "name": "barrel_clean_upright",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "barrel_clean_upright",
         "scaleX": 0.5,
         "scaleY": 0.5,
         "anchor": "bottom"
       }
     },
     {
-      "name": "wooden_chest",
+      "name": "crate_mossy_01",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "wooden_chest",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "crate_mossy_01",
+        "scaleX": 0.45,
+        "scaleY": 0.45,
         "anchor": "bottom"
       }
     },
     {
-      "name": "iron_chest",
+      "name": "bones_pile_02",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "iron_chest",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "bones_pile_02",
+        "scaleX": 0.35,
+        "scaleY": 0.35,
         "anchor": "bottom"
       }
     },
     {
-      "name": "wall_lantern",
+      "name": "sword_ground_04",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "wall_lantern",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "sword_ground_04",
+        "scaleX": 0.35,
+        "scaleY": 0.35,
         "anchor": "bottom"
       }
     },
     {
-      "name": "hanging_lantern",
+      "name": "sword_ground_05",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "hanging_lantern",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "sword_ground_05",
+        "scaleX": 0.35,
+        "scaleY": 0.35,
         "anchor": "bottom"
       }
     },
     {
-      "name": "torch",
+      "name": "helmet_great_01",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "torch",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "helmet_great_01",
+        "scaleX": 0.3,
+        "scaleY": 0.3,
         "anchor": "bottom"
       }
     },
     {
-      "name": "wall_torch",
+      "name": "shield_wood_01",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "wall_torch",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "shield_wood_01",
+        "scaleX": 0.4,
+        "scaleY": 0.4,
         "anchor": "bottom"
       }
     },
     {
-      "name": "brazier",
+      "name": "armor_chest_damaged",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "brazier",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "armor_chest_damaged",
+        "scaleX": 0.45,
+        "scaleY": 0.45,
+        "anchor": "bottom"
+      }
+    },
+
+    {
+      "name": "sword_ground_bloody",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "sword_ground_bloody",
+        "scaleX": 0.35,
+        "scaleY": 0.35,
         "anchor": "bottom"
       }
     },
     {
-      "name": "crystal_ball",
+      "name": "axe_ground_01",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "crystal_ball",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "axe_ground_01",
+        "scaleX": 0.4,
+        "scaleY": 0.4,
         "anchor": "bottom"
       }
     },
     {
-      "name": "candelabra",
+      "name": "mace_morningstar",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "candelabra",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "mace_morningstar",
+        "scaleX": 0.38,
+        "scaleY": 0.38,
         "anchor": "bottom"
       }
     },
     {
-      "name": "candle",
+      "name": "sword_ground_06",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "candle",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "sword_ground_06",
+        "scaleX": 0.35,
+        "scaleY": 0.35,
         "anchor": "bottom"
       }
     },
     {
-      "name": "bones_pile_small",
+      "name": "axe_ground_02",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "bones_pile_small",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "axe_ground_02",
+        "scaleX": 0.4,
+        "scaleY": 0.4,
         "anchor": "bottom"
       }
     },
     {
-      "name": "bones_pile_large",
+      "name": "shield_buckler",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "bones_pile_large",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "shield_buckler",
+        "scaleX": 0.35,
+        "scaleY": 0.35,
         "anchor": "bottom"
       }
     },
     {
-      "name": "skull",
+      "name": "mace_heavy",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "skull",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "mace_heavy",
+        "scaleX": 0.4,
+        "scaleY": 0.4,
         "anchor": "bottom"
       }
     },
     {
-      "name": "skull_helmet",
+      "name": "shield_heater_01",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "skull_helmet",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "shield_heater_01",
+        "scaleX": 0.4,
+        "scaleY": 0.4,
+        "anchor": "bottom"
+      }
+    },
+
+    {
+      "name": "mace_flail_style",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "mace_flail_style",
+        "scaleX": 0.38,
+        "scaleY": 0.38,
         "anchor": "bottom"
       }
     },
     {
-      "name": "ribcage",
+      "name": "sword_ground_07",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "ribcage",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "sword_ground_07",
+        "scaleX": 0.35,
+        "scaleY": 0.35,
         "anchor": "bottom"
       }
     },
     {
-      "name": "bone_single",
+      "name": "sword_ground_08",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "bone_single",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "sword_ground_08",
+        "scaleX": 0.35,
+        "scaleY": 0.35,
         "anchor": "bottom"
       }
     },
     {
-      "name": "rocks_pile",
+      "name": "sword_ground_broken",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "rocks_pile",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "sword_ground_broken",
+        "scaleX": 0.3,
+        "scaleY": 0.3,
         "anchor": "bottom"
       }
     },
     {
-      "name": "broken_pot",
+      "name": "sword_ground_09",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "broken_pot",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "sword_ground_09",
+        "scaleX": 0.35,
+        "scaleY": 0.35,
         "anchor": "bottom"
       }
     },
     {
-      "name": "sword",
+      "name": "shield_heater_02",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "sword",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "shield_heater_02",
+        "scaleX": 0.4,
+        "scaleY": 0.4,
         "anchor": "bottom"
       }
     },
     {
-      "name": "axe",
+      "name": "crate_mossy_02",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "axe",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "crate_mossy_02",
+        "scaleX": 0.45,
+        "scaleY": 0.45,
         "anchor": "bottom"
       }
     },
     {
-      "name": "mace",
+      "name": "shield_round_wood",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "mace",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "shield_round_wood",
+        "scaleX": 0.4,
+        "scaleY": 0.4,
+        "anchor": "bottom"
+      }
+    },
+
+    {
+      "name": "crate_07",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "crate_07",
+        "scaleX": 0.45,
+        "scaleY": 0.45,
         "anchor": "bottom"
       }
     },
     {
-      "name": "spear",
+      "name": "armor_greave_01",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "spear",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "armor_greave_01",
+        "scaleX": 0.35,
+        "scaleY": 0.35,
         "anchor": "bottom"
       }
     },
     {
-      "name": "bow_quiver",
+      "name": "mace_scepter",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "bow_quiver",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "mace_scepter",
+        "scaleX": 0.35,
+        "scaleY": 0.35,
         "anchor": "bottom"
       }
     },
     {
-      "name": "crossbow",
+      "name": "helmet_closed_01",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "crossbow",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "helmet_closed_01",
+        "scaleX": 0.3,
+        "scaleY": 0.3,
         "anchor": "bottom"
       }
     },
     {
-      "name": "shield_wood",
+      "name": "helmet_broken_01",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "shield_wood",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "helmet_broken_01",
+        "scaleX": 0.28,
+        "scaleY": 0.28,
         "anchor": "bottom"
       }
     },
     {
-      "name": "shield_metal",
+      "name": "shield_round_01",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "shield_metal",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "shield_round_01",
+        "scaleX": 0.4,
+        "scaleY": 0.4,
         "anchor": "bottom"
       }
     },
     {
-      "name": "leather_armor",
+      "name": "crate_08",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "leather_armor",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "crate_08",
+        "scaleX": 0.45,
+        "scaleY": 0.45,
         "anchor": "bottom"
       }
     },
     {
-      "name": "chainmail",
+      "name": "helmet_knight_01",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "chainmail",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "helmet_knight_01",
+        "scaleX": 0.32,
+        "scaleY": 0.32,
+        "anchor": "bottom"
+      }
+    },
+
+    {
+      "name": "crate_09",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "crate_09",
+        "scaleX": 0.45,
+        "scaleY": 0.45,
         "anchor": "bottom"
       }
     },
     {
-      "name": "plate_armor",
+      "name": "crate_10",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "plate_armor",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "crate_10",
+        "scaleX": 0.45,
+        "scaleY": 0.45,
         "anchor": "bottom"
       }
     },
     {
-      "name": "helmet",
+      "name": "sword_ground_10",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "helmet",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "sword_ground_10",
+        "scaleX": 0.35,
+        "scaleY": 0.35,
         "anchor": "bottom"
       }
     },
     {
-      "name": "gauntlet",
+      "name": "sword_ground_11",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "gauntlet",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "sword_ground_11",
+        "scaleX": 0.35,
+        "scaleY": 0.35,
         "anchor": "bottom"
       }
     },
     {
-      "name": "boots",
+      "name": "sword_ground_12",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "boots",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "sword_ground_12",
+        "scaleX": 0.35,
+        "scaleY": 0.35,
         "anchor": "bottom"
       }
     },
     {
-      "name": "cloak",
+      "name": "helmet_open_01",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "cloak",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "helmet_open_01",
+        "scaleX": 0.3,
+        "scaleY": 0.3,
         "anchor": "bottom"
       }
     },
     {
-      "name": "wizard_hat",
+      "name": "armor_chest_01",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "wizard_hat",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "armor_chest_01",
+        "scaleX": 0.45,
+        "scaleY": 0.45,
         "anchor": "bottom"
       }
     },
     {
-      "name": "potion",
+      "name": "armor_chest_02",
       "itemType": "sprite",
       "properties": {
         "spritesheet": "misc_items2",
-        "sprite": "potion",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
-    },
-    {
-      "name": "scroll",
-      "itemType": "sprite",
-      "properties": {
-        "spritesheet": "misc_items2",
-        "sprite": "scroll",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
-    },
-    {
-      "name": "spellbook",
-      "itemType": "sprite",
-      "properties": {
-        "spritesheet": "misc_items2",
-        "sprite": "spellbook",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
-    },
-    {
-      "name": "gold_coins",
-      "itemType": "sprite",
-      "properties": {
-        "spritesheet": "misc_items2",
-        "sprite": "gold_coins",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
-    },
-    {
-      "name": "key",
-      "itemType": "sprite",
-      "properties": {
-        "spritesheet": "misc_items2",
-        "sprite": "key",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
-    },
-    {
-      "name": "map",
-      "itemType": "sprite",
-      "properties": {
-        "spritesheet": "misc_items2",
-        "sprite": "map",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
-    },
-    {
-      "name": "goblet",
-      "itemType": "sprite",
-      "properties": {
-        "spritesheet": "misc_items2",
-        "sprite": "goblet",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
-    },
-    {
-      "name": "food_plate",
-      "itemType": "sprite",
-      "properties": {
-        "spritesheet": "misc_items2",
-        "sprite": "food_plate",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
-    },
-    {
-      "name": "bear_trap",
-      "itemType": "sprite",
-      "properties": {
-        "spritesheet": "misc_items2",
-        "sprite": "bear_trap",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
-    },
-    {
-      "name": "spike_trap",
-      "itemType": "sprite",
-      "properties": {
-        "spritesheet": "misc_items2",
-        "sprite": "spike_trap",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
-    },
-    {
-      "name": "pressure_plate",
-      "itemType": "sprite",
-      "properties": {
-        "spritesheet": "misc_items2",
-        "sprite": "pressure_plate",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
-    },
-    {
-      "name": "lever",
-      "itemType": "sprite",
-      "properties": {
-        "spritesheet": "misc_items2",
-        "sprite": "lever",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
-    },
-    {
-      "name": "button",
-      "itemType": "sprite",
-      "properties": {
-        "spritesheet": "misc_items2",
-        "sprite": "button",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
-    },
-    {
-      "name": "rune_stone",
-      "itemType": "sprite",
-      "properties": {
-        "spritesheet": "misc_items2",
-        "sprite": "rune_stone",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
-    },
-    {
-      "name": "teleport_pad",
-      "itemType": "sprite",
-      "properties": {
-        "spritesheet": "misc_items2",
-        "sprite": "teleport_pad",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
-    },
-    {
-      "name": "gargoyle_statue",
-      "itemType": "sprite",
-      "properties": {
-        "spritesheet": "misc_items2",
-        "sprite": "gargoyle_statue",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
-    },
-    {
-      "name": "chair",
-      "itemType": "sprite",
-      "properties": {
-        "spritesheet": "misc_items2",
-        "sprite": "chair",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
-    },
-    {
-      "name": "bench",
-      "itemType": "sprite",
-      "properties": {
-        "spritesheet": "misc_items2",
-        "sprite": "bench",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
-    },
-    {
-      "name": "table",
-      "itemType": "sprite",
-      "properties": {
-        "spritesheet": "misc_items2",
-        "sprite": "table",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
-    },
-    {
-      "name": "campfire",
-      "itemType": "sprite",
-      "properties": {
-        "spritesheet": "misc_items2",
-        "sprite": "campfire",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
-    },
-    {
-      "name": "bed",
-      "itemType": "sprite",
-      "properties": {
-        "spritesheet": "misc_items2",
-        "sprite": "bed",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
-    },
-    {
-      "name": "throne",
-      "itemType": "sprite",
-      "properties": {
-        "spritesheet": "misc_items2",
-        "sprite": "throne",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
-    },
-    {
-      "name": "weapon_rack",
-      "itemType": "sprite",
-      "properties": {
-        "spritesheet": "misc_items2",
-        "sprite": "weapon_rack",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
-        "anchor": "bottom"
-      }
-    },
-    {
-      "name": "training_dummy",
-      "itemType": "sprite",
-      "properties": {
-        "spritesheet": "misc_items2",
-        "sprite": "training_dummy",
-        "scaleX": 0.5,
-        "scaleY": 0.5,
+        "sprite": "armor_chest_02",
+        "scaleX": 0.45,
+        "scaleY": 0.45,
         "anchor": "bottom"
       }
     }

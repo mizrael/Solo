@@ -762,18 +762,23 @@ public unsafe class Raycaster : IDisposable
             var drawEndY = Math.Min(_frameHeight - 1, screenY + spriteSizeY / 2);
 
             // Apply anchor (rotated: X is vertical, _frameWidth/2 is horizon)
+            // Floor/ceiling positions depend on distance - a 1-unit wall at this distance
+            // spans from horizon-baseSpriteSize/2 to horizon+baseSpriteSize/2
+            var floorPos = _frameWidth / 2 + baseSpriteSize / 2;
+            var ceilingPos = _frameWidth / 2 - baseSpriteSize / 2;
+
             int drawStartX, drawEndX;
             switch (billboard.Anchor)
             {
                 case BillboardAnchor.Bottom:
-                    // Sits on floor (below horizon)
-                    drawStartX = _frameWidth / 2;
-                    drawEndX = _frameWidth / 2 + spriteSizeX;
+                    // Sits on floor - bottom of sprite aligns with floor at this distance
+                    drawStartX = floorPos - spriteSizeX;
+                    drawEndX = floorPos;
                     break;
                 case BillboardAnchor.Top:
-                    // Hangs from ceiling (above horizon)
-                    drawStartX = _frameWidth / 2 - spriteSizeX;
-                    drawEndX = _frameWidth / 2;
+                    // Hangs from ceiling - top of sprite aligns with ceiling at this distance
+                    drawStartX = ceilingPos;
+                    drawEndX = ceilingPos + spriteSizeX;
                     break;
                 case BillboardAnchor.Center:
                 default:

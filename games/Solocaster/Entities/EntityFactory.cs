@@ -38,10 +38,18 @@ public static class EntityFactory
 
         var entity = new GameObject();
         var transform = entity.Components.Add<TransformComponent>();
-        transform.Local.Position = new Vector2(
-            definition.TileX + 0.5f, 
-            definition.TileY + 0.5f
-        );
+
+        // Base position is center of tile
+        float posX = definition.TileX + 0.5f;
+        float posY = definition.TileY + 0.5f;
+
+        // Apply optional offsets (for wall-adjacent decorations)
+        if (definition.Properties.TryGetValue("offsetX", out var offsetXObj) && offsetXObj is float offsetX)
+            posX += offsetX;
+        if (definition.Properties.TryGetValue("offsetY", out var offsetYObj) && offsetYObj is float offsetY)
+            posY += offsetY;
+
+        transform.Local.Position = new Vector2(posX, posY);
 
         var billboard = entity.Components.Add<BillboardComponent>();
         billboard.Sprite = sprite;
