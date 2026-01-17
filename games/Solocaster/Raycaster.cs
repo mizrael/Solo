@@ -814,6 +814,11 @@ public unsafe class Raycaster : IDisposable
 
         projections.Sort((a, b) => b.Distance.CompareTo(a.Distance));
 
+        int* texYCoords = stackalloc int[8];
+        int* texOffsets = stackalloc int[8];
+        int* resultBuf = stackalloc int[8];
+        int* alphaBuf = stackalloc int[8];
+
         foreach (var proj in projections)
         {
             // Pre-compute fixed-point shading factor (8.8 format)
@@ -824,11 +829,6 @@ public unsafe class Raycaster : IDisposable
             int texStepX = (proj.SpriteBounds.Width << 16) / Math.Max(1, proj.SpriteSizeY);
 
             int baseTexYStart = proj.SpriteBounds.Y * proj.TexWidth;
-
-            int* texYCoords = stackalloc int[8];
-            int* texOffsets = stackalloc int[8];
-            int* resultBuf = stackalloc int[8];
-            int* alphaBuf = stackalloc int[8];
 
             for (int y = proj.DrawStartY; y < proj.DrawEndY; y++)
             {
