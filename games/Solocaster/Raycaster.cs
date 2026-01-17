@@ -816,6 +816,20 @@ public unsafe class Raycaster : IDisposable
 
         foreach (var proj in projections)
         {
+            // Pre-compute fixed-point shading factor (8.8 format)
+            uint shadingFixed = (uint)(proj.ShadingFactor * 256);
+
+            // Pre-compute texture stepping values (16.16 fixed-point)
+            int texStepY = (proj.SpriteBounds.Height << 16) / Math.Max(1, proj.SpriteSizeX);
+            int texStepX = (proj.SpriteBounds.Width << 16) / Math.Max(1, proj.SpriteSizeY);
+
+            int baseTexYStart = proj.SpriteBounds.Y * proj.TexWidth;
+
+            int* texYCoords = stackalloc int[8];
+            int* texOffsets = stackalloc int[8];
+            int* resultBuf = stackalloc int[8];
+            int* alphaBuf = stackalloc int[8];
+
             for (int y = proj.DrawStartY; y < proj.DrawEndY; y++)
             {
                 if (proj.Distance >= _zBuffer[y])
@@ -823,24 +837,127 @@ public unsafe class Raycaster : IDisposable
 
                 uint* rowPtr = pixels + y * _frameWidth;
 
-                int localTexX = (int)((y - proj.ScreenY + proj.SpriteSizeY / 2) * proj.SpriteBounds.Width / proj.SpriteSizeY);
+                // Calculate texX using fixed-point
+                int localTexXFixed = (y - proj.ScreenY + proj.SpriteSizeY / 2) * texStepX;
+                int localTexX = localTexXFixed >> 16;
                 if (localTexX < 0 || localTexX >= proj.SpriteBounds.Width) continue;
                 int texX = proj.SpriteBounds.X + localTexX;
 
-                for (int x = proj.DrawStartX; x < proj.DrawEndX; x++)
-                {
-                    int localTexY = (int)((x - proj.DrawStartX) * proj.SpriteBounds.Height / proj.SpriteSizeX);
-                    if (localTexY < 0 || localTexY >= proj.SpriteBounds.Height) continue;
-                    int texY = proj.SpriteBounds.Y + localTexY;
+                int x = proj.DrawStartX;
+                int endX = proj.DrawEndX;
+                int texYFixed = 0; // Starting texture Y in 16.16 fixed-point
 
-                    uint color = proj.TexturePtr[texY * proj.TexWidth + texX];
-                    if ((color & 0xFF000000) != 0)
+                // AVX2 path: process 8 pixels at a time
+                if (Avx2.IsSupported && endX - x >= 8)
+                {
+                    Vector256<int> vShadingR = Vector256.Create((int)shadingFixed);
+                    Vector256<int> vShadingG = Vector256.Create((int)shadingFixed);
+                    Vector256<int> vShadingB = Vector256.Create((int)shadingFixed);
+                    Vector256<int> vAlphaMask = Vector256.Create(unchecked((int)0xFF000000));
+                    Vector256<int> vZero = Vector256<int>.Zero;
+                    Vector256<int> v255 = Vector256.Create(255);
+
+                    for (; x <= endX - 8; x += 8)
                     {
-                        rowPtr[x] = ApplyShading(color, proj.ShadingFactor);
+                        for (int i = 0; i < 8; i++)
+                        {
+                            int localTexY = texYFixed >> 16;
+                            texYCoords[i] = proj.SpriteBounds.Y + Math.Clamp(localTexY, 0, proj.SpriteBounds.Height - 1);
+                            texOffsets[i] = texYCoords[i] * proj.TexWidth + texX;
+                            texYFixed += texStepY;
+                        }
+
+                        // Gather 8 colors
+                        Vector256<int> vOffsets = Avx.LoadVector256(texOffsets);
+                        Vector256<int> vColors = Avx2.GatherVector256((int*)proj.TexturePtr, vOffsets, 4);
+
+                        // Check alpha (skip if all transparent)
+                        Vector256<int> vAlpha = Avx2.And(vColors, vAlphaMask);
+                        if (Avx2.MoveMask(Avx2.CompareEqual(vAlpha, vZero).AsByte()) == -1)
+                            continue;
+
+                        // Extract and shade RGB channels
+                        Vector256<int> vR = Avx2.And(Avx2.ShiftRightLogical(vColors, 16), v255);
+                        Vector256<int> vG = Avx2.And(Avx2.ShiftRightLogical(vColors, 8), v255);
+                        Vector256<int> vB = Avx2.And(vColors, v255);
+
+                        // Apply shading (fixed-point multiply, then shift)
+                        vR = Avx2.ShiftRightLogical(Avx2.MultiplyLow(vR, vShadingR), 8);
+                        vG = Avx2.ShiftRightLogical(Avx2.MultiplyLow(vG, vShadingG), 8);
+                        vB = Avx2.ShiftRightLogical(Avx2.MultiplyLow(vB, vShadingB), 8);
+
+                        // Recombine
+                        Vector256<int> vResult = Avx2.Or(Avx2.Or(
+                            Avx2.Or(vAlpha, Avx2.ShiftLeftLogical(vR, 16)),
+                            Avx2.ShiftLeftLogical(vG, 8)), vB);
+
+                        // Store with alpha check per pixel
+                        Avx.Store(resultBuf, vResult);
+                        Avx.Store(alphaBuf, vAlpha);
+
+                        for (int i = 0; i < 8; i++)
+                        {
+                            if (alphaBuf[i] != 0)
+                                rowPtr[x + i] = (uint)resultBuf[i];
+                        }
                     }
+                }
+
+                // Scalar fallback with loop unrolling (4 pixels)
+                for (; x <= endX - 4; x += 4)
+                {
+                    uint c0, c1, c2, c3;
+                    int ty0 = proj.SpriteBounds.Y + Math.Clamp(texYFixed >> 16, 0, proj.SpriteBounds.Height - 1);
+                    texYFixed += texStepY;
+                    int ty1 = proj.SpriteBounds.Y + Math.Clamp(texYFixed >> 16, 0, proj.SpriteBounds.Height - 1);
+                    texYFixed += texStepY;
+                    int ty2 = proj.SpriteBounds.Y + Math.Clamp(texYFixed >> 16, 0, proj.SpriteBounds.Height - 1);
+                    texYFixed += texStepY;
+                    int ty3 = proj.SpriteBounds.Y + Math.Clamp(texYFixed >> 16, 0, proj.SpriteBounds.Height - 1);
+                    texYFixed += texStepY;
+
+                    c0 = proj.TexturePtr[ty0 * proj.TexWidth + texX];
+                    c1 = proj.TexturePtr[ty1 * proj.TexWidth + texX];
+                    c2 = proj.TexturePtr[ty2 * proj.TexWidth + texX];
+                    c3 = proj.TexturePtr[ty3 * proj.TexWidth + texX];
+
+                    if ((c0 & 0xFF000000) != 0) rowPtr[x] = ApplyShadingFixed(c0, shadingFixed);
+                    if ((c1 & 0xFF000000) != 0) rowPtr[x + 1] = ApplyShadingFixed(c1, shadingFixed);
+                    if ((c2 & 0xFF000000) != 0) rowPtr[x + 2] = ApplyShadingFixed(c2, shadingFixed);
+                    if ((c3 & 0xFF000000) != 0) rowPtr[x + 3] = ApplyShadingFixed(c3, shadingFixed);
+                }
+
+                // Handle remaining pixels
+                for (; x < endX; x++)
+                {
+                    int localTexY = texYFixed >> 16;
+                    if (localTexY >= 0 && localTexY < proj.SpriteBounds.Height)
+                    {
+                        int texY = proj.SpriteBounds.Y + localTexY;
+                        uint color = proj.TexturePtr[texY * proj.TexWidth + texX];
+                        if ((color & 0xFF000000) != 0)
+                        {
+                            rowPtr[x] = ApplyShadingFixed(color, shadingFixed);
+                        }
+                    }
+                    texYFixed += texStepY;
                 }
             }
         }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static uint ApplyShadingFixed(uint color, uint shadingFixed)
+    {
+        if (shadingFixed >= 256) return color;
+        if (shadingFixed == 0) return color & 0xFF000000;
+
+        uint a = color & 0xFF000000;
+        uint r = ((color >> 16) & 0xFF) * shadingFixed >> 8;
+        uint g = ((color >> 8) & 0xFF) * shadingFixed >> 8;
+        uint b = (color & 0xFF) * shadingFixed >> 8;
+
+        return a | (r << 16) | (g << 8) | b;
     }
 
     public void Dispose()
