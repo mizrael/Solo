@@ -62,6 +62,12 @@ public class LevelLoader
 
         LoadEntities(game, entityManager, levelData);
 
+        // Place random decorations for random maps
+        if (levelData.Map.Type == MapType.Random && levelData.Map.Decorations != null)
+        {
+            PlaceDecorations(game, entityManager, levelData.Map.Decorations, map);
+        }
+
         return new()
         {
             Map = map,
@@ -202,6 +208,103 @@ public class LevelLoader
 
             EntityFactory.CreateEntity(definition, game, entityManager);
         }
+    }
+
+    private static void PlaceDecorations(
+        Game game,
+        EntityManager entityManager,
+        List<DecorationData> decorations,
+        Entities.Map map)
+    {
+        // Collect floor tiles and wall-adjacent floor tiles
+        var floorTiles = new List<(int col, int row)>();
+        var wallAdjacentTiles = new List<(int col, int row)>();
+
+        for (int row = 0; row < map.Rows; row++)
+        {
+            for (int col = 0; col < map.Cols; col++)
+            {
+                var cell = map.Cells[row][col];
+
+                // Skip non-floor tiles
+                if (cell != TileTypes.Floor)
+                    continue;
+
+                floorTiles.Add((col, row));
+
+                // Check if adjacent to a wall
+                if (IsAdjacentToWall(map, col, row))
+                {
+                    wallAdjacentTiles.Add((col, row));
+                }
+            }
+        }
+
+        // Track occupied tiles to avoid placing multiple decorations on same tile
+        var occupiedTiles = new HashSet<(int, int)>();
+
+        foreach (var decoration in decorations)
+        {
+            if (decoration.Items == null || decoration.Items.Count == 0)
+                continue;
+
+            var eligibleTiles = decoration.Placement == DecorationPlacement.Wall
+                ? wallAdjacentTiles
+                : floorTiles;
+
+            foreach (var (col, row) in eligibleTiles)
+            {
+                // Skip if already occupied
+                if (occupiedTiles.Contains((col, row)))
+                    continue;
+
+                // Use density as probability
+                if (Random.Shared.NextDouble() > decoration.Density)
+                    continue;
+
+                // Pick a random item using weights
+                var template = decoration.Items.WeightedRandom();
+
+                var templateData = _templateLoader.Get(template);
+                var properties = new Dictionary<string, object>();
+                foreach (var kvp in templateData.Properties)
+                {
+                    properties[kvp.Key] = JsonUtils.ConvertJsonElement(kvp.Value);
+                }
+
+                var definition = new EntityDefinition(
+                    Type: templateData.ItemType,
+                    TileX: col,
+                    TileY: row,
+                    Properties: properties
+                );
+
+                EntityFactory.CreateEntity(definition, game, entityManager);
+                occupiedTiles.Add((col, row));
+            }
+        }
+    }
+
+    private static bool IsAdjacentToWall(Entities.Map map, int col, int row)
+    {
+        // Check all 4 cardinal directions for walls
+        int[][] directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+
+        foreach (var dir in directions)
+        {
+            int newCol = col + dir[0];
+            int newRow = row + dir[1];
+
+            if (newCol < 0 || newCol >= map.Cols || newRow < 0 || newRow >= map.Rows)
+                continue;
+
+            var cell = map.Cells[newRow][newCol];
+            // Wall cells are positive integers (sprite indices) that are not doors
+            if (cell > 0 && cell != TileTypes.DoorVertical && cell != TileTypes.DoorHorizontal)
+                return true;
+        }
+
+        return false;
     }
 
     private static int[][] ConvertTilesToCells(TileType[,] tiles, Dictionary<int, int>? weightedWallCellIds = null)
@@ -438,6 +541,20 @@ public class LevelLoader
         public int[][]? Cells { get; init; }
         public JsonElement? WallSprites { get; init; }
         public string[]? DoorSprites { get; init; }
+        public List<DecorationData>? Decorations { get; init; }
+    }
+
+    private enum DecorationPlacement
+    {
+        Floor,
+        Wall
+    }
+
+    private class DecorationData
+    {
+        public float Density { get; init; }
+        public DecorationPlacement Placement { get; init; }
+        public Dictionary<string, int>? Items { get; init; }
     }
 
     private class EntityData

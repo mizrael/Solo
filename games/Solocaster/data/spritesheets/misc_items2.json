@@ -1,0 +1,460 @@
+{
+  "spriteSheetName": "misc_items2",
+  "sprites": [
+    {
+      "name": "barrel",
+      "x": 0,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "broken_barrel",
+      "x": 128,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "open_crate",
+      "x": 256,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "closed_crate",
+      "x": 384,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "sack",
+      "x": 512,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "multiple_sacks",
+      "x": 640,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "wooden_chest",
+      "x": 768,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "iron_chest",
+      "x": 896,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    },
+
+    {
+      "name": "wall_lantern",
+      "x": 0,
+      "y": 128,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "hanging_lantern",
+      "x": 128,
+      "y": 128,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "torch",
+      "x": 256,
+      "y": 128,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "wall_torch",
+      "x": 384,
+      "y": 128,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "brazier",
+      "x": 512,
+      "y": 128,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "crystal_ball",
+      "x": 640,
+      "y": 128,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "candelabra",
+      "x": 768,
+      "y": 128,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "candle",
+      "x": 896,
+      "y": 128,
+      "width": 128,
+      "height": 128
+    },
+
+    {
+      "name": "bones_pile_small",
+      "x": 0,
+      "y": 256,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "bones_pile_large",
+      "x": 128,
+      "y": 256,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "skull",
+      "x": 256,
+      "y": 256,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "skull_helmet",
+      "x": 384,
+      "y": 256,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "ribcage",
+      "x": 512,
+      "y": 256,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "bone_single",
+      "x": 640,
+      "y": 256,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "rocks_pile",
+      "x": 768,
+      "y": 256,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "broken_pot",
+      "x": 896,
+      "y": 256,
+      "width": 128,
+      "height": 128
+    },
+
+    {
+      "name": "sword",
+      "x": 0,
+      "y": 384,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "axe",
+      "x": 128,
+      "y": 384,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "mace",
+      "x": 256,
+      "y": 384,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "spear",
+      "x": 384,
+      "y": 384,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "bow_quiver",
+      "x": 512,
+      "y": 384,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "crossbow",
+      "x": 640,
+      "y": 384,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "shield_wood",
+      "x": 768,
+      "y": 384,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "shield_metal",
+      "x": 896,
+      "y": 384,
+      "width": 128,
+      "height": 128
+    },
+
+    {
+      "name": "leather_armor",
+      "x": 0,
+      "y": 512,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "chainmail",
+      "x": 128,
+      "y": 512,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "plate_armor",
+      "x": 256,
+      "y": 512,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "helmet",
+      "x": 384,
+      "y": 512,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "gauntlet",
+      "x": 512,
+      "y": 512,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "boots",
+      "x": 640,
+      "y": 512,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "cloak",
+      "x": 768,
+      "y": 512,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "wizard_hat",
+      "x": 896,
+      "y": 512,
+      "width": 128,
+      "height": 128
+    },
+
+    {
+      "name": "potion",
+      "x": 0,
+      "y": 640,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "scroll",
+      "x": 128,
+      "y": 640,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "spellbook",
+      "x": 256,
+      "y": 640,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "gold_coins",
+      "x": 384,
+      "y": 640,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "key",
+      "x": 512,
+      "y": 640,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "map",
+      "x": 640,
+      "y": 640,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "goblet",
+      "x": 768,
+      "y": 640,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "food_plate",
+      "x": 896,
+      "y": 640,
+      "width": 128,
+      "height": 128
+    },
+
+    {
+      "name": "bear_trap",
+      "x": 0,
+      "y": 768,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "spike_trap",
+      "x": 128,
+      "y": 768,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "pressure_plate",
+      "x": 256,
+      "y": 768,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "lever",
+      "x": 384,
+      "y": 768,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "button",
+      "x": 512,
+      "y": 768,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "rune_stone",
+      "x": 640,
+      "y": 768,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "teleport_pad",
+      "x": 768,
+      "y": 768,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "gargoyle_statue",
+      "x": 896,
+      "y": 768,
+      "width": 128,
+      "height": 128
+    },
+
+    {
+      "name": "chair",
+      "x": 0,
+      "y": 896,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "bench",
+      "x": 128,
+      "y": 896,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "table",
+      "x": 256,
+      "y": 896,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "campfire",
+      "x": 384,
+      "y": 896,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "bed",
+      "x": 512,
+      "y": 896,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "throne",
+      "x": 640,
+      "y": 896,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "weapon_rack",
+      "x": 768,
+      "y": 896,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "training_dummy",
+      "x": 896,
+      "y": 896,
+      "width": 128,
+      "height": 128
+    }
+  ]
+}

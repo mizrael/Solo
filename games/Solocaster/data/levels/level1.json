@@ -1,7 +1,8 @@
 {
   "spritesheets": [
     "dungeon1",
-    "dungeon_doors1"
+    "dungeon_doors1",
+    "misc_items2"
   ],
   "map": {
     "type": "random",
@@ -13,6 +14,40 @@
       },
       "accent": [ "stone_wall_bloodstained", "brick_wall_aged", "wood_wall_dusty", "wood_wall_bloodstained" ]
     },
-    "doorSprites": [ "door1", "door2", "door3", "door4" ] 
+    "doorSprites": [ "door1", "door2", "door3", "door4" ],
+    "decorations": [
+      {
+        "density": 0.04,
+        "placement": "floor",
+        "items": {
+          "misc_items2:barrel": 20,
+          "misc_items2:broken_barrel": 10,
+          "misc_items2:closed_crate": 15,
+          "misc_items2:sack": 10,
+          "misc_items2:multiple_sacks": 5
+        }
+      },
+      {
+        "density": 0.03,
+        "placement": "floor",
+        "items": {
+          "misc_items2:bones_pile_small": 20,
+          "misc_items2:bones_pile_large": 10,
+          "misc_items2:skull": 15,
+          "misc_items2:bone_single": 10,
+          "misc_items2:rocks_pile": 10,
+          "misc_items2:broken_pot": 5
+        }
+      },
+      {
+        "density": 0.06,
+        "placement": "wall",
+        "items": {
+          "misc_items2:wall_torch": 30,
+          "misc_items2:brazier": 15,
+          "misc_items2:candelabra": 10
+        }
+      }
+    ]
   }
 }

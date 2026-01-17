@@ -1,0 +1,709 @@
+{
+  "namespace": "misc_items2",
+  "items": [
+    {
+      "name": "barrel",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "barrel",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "broken_barrel",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "broken_barrel",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "open_crate",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "open_crate",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "closed_crate",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "closed_crate",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "sack",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "sack",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "multiple_sacks",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "multiple_sacks",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "wooden_chest",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "wooden_chest",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "iron_chest",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "iron_chest",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "wall_lantern",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "wall_lantern",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "hanging_lantern",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "hanging_lantern",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "torch",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "torch",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "wall_torch",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "wall_torch",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "brazier",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "brazier",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "crystal_ball",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "crystal_ball",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "candelabra",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "candelabra",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "candle",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "candle",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "bones_pile_small",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "bones_pile_small",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "bones_pile_large",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "bones_pile_large",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "skull",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "skull",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "skull_helmet",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "skull_helmet",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "ribcage",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "ribcage",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "bone_single",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "bone_single",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "rocks_pile",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "rocks_pile",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "broken_pot",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "broken_pot",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "sword",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "sword",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "axe",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "axe",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "mace",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "mace",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "spear",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "spear",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "bow_quiver",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "bow_quiver",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "crossbow",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "crossbow",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "shield_wood",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "shield_wood",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "shield_metal",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "shield_metal",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "leather_armor",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "leather_armor",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "chainmail",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "chainmail",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "plate_armor",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "plate_armor",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "helmet",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "helmet",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "gauntlet",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "gauntlet",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "boots",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "boots",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "cloak",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "cloak",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "wizard_hat",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "wizard_hat",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "potion",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "potion",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "scroll",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "scroll",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "spellbook",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "spellbook",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "gold_coins",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "gold_coins",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "key",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "key",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "map",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "map",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "goblet",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "goblet",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "food_plate",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "food_plate",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "bear_trap",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "bear_trap",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "spike_trap",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "spike_trap",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "pressure_plate",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "pressure_plate",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "lever",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "lever",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "button",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "button",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "rune_stone",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "rune_stone",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "teleport_pad",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "teleport_pad",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "gargoyle_statue",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "gargoyle_statue",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "chair",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "chair",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "bench",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "bench",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "table",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "table",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "campfire",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "campfire",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "bed",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "bed",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "throne",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "throne",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "weapon_rack",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "weapon_rack",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    },
+    {
+      "name": "training_dummy",
+      "itemType": "sprite",
+      "properties": {
+        "spritesheet": "misc_items2",
+        "sprite": "training_dummy",
+        "scaleX": 0.5,
+        "scaleY": 0.5,
+        "anchor": "bottom"
+      }
+    }
+  ]
+}
