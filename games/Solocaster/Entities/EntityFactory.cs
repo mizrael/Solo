@@ -132,15 +132,10 @@ public static class EntityFactory
         if (definition.Properties.TryGetValue("quantity", out var quantityObj) && quantityObj is int qty)
             quantity = qty;
 
-        float pickupRadius = 1.5f;
-        if (definition.Properties.TryGetValue("pickupRadius", out var radiusObj) && radiusObj is float radius)
-            pickupRadius = radius;
-
         var pickupable = new PickupableComponent(entity)
         {
             ItemTemplateId = itemTemplateId,
             Quantity = quantity,
-            PickupRadius = pickupRadius,
             SpatialGrid = spatialGrid
         };
         entity.Components.Add(pickupable);
@@ -158,8 +153,7 @@ public static class EntityFactory
         Game game,
         GameObject container,
         SpatialGrid? spatialGrid = null,
-        int quantity = 1,
-        float pickupRadius = 1.5f)
+        int quantity = 1)
     {
         var definition = new EntityDefinition
         {
@@ -169,8 +163,7 @@ public static class EntityFactory
             Properties = new Dictionary<string, object>
             {
                 ["itemTemplateId"] = itemTemplateId,
-                ["quantity"] = quantity,
-                ["pickupRadius"] = pickupRadius
+                ["quantity"] = quantity
             }
         };
 

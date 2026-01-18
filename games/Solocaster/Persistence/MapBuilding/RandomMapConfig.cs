@@ -31,5 +31,4 @@ public class PickupableItemConfig
     public Dictionary<string, int>? Items { get; init; }
     public int MinQuantity { get; init; } = 1;
     public int MaxQuantity { get; init; } = 1;
-    public float PickupRadius { get; init; } = 1.5f;
 }

@@ -11,9 +11,10 @@ public class PickupableComponent : Component
     {
     }
 
+    private const float PickupRadius = 3f;
+
     public required string ItemTemplateId { get; init; }
     public int Quantity { get; init; } = 1;
-    public float PickupRadius { get; init; } = 1f;
     public SpatialGrid? SpatialGrid { get; init; }
 
     public ItemInstance CreateItemInstance()

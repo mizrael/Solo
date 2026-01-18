@@ -243,8 +243,7 @@ public class RandomMapBuilder : IMapBuilder
                 context.Game,
                 context.SceneRoot,
                 context.SpatialGrid,
-                quantity,
-                itemConfig.PickupRadius
+                quantity
             );
 
             occupiedTiles.Add((col, row));

@@ -72,8 +72,7 @@ public class MapBuilderFactory
             Density = i.Density,
             Items = i.Items,
             MinQuantity = i.MinQuantity,
-            MaxQuantity = i.MaxQuantity,
-            PickupRadius = i.PickupRadius
+            MaxQuantity = i.MaxQuantity
         }).ToList();
     }
 
@@ -227,5 +226,4 @@ public class PickupableItemData
     public Dictionary<string, int>? Items { get; init; }
     public int MinQuantity { get; init; } = 1;
     public int MaxQuantity { get; init; } = 1;
-    public float PickupRadius { get; init; } = 1.5f;
 }
