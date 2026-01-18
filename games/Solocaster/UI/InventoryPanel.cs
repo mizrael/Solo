@@ -20,20 +20,12 @@ public class InventoryPanel : PanelWidget
     private readonly StatsComponent _stats;
     private readonly SpriteFont _font;
     private readonly Game _game;
+    private readonly DragDropManager _dragDropManager;
 
     private readonly Dictionary<EquipSlot, ItemSlotWidget> _equipmentSlots = new();
     private readonly List<ItemSlotWidget> _backpackSlots = new();
     private LabelWidget? _weightLabel;
     private LabelWidget? _titleLabel;
-
-    // Drag-and-drop state
-    private ItemInstance? _draggedItem;
-    private ItemSlotWidget? _dragSourceSlot;
-    private EquipSlot? _dragSourceEquipSlot;
-    private int _dragSourceBackpackIndex = -1;
-    private Texture2D? _draggedItemTexture;
-    private Rectangle? _draggedItemSourceRect;
-    private Point _dragPosition;
 
     // Equipment slot layout positions (relative to equipment section)
     private static readonly Dictionary<EquipSlot, Vector2> EquipmentSlotPositions = new()
@@ -60,10 +52,11 @@ public class InventoryPanel : PanelWidget
         [EquipSlot.RightRing] = "RR"
     };
 
-    public InventoryPanel(InventoryComponent inventory, StatsComponent stats, SpriteFont font, Game game)
+    public InventoryPanel(InventoryComponent inventory, StatsComponent stats, DragDropManager dragDropManager, SpriteFont font, Game game)
     {
         _inventory = inventory;
         _stats = stats;
+        _dragDropManager = dragDropManager;
         _font = font;
         _game = game;
 
@@ -224,39 +217,28 @@ public class InventoryPanel : PanelWidget
 
     private void OnEquipmentSlotDragStart(EquipSlot equipSlot, ItemSlotWidget slot, ItemInstance item)
     {
-        StartDrag(slot, item, equipSlot, -1);
+        _dragDropManager.StartDrag(
+            item,
+            DragSource.Equipment,
+            -1,
+            equipSlot,
+            slot.ItemTexture,
+            slot.ItemSourceRect
+        );
+        slot.IsDragSource = true;
     }
 
     private void OnBackpackSlotDragStart(int slotIndex, ItemSlotWidget slot, ItemInstance item)
     {
-        StartDrag(slot, item, null, slotIndex);
-    }
-
-    private void StartDrag(ItemSlotWidget sourceSlot, ItemInstance item, EquipSlot? equipSlot, int backpackIndex)
-    {
-        _draggedItem = item;
-        _dragSourceSlot = sourceSlot;
-        _dragSourceEquipSlot = equipSlot;
-        _dragSourceBackpackIndex = backpackIndex;
-        _draggedItemTexture = sourceSlot.ItemTexture;
-        _draggedItemSourceRect = sourceSlot.ItemSourceRect;
-
-        sourceSlot.IsDragSource = true;
-    }
-
-    private void EndDrag()
-    {
-        if (_dragSourceSlot != null)
-            _dragSourceSlot.IsDragSource = false;
-
-        _draggedItem = null;
-        _dragSourceSlot = null;
-        _dragSourceEquipSlot = null;
-        _dragSourceBackpackIndex = -1;
-        _draggedItemTexture = null;
-        _draggedItemSourceRect = null;
-
-        ClearDropTargetHighlights();
+        _dragDropManager.StartDrag(
+            item,
+            DragSource.Backpack,
+            slotIndex,
+            null,
+            slot.ItemTexture,
+            slot.ItemSourceRect
+        );
+        slot.IsDragSource = true;
     }
 
     private void ClearDropTargetHighlights()
@@ -277,9 +259,9 @@ public class InventoryPanel : PanelWidget
     {
         base.UpdateCore(gameTime, mouseState, previousMouseState);
 
-        _dragPosition = new Point(mouseState.X, mouseState.Y);
+        _dragDropManager.DragPosition = new Point(mouseState.X, mouseState.Y);
 
-        if (_draggedItem != null)
+        if (_dragDropManager.IsDragging)
         {
             // Update drop target highlights
             UpdateDropTargetHighlights(mouseState);
@@ -287,15 +269,41 @@ public class InventoryPanel : PanelWidget
             // Check for drop (mouse released)
             if (mouseState.LeftButton == ButtonState.Released)
             {
-                HandleDrop(mouseState);
-                EndDrag();
+                bool handled = HandleDrop(mouseState);
+                var source = _dragDropManager.Source;
+                bool isOurDrag = source == DragSource.Backpack || source == DragSource.Equipment;
+
+                // Check if mouse is within our panel bounds
+                var mousePoint = new Point(mouseState.X, mouseState.Y);
+                bool mouseInPanel = Bounds.Contains(mousePoint);
+
+                // End drag if we handled it, or if it's our drag and mouse is in our panel (cancel)
+                if (handled || (isOurDrag && mouseInPanel))
+                {
+                    ClearDragSourceFlags();
+                    _dragDropManager.EndDrag();
+                }
             }
         }
     }
 
+    private void ClearDragSourceFlags()
+    {
+        foreach (var slot in _equipmentSlots.Values)
+        {
+            slot.IsDragSource = false;
+        }
+        foreach (var slot in _backpackSlots)
+        {
+            slot.IsDragSource = false;
+        }
+        ClearDropTargetHighlights();
+    }
+
     private void UpdateDropTargetHighlights(MouseState mouseState)
     {
-        if (_draggedItem == null)
+        var draggedItem = _dragDropManager.DraggedItem;
+        if (draggedItem == null)
             return;
 
         ClearDropTargetHighlights();
@@ -306,12 +314,12 @@ public class InventoryPanel : PanelWidget
         foreach (var kvp in _equipmentSlots)
         {
             var slot = kvp.Value;
-            if (slot == _dragSourceSlot)
+            if (slot.IsDragSource)
                 continue;
 
             if (slot.Bounds.Contains(mousePoint))
             {
-                if (_inventory.CanEquipToSlot(_draggedItem, kvp.Key))
+                if (_inventory.CanEquipToSlot(draggedItem, kvp.Key))
                     slot.IsValidDropTarget = true;
                 else
                     slot.IsInvalidDropTarget = true;
@@ -323,7 +331,7 @@ public class InventoryPanel : PanelWidget
         for (int i = 0; i < _backpackSlots.Count; i++)
         {
             var slot = _backpackSlots[i];
-            if (slot == _dragSourceSlot)
+            if (slot.IsDragSource)
                 continue;
 
             if (slot.Bounds.Contains(mousePoint))
@@ -335,10 +343,11 @@ public class InventoryPanel : PanelWidget
         }
     }
 
-    private void HandleDrop(MouseState mouseState)
+    private bool HandleDrop(MouseState mouseState)
     {
-        if (_draggedItem == null)
-            return;
+        var draggedItem = _dragDropManager.DraggedItem;
+        if (draggedItem == null)
+            return false;
 
         var mousePoint = new Point(mouseState.X, mouseState.Y);
 
@@ -346,13 +355,13 @@ public class InventoryPanel : PanelWidget
         foreach (var kvp in _equipmentSlots)
         {
             var slot = kvp.Value;
-            if (slot == _dragSourceSlot)
+            if (slot.IsDragSource)
                 continue;
 
             if (slot.Bounds.Contains(mousePoint))
             {
-                HandleDropOnEquipmentSlot(kvp.Key, slot);
-                return;
+                HandleDropOnEquipmentSlot(kvp.Key, draggedItem);
+                return true;
             }
         }
 
@@ -360,91 +369,112 @@ public class InventoryPanel : PanelWidget
         for (int i = 0; i < _backpackSlots.Count; i++)
         {
             var slot = _backpackSlots[i];
-            if (slot == _dragSourceSlot)
+            if (slot.IsDragSource)
                 continue;
 
             if (slot.Bounds.Contains(mousePoint))
             {
-                HandleDropOnBackpackSlot(i, slot);
-                return;
+                HandleDropOnBackpackSlot(i, draggedItem);
+                return true;
             }
         }
+
+        return false;
     }
 
-    private void HandleDropOnEquipmentSlot(EquipSlot targetSlot, ItemSlotWidget targetWidget)
+    private void HandleDropOnEquipmentSlot(EquipSlot targetSlot, ItemInstance draggedItem)
     {
-        if (_draggedItem == null)
-            return;
-
         // Check if item can be equipped to this slot
-        if (!_inventory.CanEquipToSlot(_draggedItem, targetSlot))
+        if (!_inventory.CanEquipToSlot(draggedItem, targetSlot))
             return;
 
-        // If dragging from equipment slot, need to unequip first then re-equip to new slot
-        if (_dragSourceEquipSlot.HasValue)
+        var source = _dragDropManager.Source;
+        var sourceEquipSlot = _dragDropManager.SourceEquipSlot;
+
+        switch (source)
         {
-            // Swap equipment slots
-            var targetItem = targetWidget.Item;
-
-            // Unequip source
-            _inventory.UnequipItem(_dragSourceEquipSlot.Value);
-
-            // If target had an item, unequip it too
-            if (targetItem != null)
+            case DragSource.Equipment when sourceEquipSlot.HasValue:
             {
-                _inventory.UnequipItem(targetSlot);
-                // Re-equip target item to source slot if compatible
-                if (_inventory.CanEquipToSlot(targetItem, _dragSourceEquipSlot.Value))
+                // Swap equipment slots
+                var targetItem = _inventory.GetEquippedItem(targetSlot);
+
+                // Unequip source
+                _inventory.UnequipItem(sourceEquipSlot.Value);
+
+                // If target had an item, unequip it too
+                if (targetItem != null)
                 {
-                    _inventory.EquipItemToSlot(targetItem, _dragSourceEquipSlot.Value);
+                    _inventory.UnequipItem(targetSlot);
+                    // Re-equip target item to source slot if compatible
+                    if (_inventory.CanEquipToSlot(targetItem, sourceEquipSlot.Value))
+                    {
+                        _inventory.EquipItemToSlot(targetItem, sourceEquipSlot.Value);
+                    }
                 }
+
+                // Equip dragged item to target slot
+                _inventory.EquipItemToSlot(draggedItem, targetSlot);
+                break;
             }
 
-            // Equip dragged item to target slot
-            _inventory.EquipItemToSlot(_draggedItem, targetSlot);
-        }
-        else if (_dragSourceBackpackIndex >= 0)
-        {
-            // Dragging from backpack to equipment slot
-            // If target slot is occupied, items will be swapped (existing goes to backpack)
-            _inventory.EquipItemToSlot(_draggedItem, targetSlot);
+            case DragSource.Backpack:
+                // Dragging from backpack to equipment slot
+                // If target slot is occupied, items will be swapped (existing goes to backpack)
+                _inventory.EquipItemToSlot(draggedItem, targetSlot);
+                break;
+
+            case DragSource.Belt:
+                // Can't equip consumables from belt
+                break;
         }
     }
 
-    private void HandleDropOnBackpackSlot(int targetIndex, ItemSlotWidget targetWidget)
+    private void HandleDropOnBackpackSlot(int targetIndex, ItemInstance draggedItem)
     {
-        if (_draggedItem == null)
-            return;
+        var source = _dragDropManager.Source;
+        var sourceIndex = _dragDropManager.SourceIndex;
+        var sourceEquipSlot = _dragDropManager.SourceEquipSlot;
 
-        if (_dragSourceEquipSlot.HasValue)
+        switch (source)
         {
-            // Dragging from equipment to backpack
-            var targetItem = targetWidget.Item;
-
-            // Unequip the dragged item
-            _inventory.UnequipItem(_dragSourceEquipSlot.Value);
-
-            // If target slot had an item and it can be equipped to source slot, equip it
-            if (targetItem != null && _inventory.CanEquipToSlot(targetItem, _dragSourceEquipSlot.Value))
+            case DragSource.Equipment when sourceEquipSlot.HasValue:
             {
-                _inventory.EquipItemToSlot(targetItem, _dragSourceEquipSlot.Value);
-            }
-        }
-        else if (_dragSourceBackpackIndex >= 0)
-        {
-            // Dragging within backpack - swap or move
-            var targetItem = targetWidget.Item;
+                // Dragging from equipment to backpack
+                var targetItem = targetIndex < _inventory.Backpack.Count ? _inventory.Backpack[targetIndex] : null;
 
-            if (targetItem != null)
-            {
-                // Swap items
-                _inventory.SwapBackpackItems(_dragSourceBackpackIndex, targetIndex);
+                // Unequip the dragged item
+                _inventory.UnequipItem(sourceEquipSlot.Value);
+
+                // If target slot had an item and it can be equipped to source slot, equip it
+                if (targetItem != null && _inventory.CanEquipToSlot(targetItem, sourceEquipSlot.Value))
+                {
+                    _inventory.EquipItemToSlot(targetItem, sourceEquipSlot.Value);
+                }
+                break;
             }
-            else
+
+            case DragSource.Backpack when sourceIndex >= 0:
             {
-                // Move to empty slot
-                _inventory.MoveBackpackItem(_dragSourceBackpackIndex, targetIndex);
+                // Dragging within backpack - swap or move
+                var targetItem = targetIndex < _inventory.Backpack.Count ? _inventory.Backpack[targetIndex] : null;
+
+                if (targetItem != null)
+                {
+                    // Swap items
+                    _inventory.SwapBackpackItems(sourceIndex, targetIndex);
+                }
+                else
+                {
+                    // Move to empty slot
+                    _inventory.MoveBackpackItem(sourceIndex, targetIndex);
+                }
+                break;
             }
+
+            case DragSource.Belt when sourceIndex >= 0:
+                // Dragging from belt to backpack - remove from belt
+                _inventory.RemoveFromBelt(sourceIndex);
+                break;
         }
     }
 
@@ -452,18 +482,8 @@ public class InventoryPanel : PanelWidget
     {
         base.RenderCore(spriteBatch);
 
-        // Render dragged item following cursor
-        if (_draggedItem != null && _draggedItemTexture != null)
-        {
-            var dragRect = new Rectangle(
-                _dragPosition.X - SlotSize / 2,
-                _dragPosition.Y - SlotSize / 2,
-                SlotSize - 8,
-                SlotSize - 8
-            );
-
-            spriteBatch.Draw(_draggedItemTexture, dragRect, _draggedItemSourceRect, Color.White * 0.8f);
-        }
+        // Dragged item is rendered by DragDropManager
+        _dragDropManager.Render(spriteBatch, SlotSize);
     }
 
     private void OnItemEquipped(ItemInstance item, EquipSlot equipSlot)

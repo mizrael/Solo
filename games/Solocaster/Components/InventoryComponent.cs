@@ -25,6 +25,8 @@ public enum EquipResult
 
 public class InventoryComponent : Component
 {
+    private const int DefaultBeltSize = 5;
+
     private readonly Dictionary<EquipSlot, ItemInstance?> _equipment = new()
     {
         [EquipSlot.Head] = null,
@@ -38,11 +40,15 @@ public class InventoryComponent : Component
     };
 
     private readonly List<ItemInstance> _backpack = new();
+    private readonly ItemInstance?[] _belt;
     private StatsComponent? _stats;
 
     public InventoryComponent(GameObject owner) : base(owner)
     {
+        _belt = new ItemInstance?[DefaultBeltSize];
     }
+
+    public int BeltSize => _belt.Length;
 
     protected override void InitCore()
     {
@@ -52,6 +58,7 @@ public class InventoryComponent : Component
 
     public IReadOnlyDictionary<EquipSlot, ItemInstance?> Equipment => _equipment;
     public IReadOnlyList<ItemInstance> Backpack => _backpack;
+    public IReadOnlyList<ItemInstance?> Belt => _belt;
 
     public float CurrentWeight => _backpack.Sum(i => i.TotalWeight) +
                                    _equipment.Values.Where(i => i != null).Sum(i => i!.TotalWeight);
@@ -314,7 +321,82 @@ public class InventoryComponent : Component
         return _backpack.IndexOf(item);
     }
 
+    // Belt operations
+    public bool CanPutInBelt(ItemInstance item)
+    {
+        return item.Template.ItemType == ItemType.Consumable;
+    }
+
+    public ItemInstance? GetBeltItem(int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= _belt.Length)
+            return null;
+        return _belt[slotIndex];
+    }
+
+    public bool AddToBelt(ItemInstance item, int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= _belt.Length)
+            return false;
+
+        if (!CanPutInBelt(item))
+            return false;
+
+        // If slot is occupied, swap with backpack
+        var existingItem = _belt[slotIndex];
+        if (existingItem != null)
+        {
+            _backpack.Add(existingItem);
+        }
+
+        // Remove from backpack if present
+        _backpack.Remove(item);
+
+        _belt[slotIndex] = item;
+        OnBeltChanged?.Invoke();
+        OnBackpackChanged?.Invoke();
+        return true;
+    }
+
+    public bool RemoveFromBelt(int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= _belt.Length)
+            return false;
+
+        var item = _belt[slotIndex];
+        if (item == null)
+            return false;
+
+        _belt[slotIndex] = null;
+        _backpack.Add(item);
+        OnBeltChanged?.Invoke();
+        OnBackpackChanged?.Invoke();
+        return true;
+    }
+
+    public void SwapBeltSlots(int index1, int index2)
+    {
+        if (index1 < 0 || index1 >= _belt.Length ||
+            index2 < 0 || index2 >= _belt.Length ||
+            index1 == index2)
+            return;
+
+        (_belt[index1], _belt[index2]) = (_belt[index2], _belt[index1]);
+        OnBeltChanged?.Invoke();
+    }
+
+    public int GetBeltIndex(ItemInstance item)
+    {
+        for (int i = 0; i < _belt.Length; i++)
+        {
+            if (_belt[i] == item)
+                return i;
+        }
+        return -1;
+    }
+
     public event Action<ItemInstance, EquipSlot>? OnItemEquipped;
     public event Action<ItemInstance, EquipSlot>? OnItemUnequipped;
     public event Action? OnBackpackChanged;
+    public event Action? OnBeltChanged;
 }

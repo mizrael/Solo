@@ -13,8 +13,8 @@ public class SolocasterGame : Game
     private RenderService _renderService;
     private UIService _uiService;
 
-    private const int ScreenWidth = 2048;
-    private const int ScreenHeight = 1536;
+    private const int ScreenWidth = 1600;
+    private const int ScreenHeight = 1200;
 
     public SolocasterGame()
     {

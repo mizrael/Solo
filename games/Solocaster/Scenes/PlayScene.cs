@@ -79,5 +79,12 @@ public class PlayScene : Scene
         );
         uiService.AddWidget(characterPanel);
         playerBrain.CharacterPanel = characterPanel;
+
+        var beltPanel = new BeltPanel(inventoryComponent, characterPanel.DragDropManager, font, Game);
+        beltPanel.PositionAtBottom(
+            renderService.Graphics.GraphicsDevice.Viewport.Width,
+            renderService.Graphics.GraphicsDevice.Viewport.Height
+        );
+        uiService.AddWidget(beltPanel);
     }
 }

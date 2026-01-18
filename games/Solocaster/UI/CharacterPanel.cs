@@ -11,6 +11,9 @@ public class CharacterPanel : Widget
 
     private readonly StatsPanel _statsPanel;
     private readonly InventoryPanel _inventoryPanel;
+    private readonly DragDropManager _dragDropManager;
+
+    public DragDropManager DragDropManager => _dragDropManager;
 
     public CharacterPanel(
         InventoryComponent inventory,
@@ -18,8 +21,9 @@ public class CharacterPanel : Widget
         SpriteFont font,
         Game game)
     {
+        _dragDropManager = new DragDropManager();
         _statsPanel = new StatsPanel(stats, font);
-        _inventoryPanel = new InventoryPanel(inventory, stats, font, game);
+        _inventoryPanel = new InventoryPanel(inventory, stats, _dragDropManager, font, game);
 
         // Position stats panel on the left
         _statsPanel.Position = Vector2.Zero;
