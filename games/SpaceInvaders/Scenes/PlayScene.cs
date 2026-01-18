@@ -23,7 +23,7 @@ public class PlayScene : Scene
     protected override void EnterCore()
     {
         var spriteSheet = SpriteSheetLoader.Get("meta/spritesheet.json", Game);        
-        var collisionService = GameServicesManager.Instance.GetRequired<CollisionService>();
+        var collisionService = GameServicesManager.Instance.GetRequired<BoundingBoxCollisionService>();
 
         var bulletSpawner = BuildBulletSpawner(spriteSheet, collisionService);
         this.Root.AddChild(bulletSpawner);
@@ -35,7 +35,7 @@ public class PlayScene : Scene
         AddPlayer(spriteSheet, collisionService, scale, bulletSpawner);
     }
 
-    private void AddPlayer(SpriteSheet spriteSheet, CollisionService collisionService, float scale, Spawner bulletSpawner)
+    private void AddPlayer(SpriteSheet spriteSheet, BoundingBoxCollisionService collisionService, float scale, Spawner bulletSpawner)
     {
         var player = new GameObject();
         player.AddTag(Tags.Player);
@@ -79,7 +79,7 @@ public class PlayScene : Scene
         Root.AddChild(player);
     }
 
-    private Spawner BuildBulletSpawner(SpriteSheet spriteSheet, CollisionService collisionService)
+    private Spawner BuildBulletSpawner(SpriteSheet spriteSheet, BoundingBoxCollisionService collisionService)
     {
         var spawner = new Spawner(() =>
         {
@@ -124,7 +124,7 @@ public class PlayScene : Scene
     private void AddAliens(
         SpriteSheet spriteSheet,
         Spawner bulletSpawner,
-        CollisionService collisionService, 
+        BoundingBoxCollisionService collisionService, 
         float scale)
     {
         var alienWidth = 110;
@@ -195,7 +195,7 @@ public class PlayScene : Scene
         SpriteSheet spriteSheet,
         string alienName,
         Spawner bulletSpawner,
-        CollisionService collisionService,
+        BoundingBoxCollisionService collisionService,
         MessageTopic<SetDirection> setDirectionTopic,
         float yStep,
         Vector2 boardSize,

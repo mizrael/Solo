@@ -14,12 +14,13 @@ public static class EntityFactory
     public static GameObject CreateEntity(
         EntityDefinition definition,
         Game game,
-        GameObject container)
+        GameObject container,
+        SpatialGrid? spatialGrid = null)
     {
         return definition.Type switch
         {
-            "sprite" => CreateSpriteEntity(definition, game, container),
-            "pickupable" => CreatePickupableEntity(definition, game, container),
+            "sprite" => CreateSpriteEntity(definition, game, container, spatialGrid),
+            "pickupable" => CreatePickupableEntity(definition, game, container, spatialGrid),
             _ => throw new NotSupportedException($"Entity type '{definition.Type}' not supported")
         };
     }
@@ -27,7 +28,8 @@ public static class EntityFactory
     private static GameObject CreateSpriteEntity(
         EntityDefinition definition,
         Game game,
-        GameObject container)
+        GameObject container,
+        SpatialGrid? spatialGrid)
     {
         var sheetName = definition.Properties["spritesheet"] as string;
         ArgumentException.ThrowIfNullOrWhiteSpace(sheetName, nameof(definition.Properties));
@@ -77,6 +79,7 @@ public static class EntityFactory
         }
 
         container.AddChild(entity);
+        spatialGrid?.Add(entity, transform.Local.Position);
 
         return entity;
     }
@@ -84,7 +87,8 @@ public static class EntityFactory
     private static GameObject CreatePickupableEntity(
         EntityDefinition definition,
         Game game,
-        GameObject container)
+        GameObject container,
+        SpatialGrid? spatialGrid)
     {
         var itemTemplateId = definition.Properties["itemTemplateId"] as string;
         ArgumentException.ThrowIfNullOrWhiteSpace(itemTemplateId, nameof(definition.Properties));
@@ -136,11 +140,13 @@ public static class EntityFactory
         {
             ItemTemplateId = itemTemplateId,
             Quantity = quantity,
-            PickupRadius = pickupRadius
+            PickupRadius = pickupRadius,
+            SpatialGrid = spatialGrid
         };
         entity.Components.Add(pickupable);
 
         container.AddChild(entity);
+        spatialGrid?.Add(entity, transform.Local.Position);
 
         return entity;
     }
@@ -151,6 +157,7 @@ public static class EntityFactory
         int tileY,
         Game game,
         GameObject container,
+        SpatialGrid? spatialGrid = null,
         int quantity = 1,
         float pickupRadius = 1.5f)
     {
@@ -167,6 +174,6 @@ public static class EntityFactory
             }
         };
 
-        return CreatePickupableEntity(definition, game, container);
+        return CreatePickupableEntity(definition, game, container, spatialGrid);
     }
 }

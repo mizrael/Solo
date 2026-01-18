@@ -20,7 +20,7 @@ public class PlayerBrain : Component
     private KeyboardState _previousKeyboardState;
 
     public InventoryPanel? InventoryPanel { get; set; }
-    public GameObject? EntityContainer { get; set; }
+    public SpatialGrid? SpatialGrid { get; set; }
 
     public PlayerBrain(GameObject owner, Map map) : base(owner)
     {
@@ -110,16 +110,14 @@ public class PlayerBrain : Component
 
     private bool TryPickupNearbyItem()
     {
-        if (_inventory == null || EntityContainer == null)
+        if (_inventory == null || SpatialGrid == null)
             return false;
 
         var playerPos = _transform.World.Position;
+        const float queryRadius = 2f; // Query radius for nearby entities
 
-        foreach (var entity in EntityContainer.Children)
+        foreach (var entity in SpatialGrid.Query(playerPos, queryRadius))
         {
-            if (!entity.Enabled)
-                continue;
-
             if (!entity.Components.TryGet<PickupableComponent>(out var pickupable))
                 continue;
 

@@ -60,15 +60,15 @@ public unsafe class Raycaster : IDisposable
 
     private readonly float[] _zBuffer;
     private readonly Dictionary<Texture2D, (Color[] data, GCHandle handle)> _spriteTextureCache;
-    private readonly GameObject _entityContainer;
+    private readonly SpatialGrid _spatialGrid;
 
     public Raycaster(
         Level level,
-        GameObject entityContainer,
+        SpatialGrid spatialGrid,
         int screenWidth,
         int screenHeight)
     {
-        _entityContainer = entityContainer;
+        _spatialGrid = spatialGrid;
         _frameWidth = screenWidth;
         _frameHeight = screenHeight;
 
@@ -731,9 +731,9 @@ public unsafe class Raycaster : IDisposable
     {
         var projections = new List<SpriteProjection>();
 
-        foreach (var entity in _entityContainer.Children)
+        foreach (var entity in _spatialGrid.GetAll())
         {
-            if (!entity.Enabled || !entity.Components.Has<BillboardComponent>())
+            if (!entity.Components.Has<BillboardComponent>())
                 continue;
             var transform = entity.Components.Get<TransformComponent>();
             var billboard = entity.Components.Get<BillboardComponent>();

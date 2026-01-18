@@ -24,15 +24,14 @@ public class PlayScene : Scene
         var uiService = GameServicesManager.Instance.GetRequired<UIService>();
         uiService.ClearWidgets();
 
-        var entityContainer = new GameObject();
-        Root.AddChild(entityContainer);
+        var spatialGrid = new SpatialGrid(bucketSize: 1f);
 
         ItemTemplateLoader.LoadAllFromFolder("./data/templates/items/");
 
         var frameBufferWidth = renderService.Graphics.GraphicsDevice.Viewport.Height / FrameBufferScale;
         var frameBufferHeight = renderService.Graphics.GraphicsDevice.Viewport.Width / FrameBufferScale;
 
-        var level = LevelLoader.LoadFromJson("./data/levels/level1.json", Game, entityContainer);
+        var level = LevelLoader.LoadFromJson("./data/levels/level1.json", Game, Root, spatialGrid);
 
         var player = new GameObject();
         var playerTransform = player.Components.Add<TransformComponent>();
@@ -43,11 +42,11 @@ public class PlayScene : Scene
 
         var playerBrain = new PlayerBrain(player, level.Map);
         player.Components.Add(playerBrain);
-        playerBrain.EntityContainer = entityContainer;
+        playerBrain.SpatialGrid = spatialGrid;
 
         this.Root.AddChild(player);
 
-        var raycaster = new Raycaster(level, entityContainer, frameBufferWidth, frameBufferHeight);
+        var raycaster = new Raycaster(level, spatialGrid, frameBufferWidth, frameBufferHeight);
 
         var frameTexture = new Texture2D(renderService.Graphics.GraphicsDevice, frameBufferWidth, frameBufferHeight);
 

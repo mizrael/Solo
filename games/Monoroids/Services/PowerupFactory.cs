@@ -10,9 +10,9 @@ namespace Monoroids.Services;
 public class PowerupFactory
 {
     private readonly SpriteSheet _spriteSheet;
-    private readonly CollisionService _collisionService;
+    private readonly BoundingBoxCollisionService _collisionService;
 
-    public PowerupFactory(SpriteSheet spriteSheet, CollisionService collisionService)
+    public PowerupFactory(SpriteSheet spriteSheet, BoundingBoxCollisionService collisionService)
     {
         _spriteSheet = spriteSheet ?? throw new ArgumentNullException(nameof(spriteSheet));
         _collisionService = collisionService ?? throw new ArgumentNullException(nameof(collisionService));

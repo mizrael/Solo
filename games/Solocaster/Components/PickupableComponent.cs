@@ -14,6 +14,7 @@ public class PickupableComponent : Component
     public required string ItemTemplateId { get; init; }
     public int Quantity { get; init; } = 1;
     public float PickupRadius { get; init; } = 1f;
+    public SpatialGrid? SpatialGrid { get; init; }
 
     public ItemInstance CreateItemInstance()
     {
@@ -32,6 +33,7 @@ public class PickupableComponent : Component
 
     public void OnPickedUp()
     {
+        SpatialGrid?.Remove(Owner);
         Owner.Enabled = false;
         Owner.Parent?.RemoveChild(Owner);
     }

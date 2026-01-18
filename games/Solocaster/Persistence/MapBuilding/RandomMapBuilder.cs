@@ -170,7 +170,7 @@ public class RandomMapBuilder : IMapBuilder
                 Properties = properties
             };
 
-            EntityFactory.CreateEntity(definition, context.Game, context.EntityContainer);
+            EntityFactory.CreateEntity(definition, context.Game, context.SceneRoot, context.SpatialGrid);
             occupiedTiles.Add((col, row));
         }
     }
@@ -241,7 +241,8 @@ public class RandomMapBuilder : IMapBuilder
                 col,
                 row,
                 context.Game,
-                context.EntityContainer,
+                context.SceneRoot,
+                context.SpatialGrid,
                 quantity,
                 itemConfig.PickupRadius
             );

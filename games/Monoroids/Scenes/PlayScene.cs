@@ -32,7 +32,7 @@ internal class PlayScene : Scene
         SpriteSheetLoader.BasePath = "./meta";
         var spriteSheet = SpriteSheetLoader.Get("sheet", Game);
 
-        var collisionService = GameServicesManager.Instance.GetRequired<CollisionService>();
+        var collisionService = GameServicesManager.Instance.GetRequired<BoundingBoxCollisionService>();
         var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
 
         var explosionSpawner = BuildExplosionsSpawner();
@@ -94,7 +94,7 @@ internal class PlayScene : Scene
 
     private Spawner BuildBulletSpawner(
         SpriteSheet spriteSheet,
-        CollisionService collisionService)
+        BoundingBoxCollisionService collisionService)
     {
         var spawner = new Spawner(() =>
         {
@@ -132,7 +132,7 @@ internal class PlayScene : Scene
         return spawner;
     }
 
-    private GameObject BuildPlayer(SpriteSheet spriteSheet, Spawner bulletSpawner, CollisionService collisionService)
+    private GameObject BuildPlayer(SpriteSheet spriteSheet, Spawner bulletSpawner, BoundingBoxCollisionService collisionService)
     {
         var shipTemplate = GameState.Instance.ShipTemplate;
         var shipTexture = spriteSheet.Get(shipTemplate.Asset);
@@ -193,7 +193,7 @@ internal class PlayScene : Scene
 
     private Spawner BuildAsteroidsSpawner(
         SpriteSheet spriteSheet,
-        CollisionService collisionService,
+        BoundingBoxCollisionService collisionService,
         RenderService renderService,
         GameObject player,
         Spawner explosionSpawner)

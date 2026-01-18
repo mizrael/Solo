@@ -32,7 +32,7 @@ public class PacmanGame : Game
         _sceneManager = new SceneManager();
         GameServicesManager.Instance.AddService(_sceneManager);
 
-        GameServicesManager.Instance.AddService(new CollisionService(new Point(64, 64)));
+        GameServicesManager.Instance.AddService(new BoundingBoxCollisionService(new Point(64, 64)));
 
         GameServicesManager.Instance.AddService(new MessageBus());
 

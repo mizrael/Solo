@@ -31,7 +31,7 @@ public class LevelLoader
         TemplateLoader.LoadAllTemplatesFromFolder(Path.GetFullPath(templatesPath));
     }
 
-    public static Level LoadFromJson(string path, Game game, GameObject entityContainer)
+    public static Level LoadFromJson(string path, Game game, GameObject sceneRoot, SpatialGrid spatialGrid)
     {
         var levelData = ParseLevelFile(path);
         var spritesheets = LoadSpritesheets(path, game, levelData);
@@ -40,7 +40,8 @@ public class LevelLoader
         var context = new MapBuildContext
         {
             Game = game,
-            EntityContainer = entityContainer,
+            SceneRoot = sceneRoot,
+            SpatialGrid = spatialGrid,
             SpriteSheets = spritesheets,
             TemplateLoader = TemplateLoader
         };
@@ -48,7 +49,7 @@ public class LevelLoader
         var builder = BuilderFactory.Create(levelData.Map, spritesheets, doorSprites);
         var mapResult = builder.Build(context);
 
-        LoadEntities(game, entityContainer, levelData);
+        LoadEntities(game, sceneRoot, spatialGrid, levelData);
 
         return new Level
         {
@@ -107,7 +108,7 @@ public class LevelLoader
         throw new InvalidOperationException($"Sprite '{spriteName}' not found in any spritesheet");
     }
 
-    private static void LoadEntities(Game game, GameObject entityContainer, LevelData levelData)
+    private static void LoadEntities(Game game, GameObject sceneRoot, SpatialGrid spatialGrid, LevelData levelData)
     {
         if (levelData.Entities == null)
             return;
@@ -125,7 +126,7 @@ public class LevelLoader
                 Properties = properties
             };
 
-            EntityFactory.CreateEntity(definition, game, entityContainer);
+            EntityFactory.CreateEntity(definition, game, sceneRoot, spatialGrid);
         }
     }
 
