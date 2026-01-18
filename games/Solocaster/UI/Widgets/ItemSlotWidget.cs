@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -157,8 +158,82 @@ public class ItemSlotWidget : PanelWidget
 
     public override string? GetTooltipText()
     {
-        if (_isHovered && Item != null)
-            return Item.Template.Name;
-        return null;
+        if (!_isHovered || Item == null)
+            return null;
+
+        var template = Item.Template;
+        var sb = new StringBuilder();
+
+        // Item name
+        sb.Append(template.Name);
+
+        // Stat modifiers
+        if (template.StatModifiers.Count > 0)
+        {
+            sb.AppendLine();
+            foreach (var mod in template.StatModifiers)
+            {
+                var sign = mod.Value >= 0 ? "+" : "";
+                sb.AppendLine($"{sign}{mod.Value:0} {FormatStatName(mod.Key)}");
+            }
+        }
+
+        // Requirements
+        if (template.Requirements.Count > 0)
+        {
+            sb.AppendLine();
+            sb.Append("Requires: ");
+            var first = true;
+            foreach (var req in template.Requirements)
+            {
+                if (!first) sb.Append(", ");
+                sb.Append($"{GetStatAbbreviation(req.Key)} {req.Value:0}");
+                first = false;
+            }
+        }
+
+        return sb.ToString().TrimEnd();
+    }
+
+    private static string FormatStatName(StatType stat)
+    {
+        return stat switch
+        {
+            StatType.Strength => "Strength",
+            StatType.Agility => "Agility",
+            StatType.Vitality => "Vitality",
+            StatType.Intelligence => "Intelligence",
+            StatType.MaxHealth => "Max Health",
+            StatType.MaxWeight => "Max Weight",
+            StatType.Damage => "Damage",
+            StatType.Defense => "Defense",
+            StatType.AttackSpeed => "Attack Speed",
+            StatType.CriticalChance => "Critical Chance",
+            StatType.MaxMana => "Max Mana",
+            StatType.ManaRegen => "Mana Regen",
+            StatType.SpellPower => "Spell Power",
+            _ => stat.ToString()
+        };
+    }
+
+    private static string GetStatAbbreviation(StatType stat)
+    {
+        return stat switch
+        {
+            StatType.Strength => "STR",
+            StatType.Agility => "AGI",
+            StatType.Vitality => "VIT",
+            StatType.Intelligence => "INT",
+            StatType.MaxHealth => "HP",
+            StatType.MaxWeight => "WT",
+            StatType.Damage => "DMG",
+            StatType.Defense => "DEF",
+            StatType.AttackSpeed => "SPD",
+            StatType.CriticalChance => "CRIT",
+            StatType.MaxMana => "MP",
+            StatType.ManaRegen => "MPR",
+            StatType.SpellPower => "PWR",
+            _ => stat.ToString()
+        };
     }
 }
