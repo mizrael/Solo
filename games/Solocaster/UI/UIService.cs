@@ -9,12 +9,16 @@ namespace Solocaster.UI;
 
 public class UIService : IGameService
 {
+    private const int DragItemSize = 48;
+
     private readonly List<Widget> _rootWidgets = new();
     private readonly GraphicsDeviceManager _graphics;
     private SpriteBatch? _spriteBatch;
     private MouseState _previousMouseState;
     private TooltipWidget? _tooltip;
     private SpriteFont? _tooltipFont;
+
+    public readonly DragDropManager DragDropManager = new();
 
     public UIService(GraphicsDeviceManager graphics)
     {
@@ -158,6 +162,9 @@ public class UIService : IGameService
         {
             widget.Render(_spriteBatch);
         }
+
+        // Render dragged item on top of all widgets
+        DragDropManager?.Render(_spriteBatch, DragItemSize);
 
         // Render tooltip last (always on top)
         _tooltip?.Render(_spriteBatch);

@@ -36,6 +36,13 @@ public class BeltPanel : PanelWidget
         BuildLayout();
 
         _inventory.OnBeltChanged += RefreshBelt;
+        _dragDropManager.OnDragEnded += OnDragEnded;
+    }
+
+    private void OnDragEnded(ItemInstance item, DragSource source)
+    {
+        ClearDragSourceFlags();
+        ClearDropTargetHighlights();
     }
 
     private void BuildLayout()

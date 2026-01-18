@@ -72,7 +72,7 @@ public class PlayScene : Scene
         debugUI.LayerIndex = 2;
         Root.AddChild(debugUIEntity);
 
-        var characterPanel = new CharacterPanel(inventoryComponent, statsComponent, font, Game);
+        var characterPanel = new CharacterPanel(inventoryComponent, statsComponent, uiService.DragDropManager, font, Game);
         characterPanel.CenterOnScreen(
             renderService.Graphics.GraphicsDevice.Viewport.Width,
             renderService.Graphics.GraphicsDevice.Viewport.Height
@@ -80,7 +80,7 @@ public class PlayScene : Scene
         uiService.AddWidget(characterPanel);
         playerBrain.CharacterPanel = characterPanel;
 
-        var beltPanel = new BeltPanel(inventoryComponent, characterPanel.DragDropManager, font, Game);
+        var beltPanel = new BeltPanel(inventoryComponent, uiService.DragDropManager, font, Game);
         beltPanel.PositionAtBottom(
             renderService.Graphics.GraphicsDevice.Viewport.Width,
             renderService.Graphics.GraphicsDevice.Viewport.Height

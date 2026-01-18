@@ -17,7 +17,6 @@ public class InventoryPanel : PanelWidget
     private const int BackpackRows = 4;
 
     private readonly InventoryComponent _inventory;
-    private readonly StatsComponent _stats;
     private readonly SpriteFont _font;
     private readonly Game _game;
     private readonly DragDropManager _dragDropManager;
@@ -52,10 +51,9 @@ public class InventoryPanel : PanelWidget
         [EquipSlot.RightRing] = "RR"
     };
 
-    public InventoryPanel(InventoryComponent inventory, StatsComponent stats, DragDropManager dragDropManager, SpriteFont font, Game game)
+    public InventoryPanel(InventoryComponent inventory,DragDropManager dragDropManager, SpriteFont font, Game game)
     {
         _inventory = inventory;
-        _stats = stats;
         _dragDropManager = dragDropManager;
         _font = font;
         _game = game;
@@ -70,6 +68,12 @@ public class InventoryPanel : PanelWidget
         _inventory.OnBackpackChanged += RefreshBackpack;
         _inventory.OnItemEquipped += OnItemEquipped;
         _inventory.OnItemUnequipped += OnItemUnequipped;
+        _dragDropManager.OnDragEnded += OnDragEnded;
+    }
+
+    private void OnDragEnded(ItemInstance item, DragSource source)
+    {
+        ClearDragSourceFlags();
     }
 
     private void BuildLayout()
@@ -481,9 +485,7 @@ public class InventoryPanel : PanelWidget
     protected override void RenderCore(SpriteBatch spriteBatch)
     {
         base.RenderCore(spriteBatch);
-
-        // Dragged item is rendered by DragDropManager
-        _dragDropManager.Render(spriteBatch, SlotSize);
+        // Dragged item is rendered by UIService on top of all widgets
     }
 
     private void OnItemEquipped(ItemInstance item, EquipSlot equipSlot)
