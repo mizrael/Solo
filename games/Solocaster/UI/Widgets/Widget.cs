@@ -134,4 +134,6 @@ public abstract class Widget
     {
         return Bounds.Contains(point);
     }
+
+    public virtual string? GetTooltipText() => null;
 }

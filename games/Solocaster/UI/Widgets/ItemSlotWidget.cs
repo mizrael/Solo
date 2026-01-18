@@ -93,4 +93,11 @@ public class ItemSlotWidget : PanelWidget
     }
 
     public event Action<ItemSlotWidget, ItemInstance?>? OnItemClicked;
+
+    public override string? GetTooltipText()
+    {
+        if (_isHovered && Item != null)
+            return Item.Template.Name;
+        return null;
+    }
 }

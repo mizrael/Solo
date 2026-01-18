@@ -64,6 +64,7 @@ public class PlayScene : Scene
         mapEntity.AddChild(miniMapEntity);
 
         var font = Game.Content.Load<SpriteFont>("Font");
+        uiService.SetTooltipFont(font);
 
         var debugUIEntity = new GameObject();
         var debugUI = new DebugUIRenderer(debugUIEntity, font, player);
