@@ -581,16 +581,4 @@ public class InventoryPanel : PanelWidget
             _weightLabel.TextColor = Color.Gray;
     }
 
-    public void Toggle()
-    {
-        Visible = !Visible;
-    }
-
-    public void CenterOnScreen(int screenWidth, int screenHeight)
-    {
-        Position = new Vector2(
-            (screenWidth - Size.X) / 2,
-            (screenHeight - Size.Y) / 2
-        );
-    }
 }

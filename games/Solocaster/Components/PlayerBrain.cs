@@ -20,7 +20,7 @@ public class PlayerBrain : Component
     private KeyboardState _previousKeyboardState;
     private MouseState _previousMouseState;
 
-    public InventoryPanel? InventoryPanel { get; set; }
+    public CharacterPanel? CharacterPanel { get; set; }
     public SpatialGrid? SpatialGrid { get; set; }
     public Raycaster? Raycaster { get; set; }
 
@@ -46,10 +46,10 @@ public class PlayerBrain : Component
         var keyboardState = Keyboard.GetState();
         var mouseState = Mouse.GetState();
 
-        // Toggle inventory with Tab
+        // Toggle character panel with Tab
         if (keyboardState.IsKeyDown(Keys.Tab) && !_previousKeyboardState.IsKeyDown(Keys.Tab))
         {
-            InventoryPanel?.Toggle();
+            CharacterPanel?.Toggle();
         }
 
         // Pick up items with left mouse click on hovered item

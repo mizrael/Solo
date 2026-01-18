@@ -72,13 +72,12 @@ public class PlayScene : Scene
         debugUI.LayerIndex = 2;
         Root.AddChild(debugUIEntity);
 
-        var inventoryPanel = new InventoryPanel(inventoryComponent, statsComponent, font, Game);
-        inventoryPanel.Visible = false;
-        inventoryPanel.CenterOnScreen(
+        var characterPanel = new CharacterPanel(inventoryComponent, statsComponent, font, Game);
+        characterPanel.CenterOnScreen(
             renderService.Graphics.GraphicsDevice.Viewport.Width,
             renderService.Graphics.GraphicsDevice.Viewport.Height
         );
-        uiService.AddWidget(inventoryPanel);
-        playerBrain.InventoryPanel = inventoryPanel;
+        uiService.AddWidget(characterPanel);
+        playerBrain.CharacterPanel = characterPanel;
     }
 }

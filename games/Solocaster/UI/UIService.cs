@@ -55,7 +55,6 @@ public class UIService : IGameService
     {
         var mouseState = Mouse.GetState();
 
-        // Handle mouse clicks
         if (mouseState.LeftButton == ButtonState.Released &&
             _previousMouseState.LeftButton == ButtonState.Pressed)
         {
@@ -68,7 +67,6 @@ public class UIService : IGameService
             }
         }
 
-        // Update all widgets
         foreach (var widget in _rootWidgets)
         {
             widget.Update(gameTime, mouseState, _previousMouseState);
