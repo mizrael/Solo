@@ -1,8 +1,8 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Solo.Services;
 using Solocaster.Scenes;
-using Solocaster.Services;
+using Solocaster.UI;
 
 namespace Solocaster;
 
@@ -11,6 +11,7 @@ public class SolocasterGame : Game
     private GraphicsDeviceManager _graphics;
     private SceneManager _sceneManager;
     private RenderService _renderService;
+    private UIService _uiService;
 
     private const int ScreenWidth = 2048;
     private const int ScreenHeight = 1536;
@@ -34,8 +35,8 @@ public class SolocasterGame : Game
         _sceneManager = new SceneManager();
         GameServicesManager.Instance.AddService(_sceneManager);
 
-        var entityManager = new EntityManager();
-        GameServicesManager.Instance.AddService(entityManager);
+        _uiService = new UIService(_graphics);
+        GameServicesManager.Instance.AddService(_uiService);
 
         base.Initialize();
     }
@@ -59,6 +60,7 @@ public class SolocasterGame : Game
     protected override void Draw(GameTime gameTime)
     {
         _renderService.Render();
+        _uiService.Render();
 
         base.Draw(gameTime);
     }

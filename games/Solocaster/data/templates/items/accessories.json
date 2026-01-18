@@ -1,0 +1,74 @@
+{
+  "items": [
+    {
+      "id": "gold_ring",
+      "name": "Gold Ring",
+      "description": "A simple gold ring with minor magical properties.",
+      "iconPath": "misc_items2:bones_skull_01",
+      "worldSpritePath": "misc_items2:bones_skull_01",
+      "worldSpriteScale": 0.2,
+      "itemType": "Accessory",
+      "equipSlot": "LeftRing",
+      "weight": 0.1,
+      "stackable": false,
+      "statModifiers": { "MaxHealth": 10 },
+      "requirements": {}
+    },
+    {
+      "id": "silver_ring",
+      "name": "Silver Ring",
+      "description": "A silver ring enchanted with protective magic.",
+      "iconPath": "misc_items2:bones_skull_01",
+      "worldSpritePath": "misc_items2:bones_skull_01",
+      "worldSpriteScale": 0.2,
+      "itemType": "Accessory",
+      "equipSlot": "LeftRing",
+      "weight": 0.1,
+      "stackable": false,
+      "statModifiers": { "Defense": 3 },
+      "requirements": {}
+    },
+    {
+      "id": "ring_of_strength",
+      "name": "Ring of Strength",
+      "description": "A ring imbued with the power of giants.",
+      "iconPath": "misc_items2:bones_skull_01",
+      "worldSpritePath": "misc_items2:bones_skull_01",
+      "worldSpriteScale": 0.2,
+      "itemType": "Accessory",
+      "equipSlot": "LeftRing",
+      "weight": 0.1,
+      "stackable": false,
+      "statModifiers": { "Strength": 3 },
+      "requirements": {}
+    },
+    {
+      "id": "silver_amulet",
+      "name": "Silver Amulet",
+      "description": "A silver amulet that enhances vitality.",
+      "iconPath": "misc_items2:bones_skull_01",
+      "worldSpritePath": "misc_items2:bones_skull_01",
+      "worldSpriteScale": 0.2,
+      "itemType": "Accessory",
+      "equipSlot": "Neck",
+      "weight": 0.2,
+      "stackable": false,
+      "statModifiers": { "Vitality": 2, "MaxHealth": 15 },
+      "requirements": {}
+    },
+    {
+      "id": "amulet_of_wisdom",
+      "name": "Amulet of Wisdom",
+      "description": "An ancient amulet that enhances magical abilities.",
+      "iconPath": "misc_items2:bones_skull_01",
+      "worldSpritePath": "misc_items2:bones_skull_01",
+      "worldSpriteScale": 0.2,
+      "itemType": "Accessory",
+      "equipSlot": "Neck",
+      "weight": 0.2,
+      "stackable": false,
+      "statModifiers": { "Intelligence": 3, "MaxMana": 20 },
+      "requirements": {}
+    }
+  ]
+}

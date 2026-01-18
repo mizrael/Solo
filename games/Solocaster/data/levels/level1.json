@@ -47,39 +47,57 @@
           "misc_items2:bones_pile_02": 20,
           "misc_items2:bones_scattered": 15
         }
+      }     
+    ],
+    "pickupableItems": [
+      {
+        "density": 0.015,
+        "items": {
+          "iron_sword": 20,
+          "steel_sword": 10,
+          "battle_axe": 8,
+          "morningstar": 12
+        }
       },
       {
-        "density": 0.02,
-        "placement": "floor",
+        "density": 0.012,
         "items": {
-          "misc_items2:sword_ground_01": 10,
-          "misc_items2:sword_ground_02": 10,
-          "misc_items2:sword_ground_03": 8,
-          "misc_items2:sword_ground_04": 8,
-          "misc_items2:sword_ground_bloody": 5,
-          "misc_items2:sword_ground_broken": 8,
-          "misc_items2:axe_ground_01": 10,
-          "misc_items2:axe_ground_02": 10,
-          "misc_items2:mace_morningstar": 6,
-          "misc_items2:mace_heavy": 6,
-          "misc_items2:shield_wood_01": 8,
-          "misc_items2:shield_buckler": 6,
-          "misc_items2:shield_round_wood": 5
+          "leather_helm": 20,
+          "iron_helm": 12,
+          "great_helm": 5,
+          "knight_helm": 8,
+          "iron_chestplate": 10,
+          "steel_chestplate": 5,
+          "iron_greaves": 12
         }
       },
       {
         "density": 0.01,
-        "placement": "floor",
         "items": {
-          "misc_items2:armor_chest_rusted": 15,
-          "misc_items2:armor_chest_damaged": 15,
-          "misc_items2:armor_chest_01": 10,
-          "misc_items2:armor_chest_02": 10,
-          "misc_items2:helmet_great_01": 12,
-          "misc_items2:helmet_closed_01": 10,
-          "misc_items2:helmet_broken_01": 15,
-          "misc_items2:helmet_knight_01": 8,
-          "misc_items2:armor_greave_01": 10
+          "wooden_shield": 20,
+          "buckler": 15,
+          "heater_shield": 10,
+          "round_shield": 12
+        }
+      },
+      {
+        "density": 0.02,
+        "minQuantity": 1,
+        "maxQuantity": 3,
+        "items": {
+          "health_potion": 50,
+          "mana_potion": 30,
+          "strength_elixir": 20
+        }
+      },
+      {
+        "density": 0.008,
+        "items": {
+          "gold_ring": 25,
+          "silver_ring": 25,
+          "ring_of_strength": 15,
+          "silver_amulet": 20,
+          "amulet_of_wisdom": 15
         }
       }
     ]

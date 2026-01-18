@@ -65,3 +65,12 @@ Components implement `IRenderable` to participate in rendering. The `RenderServi
    - Calls `_renderService.Render()` in `Draw()`
 3. Create scenes inheriting from `Scene`, override `EnterCore()` to build the scene graph
 4. Create components inheriting from `Component`, override `UpdateCore()` for logic and implement `IRenderable` for rendering
+
+
+## Coding Conventions
+- write comments only when strictly necessary (eg. the implementation is not obvious and the code is not self-explanatory)
+- prefer clear and descriptive names for classes, methods, variables
+- organize code into small, single-responsibility methods
+- use consistent formatting and indentation
+- follow SOLID principles and best practices
+- classes should be small and focused on a single responsibility

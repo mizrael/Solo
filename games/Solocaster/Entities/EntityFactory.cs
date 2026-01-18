@@ -1,10 +1,11 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Solo;
 using Solo.Assets.Loaders;
 using Solo.Components;
 using Solocaster.Components;
-using Solocaster.Services;
-using System;
+using Solocaster.Inventory;
 
 namespace Solocaster.Entities;
 
@@ -13,11 +14,12 @@ public static class EntityFactory
     public static GameObject CreateEntity(
         EntityDefinition definition,
         Game game,
-        EntityManager entityManager)
+        GameObject container)
     {
         return definition.Type switch
         {
-            "sprite" => CreateSpriteEntity(definition, game, entityManager),
+            "sprite" => CreateSpriteEntity(definition, game, container),
+            "pickupable" => CreatePickupableEntity(definition, game, container),
             _ => throw new NotSupportedException($"Entity type '{definition.Type}' not supported")
         };
     }
@@ -25,7 +27,7 @@ public static class EntityFactory
     private static GameObject CreateSpriteEntity(
         EntityDefinition definition,
         Game game,
-        EntityManager entityManager)
+        GameObject container)
     {
         var sheetName = definition.Properties["spritesheet"] as string;
         ArgumentException.ThrowIfNullOrWhiteSpace(sheetName, nameof(definition.Properties));
@@ -74,8 +76,97 @@ public static class EntityFactory
             };
         }
 
-        entityManager.Register(entity);
+        container.AddChild(entity);
 
         return entity;
+    }
+
+    private static GameObject CreatePickupableEntity(
+        EntityDefinition definition,
+        Game game,
+        GameObject container)
+    {
+        var itemTemplateId = definition.Properties["itemTemplateId"] as string;
+        ArgumentException.ThrowIfNullOrWhiteSpace(itemTemplateId, nameof(definition.Properties));
+
+        // Get the item template to get world sprite info
+        var itemTemplate = ItemTemplateLoader.Get(itemTemplateId);
+
+        var entity = new GameObject();
+        var transform = entity.Components.Add<TransformComponent>();
+
+        // Base position is center of tile
+        float posX = definition.TileX + 0.5f;
+        float posY = definition.TileY + 0.5f;
+
+        // Apply optional offsets
+        if (definition.Properties.TryGetValue("offsetX", out var offsetXObj) && offsetXObj is float offsetX)
+            posX += offsetX;
+        if (definition.Properties.TryGetValue("offsetY", out var offsetYObj) && offsetYObj is float offsetY)
+            posY += offsetY;
+
+        transform.Local.Position = new Vector2(posX, posY);
+
+        // Create billboard from world sprite path
+        if (!string.IsNullOrEmpty(itemTemplate.WorldSpritePath))
+        {
+            var spriteParts = itemTemplate.WorldSpritePath.Split(':');
+            if (spriteParts.Length == 2)
+            {
+                var spriteSheet = SpriteSheetLoader.Get(spriteParts[0], game);
+                var sprite = spriteSheet.Get(spriteParts[1]);
+
+                var billboard = entity.Components.Add<BillboardComponent>();
+                billboard.Sprite = sprite;
+                billboard.Scale = new Vector2(itemTemplate.WorldSpriteScale, itemTemplate.WorldSpriteScale);
+                billboard.Anchor = BillboardAnchor.Bottom;
+            }
+        }
+
+        // Add pickupable component
+        int quantity = 1;
+        if (definition.Properties.TryGetValue("quantity", out var quantityObj) && quantityObj is int qty)
+            quantity = qty;
+
+        float pickupRadius = 1.5f;
+        if (definition.Properties.TryGetValue("pickupRadius", out var radiusObj) && radiusObj is float radius)
+            pickupRadius = radius;
+
+        var pickupable = new PickupableComponent(entity)
+        {
+            ItemTemplateId = itemTemplateId,
+            Quantity = quantity,
+            PickupRadius = pickupRadius
+        };
+        entity.Components.Add(pickupable);
+
+        container.AddChild(entity);
+
+        return entity;
+    }
+
+    public static GameObject CreatePickupableItem(
+        string itemTemplateId,
+        int tileX,
+        int tileY,
+        Game game,
+        GameObject container,
+        int quantity = 1,
+        float pickupRadius = 1.5f)
+    {
+        var definition = new EntityDefinition
+        {
+            Type = "pickupable",
+            TileX = tileX,
+            TileY = tileY,
+            Properties = new Dictionary<string, object>
+            {
+                ["itemTemplateId"] = itemTemplateId,
+                ["quantity"] = quantity,
+                ["pickupRadius"] = pickupRadius
+            }
+        };
+
+        return CreatePickupableEntity(definition, game, container);
     }
 }

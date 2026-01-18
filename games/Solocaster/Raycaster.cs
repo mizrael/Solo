@@ -1,11 +1,9 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Solo.Components;
-using Solo.Services;
 using Solo;
 using Solocaster.Components;
 using Solocaster.Entities;
-using Solocaster.Services;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -62,12 +60,15 @@ public unsafe class Raycaster : IDisposable
 
     private readonly float[] _zBuffer;
     private readonly Dictionary<Texture2D, (Color[] data, GCHandle handle)> _spriteTextureCache;
+    private readonly GameObject _entityContainer;
 
     public Raycaster(
         Level level,
+        GameObject entityContainer,
         int screenWidth,
         int screenHeight)
     {
+        _entityContainer = entityContainer;
         _frameWidth = screenWidth;
         _frameHeight = screenHeight;
 
@@ -728,13 +729,12 @@ public unsafe class Raycaster : IDisposable
 
     private void RenderBillboards(TransformComponent playerTransform, PlayerBrain playerBrain, uint* pixels)
     {
-        var entityManager = GameServicesManager.Instance.GetRequired<EntityManager>();
-        var billboards = entityManager.GetVisibleEntities(e => e.Components.Has<BillboardComponent>());
-
         var projections = new List<SpriteProjection>();
 
-        foreach (var entity in billboards)
+        foreach (var entity in _entityContainer.Children)
         {
+            if (!entity.Enabled || !entity.Components.Has<BillboardComponent>())
+                continue;
             var transform = entity.Components.Get<TransformComponent>();
             var billboard = entity.Components.Get<BillboardComponent>();
             var sprite = billboard.Sprite;

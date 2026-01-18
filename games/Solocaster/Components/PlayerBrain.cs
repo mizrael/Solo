@@ -1,8 +1,10 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Solo;
 using Solo.Components;
 using Solocaster.Entities;
+using Solocaster.Inventory;
+using Solocaster.UI;
 using System;
 
 namespace Solocaster.Components;
@@ -12,8 +14,13 @@ public class PlayerBrain : Component
     private Vector2 _plane = new(0, .45f);
 
     private TransformComponent _transform;
+    private InventoryComponent? _inventory;
 
     private readonly Map _map;
+    private KeyboardState _previousKeyboardState;
+
+    public InventoryPanel? InventoryPanel { get; set; }
+    public GameObject? EntityContainer { get; set; }
 
     public PlayerBrain(GameObject owner, Map map) : base(owner)
     {
@@ -23,6 +30,7 @@ public class PlayerBrain : Component
     protected override void InitCore()
     {
         _transform = this.Owner.Components.Get<TransformComponent>();
+        _inventory = this.Owner.Components.Get<InventoryComponent>();
 
         base.InitCore();
     }
@@ -35,8 +43,24 @@ public class PlayerBrain : Component
 
         var keyboardState = Keyboard.GetState();
 
-        if (keyboardState.IsKeyDown(Keys.E) && TryOpenDoor())
+        // Toggle inventory with Tab
+        if (keyboardState.IsKeyDown(Keys.Tab) && !_previousKeyboardState.IsKeyDown(Keys.Tab))
+        {
+            InventoryPanel?.Toggle();
+        }
+
+        // Try to pick up nearby items with E (separate from door opening)
+        if (keyboardState.IsKeyDown(Keys.E) && !_previousKeyboardState.IsKeyDown(Keys.E))
+        {
+            if (!TryPickupNearbyItem())
+            {
+                TryOpenDoor();
+            }
+            _previousKeyboardState = keyboardState;
             return;
+        }
+
+        _previousKeyboardState = keyboardState;
 
         float moveAmount = 0;
         if (keyboardState.IsKeyDown(Keys.W))
@@ -84,6 +108,37 @@ public class PlayerBrain : Component
         }
     }
 
+    private bool TryPickupNearbyItem()
+    {
+        if (_inventory == null || EntityContainer == null)
+            return false;
+
+        var playerPos = _transform.World.Position;
+
+        foreach (var entity in EntityContainer.Children)
+        {
+            if (!entity.Enabled)
+                continue;
+
+            if (!entity.Components.TryGet<PickupableComponent>(out var pickupable))
+                continue;
+
+            if (!pickupable.IsInRange(playerPos))
+                continue;
+
+            var itemInstance = pickupable.CreateItemInstance();
+            var result = _inventory.AddItem(itemInstance);
+
+            if (result == AddItemResult.Success)
+            {
+                pickupable.OnPickedUp();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private bool TryOpenDoor()
     {
         float checkDistance = 1.5f;
@@ -95,7 +150,7 @@ public class PlayerBrain : Component
 
             var door = _map.GetDoor(checkX, checkY);
             if (door is not null)
-            {   
+            {
                 door.StartOpening();
                 return true;
             }
@@ -104,5 +159,6 @@ public class PlayerBrain : Component
         return false;
     }
 
+    //TODO: not sure I like this here. should be in the camera
     public Vector2 Plane => _plane;
 }
