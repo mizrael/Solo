@@ -220,6 +220,88 @@ public class InventoryComponent : Component
         return true;
     }
 
+    public bool CanEquipToSlot(ItemInstance item, EquipSlot targetSlot)
+    {
+        if (!item.Template.IsEquippable)
+            return false;
+
+        var itemSlot = item.Template.EquipSlot;
+
+        // Ring can go to either ring slot
+        if (itemSlot == EquipSlot.LeftRing || itemSlot == EquipSlot.RightRing)
+            return targetSlot == EquipSlot.LeftRing || targetSlot == EquipSlot.RightRing;
+
+        return itemSlot == targetSlot;
+    }
+
+    public void SwapBackpackItems(int index1, int index2)
+    {
+        if (index1 < 0 || index1 >= _backpack.Count ||
+            index2 < 0 || index2 >= _backpack.Count ||
+            index1 == index2)
+            return;
+
+        (_backpack[index1], _backpack[index2]) = (_backpack[index2], _backpack[index1]);
+        OnBackpackChanged?.Invoke();
+    }
+
+    public void MoveBackpackItem(int fromIndex, int toIndex)
+    {
+        if (fromIndex < 0 || fromIndex >= _backpack.Count || fromIndex == toIndex)
+            return;
+
+        var item = _backpack[fromIndex];
+        _backpack.RemoveAt(fromIndex);
+
+        // Adjust target index if needed
+        if (toIndex > fromIndex)
+            toIndex--;
+
+        if (toIndex >= _backpack.Count)
+            _backpack.Add(item);
+        else
+            _backpack.Insert(Math.Max(0, toIndex), item);
+
+        OnBackpackChanged?.Invoke();
+    }
+
+    public EquipResult EquipItemToSlot(ItemInstance item, EquipSlot targetSlot)
+    {
+        if (!item.Template.IsEquippable)
+            return EquipResult.NotEquippable;
+
+        if (!_backpack.Contains(item))
+            return EquipResult.NotInBackpack;
+
+        if (!CanEquipToSlot(item, targetSlot))
+            return EquipResult.NotEquippable;
+
+        if (_stats != null && !_stats.MeetsRequirements(item.Template))
+            return EquipResult.RequirementsNotMet;
+
+        // Unequip existing item if any
+        var existingItem = _equipment[targetSlot];
+        if (existingItem != null)
+        {
+            UnequipItemInternal(targetSlot);
+        }
+
+        // Equip the new item
+        _backpack.Remove(item);
+        _equipment[targetSlot] = item;
+        _stats?.OnItemEquipped(item);
+
+        OnItemEquipped?.Invoke(item, targetSlot);
+        OnBackpackChanged?.Invoke();
+
+        return EquipResult.Success;
+    }
+
+    public int GetBackpackIndex(ItemInstance item)
+    {
+        return _backpack.IndexOf(item);
+    }
+
     public event Action<ItemInstance, EquipSlot>? OnItemEquipped;
     public event Action<ItemInstance, EquipSlot>? OnItemUnequipped;
     public event Action? OnBackpackChanged;
