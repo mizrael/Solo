@@ -47,6 +47,7 @@ public class PlayScene : Scene
         this.Root.AddChild(player);
 
         var raycaster = new Raycaster(level, spatialGrid, frameBufferWidth, frameBufferHeight);
+        playerBrain.Raycaster = raycaster;
 
         var frameTexture = new Texture2D(renderService.Graphics.GraphicsDevice, frameBufferWidth, frameBufferHeight);
 

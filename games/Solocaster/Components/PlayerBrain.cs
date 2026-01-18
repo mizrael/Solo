@@ -18,9 +18,11 @@ public class PlayerBrain : Component
 
     private readonly Map _map;
     private KeyboardState _previousKeyboardState;
+    private MouseState _previousMouseState;
 
     public InventoryPanel? InventoryPanel { get; set; }
     public SpatialGrid? SpatialGrid { get; set; }
+    public Raycaster? Raycaster { get; set; }
 
     public PlayerBrain(GameObject owner, Map map) : base(owner)
     {
@@ -42,6 +44,7 @@ public class PlayerBrain : Component
         float rotSpeed = ms * .005f;
 
         var keyboardState = Keyboard.GetState();
+        var mouseState = Mouse.GetState();
 
         // Toggle inventory with Tab
         if (keyboardState.IsKeyDown(Keys.Tab) && !_previousKeyboardState.IsKeyDown(Keys.Tab))
@@ -49,18 +52,21 @@ public class PlayerBrain : Component
             InventoryPanel?.Toggle();
         }
 
-        // Try to pick up nearby items with E (separate from door opening)
+        // Pick up items with left mouse click on hovered item
+        if (mouseState.LeftButton == ButtonState.Pressed &&
+            _previousMouseState.LeftButton == ButtonState.Released)
+        {
+            TryPickupClickedItem();
+        }
+
+        // Open doors with E key
         if (keyboardState.IsKeyDown(Keys.E) && !_previousKeyboardState.IsKeyDown(Keys.E))
         {
-            if (!TryPickupNearbyItem())
-            {
-                TryOpenDoor();
-            }
-            _previousKeyboardState = keyboardState;
-            return;
+            TryOpenDoor();
         }
 
         _previousKeyboardState = keyboardState;
+        _previousMouseState = mouseState;
 
         float moveAmount = 0;
         if (keyboardState.IsKeyDown(Keys.W))
@@ -108,30 +114,30 @@ public class PlayerBrain : Component
         }
     }
 
-    private bool TryPickupNearbyItem()
+    private bool TryPickupClickedItem()
     {
-        if (_inventory == null || SpatialGrid == null)
+        if (_inventory == null || Raycaster == null)
             return false;
 
+        var hoveredEntity = Raycaster.HoveredEntity;
+        if (hoveredEntity == null)
+            return false;
+
+        if (!hoveredEntity.Components.TryGet<PickupableComponent>(out var pickupable))
+            return false;
+
+        // Check if player is in range to pick up
         var playerPos = _transform.World.Position;
-        const float queryRadius = 2f; // Query radius for nearby entities
+        if (!pickupable.IsInRange(playerPos))
+            return false;
 
-        foreach (var entity in SpatialGrid.Query(playerPos, queryRadius))
+        var itemInstance = pickupable.CreateItemInstance();
+        var result = _inventory.AddItem(itemInstance);
+
+        if (result == AddItemResult.Success)
         {
-            if (!entity.Components.TryGet<PickupableComponent>(out var pickupable))
-                continue;
-
-            if (!pickupable.IsInRange(playerPos))
-                continue;
-
-            var itemInstance = pickupable.CreateItemInstance();
-            var result = _inventory.AddItem(itemInstance);
-
-            if (result == AddItemResult.Success)
-            {
-                pickupable.OnPickedUp();
-                return true;
-            }
+            pickupable.OnPickedUp();
+            return true;
         }
 
         return false;
