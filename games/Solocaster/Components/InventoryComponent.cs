@@ -198,6 +198,14 @@ public class InventoryComponent : Component
             return EquipSlot.RightRing;
         }
 
+        // For hand items (weapons/shields), find an available slot (prefer right, then left)
+        if (itemSlot == EquipSlot.LeftHand || itemSlot == EquipSlot.RightHand)
+        {
+            if (_equipment[EquipSlot.RightHand] == null)
+                return EquipSlot.RightHand;
+            return EquipSlot.LeftHand;
+        }
+
         return itemSlot;
     }
 
@@ -230,6 +238,10 @@ public class InventoryComponent : Component
         // Ring can go to either ring slot
         if (itemSlot == EquipSlot.LeftRing || itemSlot == EquipSlot.RightRing)
             return targetSlot == EquipSlot.LeftRing || targetSlot == EquipSlot.RightRing;
+
+        // Weapons and shields (hand items) can go to either hand
+        if (itemSlot == EquipSlot.LeftHand || itemSlot == EquipSlot.RightHand)
+            return targetSlot == EquipSlot.LeftHand || targetSlot == EquipSlot.RightHand;
 
         return itemSlot == targetSlot;
     }
