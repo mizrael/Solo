@@ -23,6 +23,7 @@ public class PlayerBrain : Component
     public CharacterPanel? CharacterPanel { get; set; }
     public SpatialGrid? SpatialGrid { get; set; }
     public Raycaster? Raycaster { get; set; }
+    public GameObject? MiniMapEntity { get; set; }
 
     public PlayerBrain(GameObject owner, Map map) : base(owner)
     {
@@ -50,6 +51,13 @@ public class PlayerBrain : Component
         if (keyboardState.IsKeyDown(Keys.Tab) && !_previousKeyboardState.IsKeyDown(Keys.Tab))
         {
             CharacterPanel?.Toggle();
+        }
+
+        // Toggle minimap with M
+        if (keyboardState.IsKeyDown(Keys.M) && !_previousKeyboardState.IsKeyDown(Keys.M))
+        {
+            if (MiniMapEntity != null)
+                MiniMapEntity.Enabled = !MiniMapEntity.Enabled;
         }
 
         // Pick up items with left mouse click on hovered item

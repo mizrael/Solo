@@ -61,7 +61,9 @@ public class PlayScene : Scene
         var miniMapRenderer = new MiniMapRenderer(miniMapEntity, level.Map, player);
         miniMapEntity.Components.Add(miniMapRenderer);
         miniMapRenderer.LayerIndex = 1;
+        miniMapEntity.Enabled = false;
         mapEntity.AddChild(miniMapEntity);
+        playerBrain.MiniMapEntity = miniMapEntity;
 
         var font = Game.Content.Load<SpriteFont>("Font");
         uiService.SetTooltipFont(font);
