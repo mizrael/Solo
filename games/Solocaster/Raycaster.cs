@@ -164,8 +164,16 @@ public unsafe class Raycaster : IDisposable
         _texWidthF = _texWidth;
     }
 
-    public void Update(TransformComponent playerTransform, PlayerBrain playerBrain)
+    /// <summary>
+    /// The entity currently being hovered by the mouse cursor, if any.
+    /// </summary>
+    public GameObject? HoveredEntity { get; private set; }
+
+    private Vector2 _mouseFrameBufferPos;
+
+    public void Update(TransformComponent playerTransform, PlayerBrain playerBrain, Vector2 mouseFrameBufferPos)
     {
+        _mouseFrameBufferPos = mouseFrameBufferPos;
         fixed (Color* frameBufferPtr = FrameBuffer)
         {
             uint* pixels = (uint*)frameBufferPtr;
@@ -711,6 +719,8 @@ public unsafe class Raycaster : IDisposable
 
     private struct SpriteProjection
     {
+        public GameObject Entity;
+        public bool IsPickupable;
         public float Distance;
         public float ShadingFactor;
         public int ScreenY;
@@ -727,17 +737,23 @@ public unsafe class Raycaster : IDisposable
         public BillboardAnchor Anchor;
     }
 
+    // Outline color for highlighted pickupable items (yellow-gold)
+    private const uint OutlineColor = 0xFFFFD700;
+
     private void RenderBillboards(TransformComponent playerTransform, PlayerBrain playerBrain, uint* pixels)
     {
         var projections = new List<SpriteProjection>();
+        HoveredEntity = null;
 
-        foreach (var entity in _spatialGrid.GetAll())
+        var entities = _spatialGrid.Query(playerTransform.World.Position, 20f);
+        foreach (var entity in entities)
         {
             if (!entity.Components.Has<BillboardComponent>())
                 continue;
             var transform = entity.Components.Get<TransformComponent>();
             var billboard = entity.Components.Get<BillboardComponent>();
             var sprite = billboard.Sprite;
+            var isPickupable = entity.Components.Has<PickupableComponent>();
 
             var spritePos = transform.Local.Position;
 
@@ -795,6 +811,8 @@ public unsafe class Raycaster : IDisposable
 
             projections.Add(new SpriteProjection
             {
+                Entity = entity,
+                IsPickupable = isPickupable,
                 Distance = transformY,
                 ShadingFactor = CalculateShadingFactor(transformY),
                 ScreenY = screenY,
@@ -814,6 +832,29 @@ public unsafe class Raycaster : IDisposable
 
         projections.Sort((a, b) => b.Distance.CompareTo(a.Distance));
 
+        // Detect which pickupable entity is under the mouse cursor
+        // Check front-to-back (reverse order since we sorted back-to-front)
+        int mouseX = (int)_mouseFrameBufferPos.X;
+        int mouseY = (int)_mouseFrameBufferPos.Y;
+        for (int i = projections.Count - 1; i >= 0; i--)
+        {
+            var proj = projections[i];
+            if (!proj.IsPickupable)
+                continue;
+
+            // Check if mouse is within billboard bounds
+            if (mouseX >= proj.DrawStartX && mouseX <= proj.DrawEndX &&
+                mouseY >= proj.DrawStartY && mouseY <= proj.DrawEndY)
+            {
+                // Also check z-buffer to ensure the billboard is visible at this point
+                if (proj.Distance < _zBuffer[mouseY])
+                {
+                    HoveredEntity = proj.Entity;
+                    break;
+                }
+            }
+        }
+
         int* texYCoords = stackalloc int[8];
         int* texOffsets = stackalloc int[8];
         int* resultBuf = stackalloc int[8];
@@ -821,6 +862,8 @@ public unsafe class Raycaster : IDisposable
 
         foreach (var proj in projections)
         {
+            bool isHovered = proj.Entity == HoveredEntity;
+
             // Pre-compute fixed-point shading factor (8.8 format)
             uint shadingFixed = (uint)(proj.ShadingFactor * 256);
 
@@ -847,8 +890,8 @@ public unsafe class Raycaster : IDisposable
                 int endX = proj.DrawEndX;
                 int texYFixed = 0; // Starting texture Y in 16.16 fixed-point
 
-                // AVX2 path: process 8 pixels at a time
-                if (Avx2.IsSupported && endX - x >= 8)
+                // AVX2 path: process 8 pixels at a time (skip for hovered entities to show highlight)
+                if (Avx2.IsSupported && endX - x >= 8 && !isHovered)
                 {
                     Vector256<int> vShadingR = Vector256.Create((int)shadingFixed);
                     Vector256<int> vShadingG = Vector256.Create((int)shadingFixed);
@@ -921,10 +964,10 @@ public unsafe class Raycaster : IDisposable
                     c2 = proj.TexturePtr[ty2 * proj.TexWidth + texX];
                     c3 = proj.TexturePtr[ty3 * proj.TexWidth + texX];
 
-                    if ((c0 & 0xFF000000) != 0) rowPtr[x] = ApplyShadingFixed(c0, shadingFixed);
-                    if ((c1 & 0xFF000000) != 0) rowPtr[x + 1] = ApplyShadingFixed(c1, shadingFixed);
-                    if ((c2 & 0xFF000000) != 0) rowPtr[x + 2] = ApplyShadingFixed(c2, shadingFixed);
-                    if ((c3 & 0xFF000000) != 0) rowPtr[x + 3] = ApplyShadingFixed(c3, shadingFixed);
+                    if ((c0 & 0xFF000000) != 0) rowPtr[x] = isHovered ? ApplyHighlight(c0, shadingFixed) : ApplyShadingFixed(c0, shadingFixed);
+                    if ((c1 & 0xFF000000) != 0) rowPtr[x + 1] = isHovered ? ApplyHighlight(c1, shadingFixed) : ApplyShadingFixed(c1, shadingFixed);
+                    if ((c2 & 0xFF000000) != 0) rowPtr[x + 2] = isHovered ? ApplyHighlight(c2, shadingFixed) : ApplyShadingFixed(c2, shadingFixed);
+                    if ((c3 & 0xFF000000) != 0) rowPtr[x + 3] = isHovered ? ApplyHighlight(c3, shadingFixed) : ApplyShadingFixed(c3, shadingFixed);
                 }
 
                 // Handle remaining pixels
@@ -937,13 +980,28 @@ public unsafe class Raycaster : IDisposable
                         uint color = proj.TexturePtr[texY * proj.TexWidth + texX];
                         if ((color & 0xFF000000) != 0)
                         {
-                            rowPtr[x] = ApplyShadingFixed(color, shadingFixed);
+                            rowPtr[x] = isHovered ? ApplyHighlight(color, shadingFixed) : ApplyShadingFixed(color, shadingFixed);
                         }
                     }
                     texYFixed += texStepY;
                 }
             }
         }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static uint ApplyHighlight(uint color, uint shadingFixed)
+    {
+        // Apply shading first
+        uint shaded = ApplyShadingFixed(color, shadingFixed);
+
+        // Add yellow/gold tint by boosting red and green channels
+        uint a = shaded & 0xFF000000;
+        uint r = Math.Min(255, ((shaded >> 16) & 0xFF) + 80);
+        uint g = Math.Min(255, ((shaded >> 8) & 0xFF) + 60);
+        uint b = (shaded & 0xFF);
+
+        return a | (r << 16) | (g << 8) | b;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Solo;
 using Solo.Components;
 using Solo.Services;
@@ -61,8 +62,42 @@ public class MapRenderer : Component, IRenderable
     protected override void UpdateCore(GameTime gameTime)
     {
         _map.Update(gameTime);
-        _raycaster.Update(_playerTransform, _playerBrain);
+
+        // Convert screen mouse position to framebuffer coordinates
+        var mouseState = Mouse.GetState();
+        var mouseFrameBufferPos = ScreenToFrameBuffer(mouseState.X, mouseState.Y);
+
+        _raycaster.Update(_playerTransform, _playerBrain, mouseFrameBufferPos);
         _frameTexture.SetData(_raycaster.FrameBuffer);
+    }
+
+    /// <summary>
+    /// Converts screen coordinates to framebuffer coordinates, accounting for
+    /// the 90° CCW rotation and scaling applied during rendering.
+    /// </summary>
+    private Vector2 ScreenToFrameBuffer(int screenX, int screenY)
+    {
+        // The framebuffer is drawn with:
+        // 1. Origin at framebuffer center
+        // 2. 90° CCW rotation
+        // 3. Scale applied
+        // 4. Positioned at screen center
+        //
+        // Forward transform: fb(fx,fy) -> screen(sx,sy)
+        //   sx = scaleX * (fbH/2 - fy) + screenW/2
+        //   sy = scaleY * (fx - fbW/2) + screenH/2
+        //
+        // Inverse: screen(sx,sy) -> fb(fx,fy)
+        //   fx = (sy - screenH/2) / scaleY + fbW/2
+        //   fy = fbH/2 - (sx - screenW/2) / scaleX
+
+        float px = screenX - _halfScreenSize.X;
+        float py = screenY - _halfScreenSize.Y;
+
+        float fbX = py / _frameBufferScale.Y + _halfFrameBufferSize.X;
+        float fbY = _halfFrameBufferSize.Y - px / _frameBufferScale.X;
+
+        return new Vector2(fbX, fbY);
     }
 
     public void Render(SpriteBatch spriteBatch)
