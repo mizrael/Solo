@@ -1,0 +1,82 @@
+{
+  "races": [
+    {
+      "id": "human",
+      "name": "Human",
+      "description": "Versatile and adaptable, humans excel at whatever path they choose.",
+      "statBonuses": {
+        "Strength": 0,
+        "Agility": 0,
+        "Vitality": 0,
+        "Intelligence": 0,
+        "Wisdom": 0
+      },
+      "progressRates": {
+        "Strength": 1.0,
+        "Agility": 1.0,
+        "Vitality": 1.0,
+        "Intelligence": 1.0,
+        "Wisdom": 1.0
+      },
+      "gainMultipliers": {
+        "Strength": 1.0,
+        "Agility": 1.0,
+        "Vitality": 1.0,
+        "Intelligence": 1.0,
+        "Wisdom": 1.0
+      }
+    },
+    {
+      "id": "dwarf",
+      "name": "Dwarf",
+      "description": "Stout and resilient, dwarves are natural warriors with exceptional constitution.",
+      "statBonuses": {
+        "Strength": 2,
+        "Agility": -1,
+        "Vitality": 3,
+        "Intelligence": -1,
+        "Wisdom": 1
+      },
+      "progressRates": {
+        "Strength": 1.15,
+        "Agility": 0.85,
+        "Vitality": 1.2,
+        "Intelligence": 0.9,
+        "Wisdom": 1.0
+      },
+      "gainMultipliers": {
+        "Strength": 1.1,
+        "Agility": 0.9,
+        "Vitality": 1.15,
+        "Intelligence": 0.9,
+        "Wisdom": 1.0
+      }
+    },
+    {
+      "id": "elf",
+      "name": "Elf",
+      "description": "Graceful and wise, elves have a natural affinity for magic and archery.",
+      "statBonuses": {
+        "Strength": -1,
+        "Agility": 2,
+        "Vitality": -1,
+        "Intelligence": 2,
+        "Wisdom": 2
+      },
+      "progressRates": {
+        "Strength": 0.85,
+        "Agility": 1.15,
+        "Vitality": 0.9,
+        "Intelligence": 1.15,
+        "Wisdom": 1.1
+      },
+      "gainMultipliers": {
+        "Strength": 0.9,
+        "Agility": 1.1,
+        "Vitality": 0.9,
+        "Intelligence": 1.15,
+        "Wisdom": 1.1
+      }
+    }
+  ]
+}

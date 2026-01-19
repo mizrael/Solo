@@ -3,17 +3,30 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Solo;
 using Solo.Components;
+using Solocaster.Character;
 using Solocaster.Inventory;
 
 namespace Solocaster.Components;
 
 public class StatsComponent : Component
 {
+    private const float DefaultBaseStat = 10f;
+    private const float BaseStatGain = 1f; // Amount gained when progress reaches 100%
+    private const float BaseProgressPerAction = 5f; // Base % progress per action
+
     private readonly Dictionary<StatType, float> _baseStats = new();
     private readonly Dictionary<StatType, float> _equipmentBonuses = new();
+    private readonly Dictionary<StatType, float> _statProgress = new(); // 0-100%
 
     private float _currentHealth;
     private float _currentMana;
+
+    public string Name { get; set; } = "Adventurer";
+    public RaceTemplate? Race { get; private set; }
+    public ClassTemplate? Class { get; private set; }
+    public Sex Sex { get; private set; } = Sex.Male;
+
+    public PlayerMetrics Metrics { get; } = new();
 
     public float CurrentHealth
     {
@@ -37,10 +50,188 @@ public class StatsComponent : Component
 
     public StatsComponent(GameObject owner) : base(owner)
     {
-        _baseStats[StatType.Strength] = 10;
-        _baseStats[StatType.Agility] = 10;
-        _baseStats[StatType.Vitality] = 10;
-        _baseStats[StatType.Intelligence] = 10;
+        InitializeBaseStats();
+        InitializeStatProgress();
+
+        // Subscribe to metrics to update stat progress
+        Metrics.OnMetricChanged += OnMetricChanged;
+    }
+
+    private void InitializeBaseStats()
+    {
+        _baseStats[StatType.Strength] = DefaultBaseStat;
+        _baseStats[StatType.Agility] = DefaultBaseStat;
+        _baseStats[StatType.Vitality] = DefaultBaseStat;
+        _baseStats[StatType.Intelligence] = DefaultBaseStat;
+        _baseStats[StatType.Wisdom] = DefaultBaseStat;
+    }
+
+    private void InitializeStatProgress()
+    {
+        _statProgress[StatType.Strength] = 0f;
+        _statProgress[StatType.Agility] = 0f;
+        _statProgress[StatType.Vitality] = 0f;
+        _statProgress[StatType.Intelligence] = 0f;
+        _statProgress[StatType.Wisdom] = 0f;
+    }
+
+    public void SetCharacter(string raceId, string classId, Sex sex)
+    {
+        Race = CharacterTemplateLoader.GetRace(raceId);
+        Class = CharacterTemplateLoader.GetClass(classId);
+        Sex = sex;
+
+        ApplyRaceAndClassBonuses();
+        OnStatsChanged?.Invoke();
+    }
+
+    private void ApplyRaceAndClassBonuses()
+    {
+        // Reset to default and apply race/class bonuses
+        InitializeBaseStats();
+
+        if (Race != null)
+        {
+            foreach (var bonus in Race.StatBonuses)
+            {
+                if (_baseStats.ContainsKey(bonus.Key))
+                    _baseStats[bonus.Key] += bonus.Value;
+            }
+        }
+
+        if (Class != null)
+        {
+            foreach (var bonus in Class.StatBonuses)
+            {
+                if (_baseStats.ContainsKey(bonus.Key))
+                    _baseStats[bonus.Key] += bonus.Value;
+            }
+        }
+
+        // Ensure no stat goes below 1
+        foreach (var stat in new[] { StatType.Strength, StatType.Agility, StatType.Vitality, StatType.Intelligence, StatType.Wisdom })
+        {
+            if (_baseStats[stat] < 1)
+                _baseStats[stat] = 1;
+        }
+    }
+
+    private void OnMetricChanged(string metricName, float value)
+    {
+        // Map metrics to stat progress
+        switch (metricName)
+        {
+            case PlayerMetrics.Metric.MeleeAttack:
+                AddStatProgress(StatType.Strength, BaseProgressPerAction);
+                break;
+            case PlayerMetrics.Metric.RangedAttack:
+                AddStatProgress(StatType.Agility, BaseProgressPerAction * 0.5f);
+                AddStatProgress(StatType.Strength, BaseProgressPerAction * 0.5f);
+                break;
+            case PlayerMetrics.Metric.DamageTaken:
+                AddStatProgress(StatType.Vitality, BaseProgressPerAction * 0.5f);
+                break;
+            case PlayerMetrics.Metric.DamageBlocked:
+                AddStatProgress(StatType.Vitality, BaseProgressPerAction);
+                AddStatProgress(StatType.Strength, BaseProgressPerAction * 0.3f);
+                break;
+            case PlayerMetrics.Metric.SpellCast:
+                AddStatProgress(StatType.Intelligence, BaseProgressPerAction);
+                break;
+            case PlayerMetrics.Metric.MagicDamage:
+                AddStatProgress(StatType.Intelligence, BaseProgressPerAction * 0.5f);
+                break;
+            case PlayerMetrics.Metric.Healing:
+                AddStatProgress(StatType.Wisdom, BaseProgressPerAction);
+                break;
+            case PlayerMetrics.Metric.Running:
+                AddStatProgress(StatType.Agility, BaseProgressPerAction * 0.2f);
+                AddStatProgress(StatType.Vitality, BaseProgressPerAction * 0.1f);
+                break;
+            case PlayerMetrics.Metric.Walking:
+                AddStatProgress(StatType.Vitality, BaseProgressPerAction * 0.05f);
+                break;
+            case PlayerMetrics.Metric.Sneaking:
+            case PlayerMetrics.Metric.Hiding:
+                AddStatProgress(StatType.Agility, BaseProgressPerAction * 0.3f);
+                break;
+            case PlayerMetrics.Metric.LockPick:
+                if (value > 0) // success
+                    AddStatProgress(StatType.Agility, BaseProgressPerAction);
+                else
+                    AddStatProgress(StatType.Agility, BaseProgressPerAction * 0.2f);
+                break;
+            case PlayerMetrics.Metric.NPCInteraction:
+                AddStatProgress(StatType.Wisdom, BaseProgressPerAction * 0.3f);
+                break;
+            case PlayerMetrics.Metric.ItemBought:
+            case PlayerMetrics.Metric.ItemSold:
+                AddStatProgress(StatType.Wisdom, BaseProgressPerAction * 0.2f);
+                break;
+        }
+    }
+
+    public void AddStatProgress(StatType stat, float amount)
+    {
+        if (!_statProgress.ContainsKey(stat))
+            return;
+
+        // Apply race and class progress rate modifiers
+        float progressRate = GetProgressRate(stat);
+        float adjustedAmount = amount * progressRate;
+
+        _statProgress[stat] += adjustedAmount;
+
+        // Check for stat level up
+        while (_statProgress[stat] >= 100f)
+        {
+            _statProgress[stat] -= 100f;
+            LevelUpStat(stat);
+        }
+
+        OnStatProgressChanged?.Invoke(stat, _statProgress[stat]);
+    }
+
+    private float GetProgressRate(StatType stat)
+    {
+        float rate = 1f;
+
+        if (Race != null && Race.ProgressRates.TryGetValue(stat, out var raceRate))
+            rate *= raceRate;
+
+        if (Class != null && Class.ProgressRates.TryGetValue(stat, out var classRate))
+            rate *= classRate;
+
+        return rate;
+    }
+
+    private float GetGainMultiplier(StatType stat)
+    {
+        float multiplier = 1f;
+
+        if (Race != null && Race.GainMultipliers.TryGetValue(stat, out var raceMultiplier))
+            multiplier *= raceMultiplier;
+
+        if (Class != null && Class.GainMultipliers.TryGetValue(stat, out var classMultiplier))
+            multiplier *= classMultiplier;
+
+        return multiplier;
+    }
+
+    private void LevelUpStat(StatType stat)
+    {
+        float gainMultiplier = GetGainMultiplier(stat);
+        float gain = BaseStatGain * gainMultiplier;
+
+        _baseStats[stat] += gain;
+
+        OnStatLevelUp?.Invoke(stat, _baseStats[stat]);
+        OnStatsChanged?.Invoke();
+    }
+
+    public float GetStatProgress(StatType stat)
+    {
+        return _statProgress.TryGetValue(stat, out var progress) ? progress : 0f;
     }
 
     protected override void InitCore()
@@ -82,6 +273,7 @@ public class StatsComponent : Component
     {
         float vitality = GetTotalStat(StatType.Vitality);
         float bonusHealth = GetEquipmentBonus(StatType.MaxHealth);
+        // Base 50 HP + 5 per Vitality point
         return 50 + vitality * 5 + bonusHealth;
     }
 
@@ -95,8 +287,10 @@ public class StatsComponent : Component
     private float CalculateMaxMana()
     {
         float intelligence = GetTotalStat(StatType.Intelligence);
+        float wisdom = GetTotalStat(StatType.Wisdom);
         float bonusMana = GetEquipmentBonus(StatType.MaxMana);
-        return 20 + intelligence * 3 + bonusMana;
+        // Base 20 MP + 3 per Intelligence + 2 per Wisdom
+        return 20 + intelligence * 3 + wisdom * 2 + bonusMana;
     }
 
     public void OnItemEquipped(ItemInstance item)
@@ -135,4 +329,6 @@ public class StatsComponent : Component
     }
 
     public event Action? OnStatsChanged;
+    public event Action<StatType, float>? OnStatProgressChanged;
+    public event Action<StatType, float>? OnStatLevelUp;
 }

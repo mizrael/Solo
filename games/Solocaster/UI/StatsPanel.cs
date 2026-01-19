@@ -1,5 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Solo.Assets.Loaders;
+using Solocaster.Character;
 using Solocaster.Components;
 using Solocaster.Inventory;
 using Solocaster.UI.Widgets;
@@ -8,23 +10,30 @@ namespace Solocaster.UI;
 
 public class StatsPanel : PanelWidget
 {
+    private const int AvatarSize = 64;
+
     private readonly StatsComponent _stats;
     private readonly SpriteFont _font;
+    private readonly Game _game;
 
-    private LabelWidget? _titleLabel;
+    private ImageWidget? _avatarImage;
+    private LabelWidget? _nameLabel;
+    private LabelWidget? _raceClassLabel;
     private LabelWidget? _strengthLabel;
     private LabelWidget? _agilityLabel;
     private LabelWidget? _vitalityLabel;
     private LabelWidget? _intelligenceLabel;
+    private LabelWidget? _wisdomLabel;
     private LabelWidget? _healthLabel;
     private LabelWidget? _manaLabel;
     private LabelWidget? _damageLabel;
     private LabelWidget? _defenseLabel;
 
-    public StatsPanel(StatsComponent stats, SpriteFont font)
+    public StatsPanel(StatsComponent stats, SpriteFont font, Game game)
     {
         _stats = stats;
         _font = font;
+        _game = game;
 
         BackgroundColor = new Color(20, 20, 25, 240);
         BorderColor = new Color(100, 80, 60);
@@ -39,25 +48,50 @@ public class StatsPanel : PanelWidget
     {
         int padding = 16;
         int lineHeight = 24;
-        int width = 180;
-        int contentLines = 10; // title + 4 primary + separator + 4 derived
-        int height = padding * 2 + lineHeight * contentLines;
+        int width = 200;
+        // Match InventoryPanel height: padding*2 + 40 + 4*(64+8) + 8 + 30 = 398
+        int height = 398;
 
         Size = new Vector2(width, height);
 
         int y = padding;
 
-        // Title
-        _titleLabel = new LabelWidget
+        // Avatar
+        _avatarImage = new ImageWidget
         {
-            Text = "Character",
+            Position = new Vector2((width - AvatarSize) / 2, y),
+            Size = new Vector2(AvatarSize, AvatarSize),
+            ScaleToFit = true
+        };
+        AddChild(_avatarImage);
+        LoadAvatar();
+
+        y += AvatarSize + 4;
+
+        // Name
+        _nameLabel = new LabelWidget
+        {
+            Text = _stats.Name,
             Font = _font,
-            TextColor = new Color(200, 180, 140),
+            TextColor = new Color(220, 200, 160),
             Position = new Vector2(padding, y),
             Size = new Vector2(width - padding * 2, lineHeight),
             CenterHorizontally = true
         };
-        AddChild(_titleLabel);
+        AddChild(_nameLabel);
+        y += lineHeight;
+
+        // Race and Class
+        _raceClassLabel = new LabelWidget
+        {
+            Text = GetRaceClassName(),
+            Font = _font,
+            TextColor = new Color(160, 160, 160),
+            Position = new Vector2(padding, y),
+            Size = new Vector2(width - padding * 2, lineHeight),
+            CenterHorizontally = true
+        };
+        AddChild(_raceClassLabel);
         y += lineHeight + 8;
 
         // Primary stats
@@ -75,6 +109,10 @@ public class StatsPanel : PanelWidget
 
         _intelligenceLabel = CreateStatLabel(padding, y, width);
         AddChild(_intelligenceLabel);
+        y += lineHeight;
+
+        _wisdomLabel = CreateStatLabel(padding, y, width);
+        AddChild(_wisdomLabel);
         y += lineHeight + 8;
 
         // Derived stats
@@ -96,6 +134,40 @@ public class StatsPanel : PanelWidget
         RefreshStats();
     }
 
+    private void LoadAvatar()
+    {
+        if (_avatarImage == null)
+            return;
+
+        try
+        {
+            var spriteSheet = SpriteSheetLoader.Get("avatars", _game);
+            var spriteName = GetAvatarSpriteName();
+            var sprite = spriteSheet.Get(spriteName);
+            _avatarImage.Texture = sprite.Texture;
+            _avatarImage.SourceRectangle = sprite.Bounds;
+        }
+        catch
+        {
+            // Avatar not found, will show empty
+        }
+    }
+
+    private string GetAvatarSpriteName()
+    {
+        var race = _stats.Race?.Id ?? "human";
+        var cls = _stats.Class?.Id ?? "warrior";
+        var sex = _stats.Sex == Sex.Female ? "female" : "male";
+        return $"{race}_{cls}_{sex}";
+    }
+
+    private string GetRaceClassName()
+    {
+        var raceName = _stats.Race?.Name ?? "Human";
+        var className = _stats.Class?.Name ?? "Warrior";
+        return $"{raceName} {className}";
+    }
+
     private LabelWidget CreateStatLabel(int x, int y, int width)
     {
         return new LabelWidget
@@ -109,6 +181,12 @@ public class StatsPanel : PanelWidget
 
     private void RefreshStats()
     {
+        if (_nameLabel != null)
+            _nameLabel.Text = _stats.Name;
+
+        if (_raceClassLabel != null)
+            _raceClassLabel.Text = GetRaceClassName();
+
         if (_strengthLabel != null)
             _strengthLabel.Text = FormatStat("STR", StatType.Strength);
 
@@ -120,6 +198,9 @@ public class StatsPanel : PanelWidget
 
         if (_intelligenceLabel != null)
             _intelligenceLabel.Text = FormatStat("INT", StatType.Intelligence);
+
+        if (_wisdomLabel != null)
+            _wisdomLabel.Text = FormatStat("WIS", StatType.Wisdom);
 
         if (_healthLabel != null)
             _healthLabel.Text = $"Health: {_stats.GetTotalStat(StatType.MaxHealth):0}";
@@ -138,6 +219,9 @@ public class StatsPanel : PanelWidget
             var defense = _stats.GetTotalStat(StatType.Defense);
             _defenseLabel.Text = defense > 0 ? $"Defense: +{defense:0}" : "Defense: 0";
         }
+
+        // Reload avatar in case race/class/sex changed
+        LoadAvatar();
     }
 
     private string FormatStat(string label, StatType stat)

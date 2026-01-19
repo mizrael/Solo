@@ -7,6 +7,7 @@ public enum StatType
     Agility,
     Vitality,
     Intelligence,
+    Wisdom,
 
     // Derived stats
     MaxHealth,

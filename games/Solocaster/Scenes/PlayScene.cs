@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Solo;
 using Solo.Components;
 using Solo.Services;
+using Solocaster.Character;
 using Solocaster.Components;
 using Solocaster.Inventory;
 using Solocaster.Persistence;
@@ -27,6 +28,7 @@ public class PlayScene : Scene
         var spatialGrid = new SpatialGrid(bucketSize: 1f);
 
         ItemTemplateLoader.LoadAllFromFolder("./data/templates/items/");
+        CharacterTemplateLoader.LoadAll("./data/templates/character/");
 
         var frameBufferWidth = renderService.Graphics.GraphicsDevice.Viewport.Height / FrameBufferScale;
         var frameBufferHeight = renderService.Graphics.GraphicsDevice.Viewport.Width / FrameBufferScale;
@@ -38,6 +40,7 @@ public class PlayScene : Scene
         playerTransform.Local.Position = level.Map.GetStartingPosition();
         playerTransform.Local.Direction = new Vector2(-1, 0);
         var statsComponent = player.Components.Add<StatsComponent>();
+        statsComponent.SetCharacter("human", "warrior", Sex.Male);
         var inventoryComponent = player.Components.Add<InventoryComponent>();
 
         var playerBrain = new PlayerBrain(player, level.Map);

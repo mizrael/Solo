@@ -74,3 +74,4 @@ Components implement `IRenderable` to participate in rendering. The `RenderServi
 - use consistent formatting and indentation
 - follow SOLID principles and best practices
 - classes should be small and focused on a single responsibility
+- avoid magic strings; use `const string`, `nameof()`, or similar approaches instead

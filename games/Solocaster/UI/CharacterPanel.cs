@@ -19,7 +19,7 @@ public class CharacterPanel : Widget
         SpriteFont font,
         Game game)
     {
-        _statsPanel = new StatsPanel(stats, font);
+        _statsPanel = new StatsPanel(stats, font, game);
         _inventoryPanel = new InventoryPanel(inventory, dragDropManager, font, game);
 
         // Position stats panel on the left

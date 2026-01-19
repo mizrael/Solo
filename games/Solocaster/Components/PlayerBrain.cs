@@ -15,6 +15,7 @@ public class PlayerBrain : Component
 
     private TransformComponent _transform;
     private InventoryComponent? _inventory;
+    private StatsComponent? _stats;
 
     private readonly Map _map;
     private KeyboardState _previousKeyboardState;
@@ -34,6 +35,7 @@ public class PlayerBrain : Component
     {
         _transform = this.Owner.Components.Get<TransformComponent>();
         _inventory = this.Owner.Components.Get<InventoryComponent>();
+        _stats = this.Owner.Components.Get<StatsComponent>();
 
         base.InitCore();
     }
@@ -84,12 +86,19 @@ public class PlayerBrain : Component
 
         if (moveAmount != 0)
         {
+            var previousPos = _transform.Local.Position;
             var moveStep = _transform.World.Direction * moveAmount;
+
             if (!_map.IsBlocked((int)(_transform.World.Position.X + moveStep.X), (int)_transform.World.Position.Y))
                 _transform.Local.Position.X += moveStep.X;
 
             if (!_map.IsBlocked((int)_transform.World.Position.X, (int)(_transform.World.Position.Y + moveStep.Y)))
                 _transform.Local.Position.Y += moveStep.Y;
+
+            // Track actual distance walked
+            var actualDistance = Vector2.Distance(previousPos, _transform.Local.Position);
+            if (actualDistance > 0)
+                _stats?.Metrics.RecordWalking(actualDistance);
         }
 
         if (keyboardState.IsKeyDown(Keys.A))
