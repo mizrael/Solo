@@ -11,6 +11,7 @@ public class ButtonWidget : PanelWidget
 
     public ButtonWidget()
     {
+        ShowCloseButton = false;
         BackgroundColor = new Color(60, 60, 60, 230);
         BorderColor = new Color(100, 100, 100);
     }

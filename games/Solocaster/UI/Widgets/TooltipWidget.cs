@@ -9,6 +9,7 @@ public class TooltipWidget : PanelWidget
 
     public TooltipWidget()
     {
+        ShowCloseButton = false;
         BackgroundColor = new Color(20, 20, 25, 250);
         BorderColor = new Color(100, 80, 60);
         BorderWidth = 2;

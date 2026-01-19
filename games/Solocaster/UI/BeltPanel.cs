@@ -29,6 +29,7 @@ public class BeltPanel : PanelWidget
         _font = font;
         _game = game;
 
+        ShowCloseButton = false;
         BackgroundColor = new Color(20, 20, 25, 200);
         BorderColor = new Color(100, 80, 60);
         BorderWidth = 2;

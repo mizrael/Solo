@@ -95,5 +95,13 @@ public class PlayScene : Scene
         var playerStatusPanel = new PlayerStatusPanel(statsComponent, Game);
         playerStatusPanel.PositionTopRight(renderService.Graphics.GraphicsDevice.Viewport.Width);
         uiService.AddWidget(playerStatusPanel);
+
+        var metricsPanel = new MetricsPanel(statsComponent, font, Game);
+        metricsPanel.CenterOnScreen(
+            renderService.Graphics.GraphicsDevice.Viewport.Width,
+            renderService.Graphics.GraphicsDevice.Viewport.Height
+        );
+        uiService.AddWidget(metricsPanel);
+        playerBrain.MetricsPanel = metricsPanel;
     }
 }

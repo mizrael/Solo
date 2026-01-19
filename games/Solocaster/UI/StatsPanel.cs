@@ -35,6 +35,7 @@ public class StatsPanel : PanelWidget
         _font = font;
         _game = game;
 
+        ShowCloseButton = false;
         BackgroundColor = new Color(20, 20, 25, 240);
         BorderColor = new Color(100, 80, 60);
         BorderWidth = 3;

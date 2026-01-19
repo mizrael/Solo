@@ -41,9 +41,14 @@ public abstract class Widget
         {
             if (Parent == null)
                 return Position;
-            return Parent.ScreenPosition + Position;
+            return Parent.ScreenPosition + Parent.ChildRenderOffset + Position;
         }
     }
+
+    /// <summary>
+    /// Offset applied to children's positions (used for scrolling).
+    /// </summary>
+    protected virtual Vector2 ChildRenderOffset => Vector2.Zero;
 
     public Rectangle Bounds => new(
         (int)ScreenPosition.X,
@@ -89,7 +94,7 @@ public abstract class Widget
     {
     }
 
-    public void Render(SpriteBatch spriteBatch)
+    public virtual void Render(SpriteBatch spriteBatch)
     {
         if (!Visible)
             return;

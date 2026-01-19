@@ -22,6 +22,7 @@ public class PlayerBrain : Component
     private MouseState _previousMouseState;
 
     public CharacterPanel? CharacterPanel { get; set; }
+    public MetricsPanel? MetricsPanel { get; set; }
     public SpatialGrid? SpatialGrid { get; set; }
     public Raycaster? Raycaster { get; set; }
     public GameObject? MiniMapEntity { get; set; }
@@ -60,6 +61,12 @@ public class PlayerBrain : Component
         {
             if (MiniMapEntity != null)
                 MiniMapEntity.Enabled = !MiniMapEntity.Enabled;
+        }
+
+        // Toggle metrics panel with C
+        if (keyboardState.IsKeyDown(Keys.C) && !_previousKeyboardState.IsKeyDown(Keys.C))
+        {
+            MetricsPanel?.Toggle();
         }
 
         // Pick up items with left mouse click on hovered item
