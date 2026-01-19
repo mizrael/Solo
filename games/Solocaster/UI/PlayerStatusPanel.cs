@@ -29,9 +29,10 @@ public class PlayerStatusPanel : PanelWidget
         _game = game;
 
         ShowCloseButton = false;
-        BackgroundColor = new Color(20, 20, 25, 200);
-        BorderColor = new Color(100, 80, 60);
-        BorderWidth = 2;
+        BackgroundColor = UITheme.Panel.BackgroundColor;
+        BorderColor = UITheme.Panel.BorderColor;
+        BorderWidth = UITheme.Panel.BorderWidth;
+        ContentPadding = 0; // PlayerStatusPanel handles its own padding
 
         int totalWidth = Padding * 3 + AvatarSize + BarWidth;
         int totalHeight = Padding * 2 + AvatarSize;

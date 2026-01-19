@@ -36,9 +36,10 @@ public class StatsPanel : PanelWidget
         _game = game;
 
         ShowCloseButton = false;
-        BackgroundColor = new Color(20, 20, 25, 240);
-        BorderColor = new Color(100, 80, 60);
-        BorderWidth = 3;
+        BackgroundColor = UITheme.Panel.BackgroundColor;
+        BorderColor = UITheme.Panel.BorderColor;
+        BorderWidth = UITheme.Panel.BorderWidth;
+        ContentPadding = 0; // StatsPanel handles its own padding
 
         BuildLayout();
 

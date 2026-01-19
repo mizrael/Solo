@@ -20,8 +20,9 @@ public class ItemSlotWidget : PanelWidget
     public ItemSlotWidget()
     {
         ShowCloseButton = false;
-        BackgroundColor = new Color(30, 30, 30, 200);
-        BorderColor = new Color(70, 70, 70);
+        BackgroundColor = UITheme.ItemSlot.BackgroundColor;
+        BorderColor = UITheme.ItemSlot.BorderColor;
+        BorderWidth = UITheme.ItemSlot.BorderWidth;
         Size = new Vector2(64, 64);
     }
 

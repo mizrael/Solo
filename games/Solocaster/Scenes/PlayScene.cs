@@ -27,6 +27,7 @@ public class PlayScene : Scene
 
         var spatialGrid = new SpatialGrid(bucketSize: 1f);
 
+        UITheme.Load("./data/ui/theme.json");
         ItemTemplateLoader.LoadAllFromFolder("./data/templates/items/");
         CharacterTemplateLoader.LoadAll("./data/templates/character/");
 

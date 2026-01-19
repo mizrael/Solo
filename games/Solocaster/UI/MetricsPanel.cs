@@ -57,11 +57,11 @@ public class MetricsPanel : PanelWidget
         _stats = stats;
         _font = font;
 
-        BackgroundColor = new Color(20, 20, 25, 240);
-        BorderColor = new Color(100, 80, 60);
-        BorderWidth = 3;
+        BackgroundColor = UITheme.Panel.BackgroundColor;
+        BorderColor = UITheme.Panel.BorderColor;
+        BorderWidth = UITheme.Panel.BorderWidth;
+        ContentPadding = UITheme.Panel.ContentPadding;
         Scrollable = true;
-        ContentPadding = 20;
 
         Size = new Vector2(PanelWidth, PanelHeight);
         Visible = false;
