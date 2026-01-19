@@ -31,7 +31,7 @@ public class NameStepPanel : Widget
         {
             Text = "Choose your name:",
             Font = font,
-            TextColor = new Color(200, 180, 140),
+            TextColor = UITheme.Text.Highlight,
             Position = new Vector2(0, labelY),
             Size = new Vector2(size.X, 30),
             CenterHorizontally = true

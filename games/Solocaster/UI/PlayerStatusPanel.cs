@@ -100,11 +100,11 @@ public class PlayerStatusPanel : PanelWidget
 
         // Health bar
         float healthRatio = _stats.CurrentHealth / _stats.GetTotalStat(StatType.MaxHealth);
-        DrawBar(spriteBatch, barX, healthBarY, healthRatio, new Color(180, 40, 40), new Color(60, 20, 20));
+        DrawBar(spriteBatch, barX, healthBarY, healthRatio, UITheme.StatusBar.HealthFill, UITheme.StatusBar.HealthBackground);
 
         // Mana bar
         float manaRatio = _stats.CurrentMana / _stats.GetTotalStat(StatType.MaxMana);
-        DrawBar(spriteBatch, barX, manaBarY, manaRatio, new Color(40, 80, 180), new Color(20, 30, 60));
+        DrawBar(spriteBatch, barX, manaBarY, manaRatio, UITheme.StatusBar.ManaFill, UITheme.StatusBar.ManaBackground);
     }
 
     private void DrawBar(SpriteBatch spriteBatch, int x, int y, float ratio, Color fillColor, Color bgColor)
@@ -125,7 +125,7 @@ public class PlayerStatusPanel : PanelWidget
         }
 
         // Border
-        var borderColor = new Color(80, 80, 80);
+        var borderColor = UITheme.Panel.BorderColor;
         spriteBatch.Draw(_pixelTexture, new Rectangle(x, y, BarWidth, 1), borderColor);
         spriteBatch.Draw(_pixelTexture, new Rectangle(x, y + BarHeight - 1, BarWidth, 1), borderColor);
         spriteBatch.Draw(_pixelTexture, new Rectangle(x, y, 1, BarHeight), borderColor);

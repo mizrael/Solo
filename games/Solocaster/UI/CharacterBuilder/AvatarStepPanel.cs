@@ -111,7 +111,7 @@ public class AvatarStepPanel : Widget
             {
                 Text = "Avatar spritesheet not found",
                 Font = _font,
-                TextColor = Color.Red,
+                TextColor = UITheme.Text.Error,
                 Position = new Vector2(0, Size.Y / 2 - 15),
                 Size = new Vector2(Size.X, 30),
                 CenterHorizontally = true
@@ -183,7 +183,7 @@ public class AvatarStepPanel : Widget
             var bounds = hovered.Bounds;
             bounds.Inflate(3, 3);
 
-            var hoverColor = new Color(150, 150, 150, 180);
+            var hoverColor = UITheme.Selection.HoverBorder;
             // Draw border
             spriteBatch.Draw(pixel, new Rectangle(bounds.X, bounds.Y, bounds.Width, 2), hoverColor);
             spriteBatch.Draw(pixel, new Rectangle(bounds.X, bounds.Bottom - 2, bounds.Width, 2), hoverColor);
@@ -198,7 +198,7 @@ public class AvatarStepPanel : Widget
             var bounds = selected.Bounds;
             bounds.Inflate(3, 3);
 
-            var highlightColor = new Color(200, 180, 140);
+            var highlightColor = UITheme.Selection.SelectionBorder;
             // Draw border
             spriteBatch.Draw(pixel, new Rectangle(bounds.X, bounds.Y, bounds.Width, 2), highlightColor);
             spriteBatch.Draw(pixel, new Rectangle(bounds.X, bounds.Bottom - 2, bounds.Width, 2), highlightColor);

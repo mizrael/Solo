@@ -25,9 +25,9 @@ public class TextInputWidget : PanelWidget
     public string Text { get; set; } = string.Empty;
     public int MaxLength { get; set; } = 20;
     public SpriteFont? Font { get; set; }
-    public Color TextColor { get; set; } = Color.White;
-    public Color PlaceholderColor { get; set; } = new Color(100, 100, 100);
-    public Color CursorColor { get; set; } = new Color(200, 180, 140);
+    public Color TextColor { get; set; } = UITheme.Text.Primary;
+    public Color PlaceholderColor { get; set; } = UITheme.Text.Placeholder;
+    public Color CursorColor { get; set; } = UITheme.Text.Highlight;
     public string PlaceholderText { get; set; } = "Enter name...";
     public bool IsFocused { get; set; } = true;
     public int Padding { get; set; } = 8;

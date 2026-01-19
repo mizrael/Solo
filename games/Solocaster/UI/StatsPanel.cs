@@ -76,7 +76,7 @@ public class StatsPanel : PanelWidget
         {
             Text = _stats.Name,
             Font = _font,
-            TextColor = new Color(220, 200, 160),
+            TextColor = UITheme.Text.Title,
             Position = new Vector2(padding, y),
             Size = new Vector2(width - padding * 2, lineHeight),
             CenterHorizontally = true
@@ -89,7 +89,7 @@ public class StatsPanel : PanelWidget
         {
             Text = GetRaceClassName(),
             Font = _font,
-            TextColor = new Color(160, 160, 160),
+            TextColor = UITheme.Text.Subtitle,
             Position = new Vector2(padding, y),
             Size = new Vector2(width - padding * 2, lineHeight),
             CenterHorizontally = true
@@ -182,7 +182,7 @@ public class StatsPanel : PanelWidget
         return new LabelWidget
         {
             Font = _font,
-            TextColor = Color.LightGray,
+            TextColor = UITheme.Text.Secondary,
             Position = new Vector2(x, y),
             Size = new Vector2(width - x * 2, 20)
         };

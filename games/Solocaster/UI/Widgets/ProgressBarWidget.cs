@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Solocaster.UI;
 
 namespace Solocaster.UI.Widgets;
 
@@ -14,13 +15,13 @@ public class ProgressBarWidget : Widget
 
     public float Progress { get; set; }
     public float MaxProgress { get; set; } = 100f;
-    public Color FillColor { get; set; } = new Color(80, 200, 80);
-    public Color BackgroundColor { get; set; } = new Color(40, 40, 40);
-    public Color BorderColor { get; set; } = new Color(80, 80, 80);
+    public Color FillColor { get; set; } = UITheme.StatusBar.ProgressFill;
+    public Color BackgroundColor { get; set; } = UITheme.StatusBar.ProgressBackground;
+    public Color BorderColor { get; set; } = UITheme.Panel.BorderColor;
     public string? OverlayText { get; set; }
     public SpriteFont? Font { get; set; }
-    public Color TextColor { get; set; } = Color.White;
-    public Color TextShadowColor { get; set; } = new Color(0, 0, 0, 128);
+    public Color TextColor { get; set; } = UITheme.Text.Primary;
+    public Color TextShadowColor { get; set; } = UITheme.Text.Shadow;
 
     private static Texture2D GetPixelTexture(GraphicsDevice graphicsDevice)
     {

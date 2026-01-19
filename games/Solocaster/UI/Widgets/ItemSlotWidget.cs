@@ -32,10 +32,10 @@ public class ItemSlotWidget : PanelWidget
     public SpriteFont? Font { get; set; }
     public Texture2D? ItemTexture { get; set; }
     public Rectangle? ItemSourceRect { get; set; }
-    public Color EmptySlotColor { get; set; } = new Color(50, 50, 50, 150);
-    public Color HoverColor { get; set; } = new Color(60, 60, 80, 220);
-    public Color InvalidDropColor { get; set; } = new Color(200, 50, 50, 180);
-    public Color ValidDropColor { get; set; } = new Color(50, 200, 50, 180);
+    public Color EmptySlotColor { get; set; } = UITheme.Selection.EmptySlot;
+    public Color HoverColor { get; set; } = UITheme.Selection.SlotHover;
+    public Color InvalidDropColor { get; set; } = UITheme.Selection.InvalidDrop;
+    public Color ValidDropColor { get; set; } = UITheme.Selection.ValidDrop;
 
     // Drag-drop state (set by parent InventoryPanel)
     public bool IsValidDropTarget { get; set; }
@@ -120,8 +120,8 @@ public class ItemSlotWidget : PanelWidget
                 );
 
                 // Draw shadow
-                spriteBatch.DrawString(Font, countText, textPos + new Vector2(1, 1), Color.Black);
-                spriteBatch.DrawString(Font, countText, textPos, Color.White);
+                spriteBatch.DrawString(Font, countText, textPos + new Vector2(1, 1), UITheme.Text.Shadow);
+                spriteBatch.DrawString(Font, countText, textPos, UITheme.Text.Primary);
             }
         }
 
@@ -130,7 +130,7 @@ public class ItemSlotWidget : PanelWidget
         {
             var labelSize = Font.MeasureString(SlotLabel);
             var labelPos = ScreenPosition + (Size - labelSize) / 2;
-            spriteBatch.DrawString(Font, SlotLabel, labelPos, new Color(100, 100, 100));
+            spriteBatch.DrawString(Font, SlotLabel, labelPos, UITheme.Text.Placeholder);
         }
     }
 

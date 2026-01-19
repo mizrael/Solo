@@ -18,7 +18,7 @@ public class TooltipWidget : PanelWidget
 
     public string Text { get; set; } = string.Empty;
     public SpriteFont? Font { get; set; }
-    public Color TextColor { get; set; } = Color.White;
+    public Color TextColor { get; set; } = UITheme.Text.Primary;
 
     public void UpdateSize()
     {

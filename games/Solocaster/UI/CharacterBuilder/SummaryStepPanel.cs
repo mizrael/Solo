@@ -52,7 +52,7 @@ public class SummaryStepPanel : Widget
         {
             Text = character.Name,
             Font = font,
-            TextColor = new Color(220, 200, 160),
+            TextColor = UITheme.Text.Title,
             Position = new Vector2(rightX, infoY),
             Size = new Vector2(size.X - rightX - 20, lineHeight)
         };
@@ -63,7 +63,7 @@ public class SummaryStepPanel : Widget
         {
             Text = $"{race?.Name ?? character.RaceId} {cls?.Name ?? character.ClassId}",
             Font = font,
-            TextColor = Color.LightGray,
+            TextColor = UITheme.Text.Secondary,
             Position = new Vector2(rightX, infoY),
             Size = new Vector2(size.X - rightX - 20, lineHeight)
         };
@@ -74,7 +74,7 @@ public class SummaryStepPanel : Widget
         {
             Text = character.Sex.ToString(),
             Font = font,
-            TextColor = Color.LightGray,
+            TextColor = UITheme.Text.Secondary,
             Position = new Vector2(rightX, infoY),
             Size = new Vector2(size.X - rightX - 20, lineHeight)
         };
@@ -87,7 +87,7 @@ public class SummaryStepPanel : Widget
         {
             Text = "Starting Stats:",
             Font = font,
-            TextColor = new Color(200, 180, 140),
+            TextColor = UITheme.Text.Highlight,
             Position = new Vector2(leftX, y),
             Size = new Vector2(size.X - 40, lineHeight)
         };
@@ -117,7 +117,7 @@ public class SummaryStepPanel : Widget
             {
                 Text = $"{FormatStatName(stat)}: {total}{bonusText}",
                 Font = font,
-                TextColor = Color.White,
+                TextColor = UITheme.Text.Primary,
                 Position = new Vector2(leftX + 20, y),
                 Size = new Vector2(size.X - 60, lineHeight)
             };

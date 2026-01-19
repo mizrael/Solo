@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Solocaster.UI;
 
 namespace Solocaster.UI.Widgets;
 
@@ -30,7 +31,7 @@ public class LabelWidget : Widget
     }
 
     public SpriteFont? Font { get; set; }
-    public Color TextColor { get; set; } = Color.White;
+    public Color TextColor { get; set; } = UITheme.Text.Primary;
     public bool CenterHorizontally { get; set; } = false;
     public bool CenterVertically { get; set; } = false;
     public bool WordWrap { get; set; } = false;

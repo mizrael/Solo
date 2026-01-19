@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Solocaster.UI;
 
 namespace Solocaster.UI.Widgets;
 
@@ -18,10 +19,10 @@ public class StepIndicatorWidget : Widget
     public int CurrentStep { get; set; }
     public HashSet<int> CompletedSteps { get; set; } = new();
     public SpriteFont? Font { get; set; }
-    public Color ActiveColor { get; set; } = new Color(200, 180, 140);
-    public Color CompletedColor { get; set; } = new Color(150, 150, 150);
-    public Color InactiveColor { get; set; } = new Color(80, 80, 80);
-    public Color SeparatorColor { get; set; } = new Color(100, 100, 100);
+    public Color ActiveColor { get; set; } = UITheme.Text.Highlight;
+    public Color CompletedColor { get; set; } = UITheme.Text.SectionHeader;
+    public Color InactiveColor { get; set; } = UITheme.Text.Muted;
+    public Color SeparatorColor { get; set; } = UITheme.Text.Placeholder;
 
     public event Action<int>? OnStepClicked;
 

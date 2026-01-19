@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Solocaster.Inventory;
+using Solocaster.UI;
 
 namespace Solocaster.UI.Widgets;
 
@@ -19,7 +20,7 @@ public class StatProgressRowWidget : Widget
     public float Progress { get; set; }
     public StatType StatType { get; set; }
     public SpriteFont? Font { get; set; }
-    public Color LabelColor { get; set; } = Color.LightGray;
+    public Color LabelColor { get; set; } = UITheme.Text.Secondary;
 
     private static Texture2D GetPixelTexture(GraphicsDevice graphicsDevice)
     {
@@ -29,19 +30,6 @@ public class StatProgressRowWidget : Widget
             _pixelTexture.SetData(new[] { Color.White });
         }
         return _pixelTexture;
-    }
-
-    private static Color GetStatColor(StatType stat)
-    {
-        return stat switch
-        {
-            StatType.Strength => new Color(200, 80, 80),
-            StatType.Agility => new Color(80, 200, 80),
-            StatType.Vitality => new Color(200, 160, 80),
-            StatType.Intelligence => new Color(80, 120, 200),
-            StatType.Wisdom => new Color(160, 80, 200),
-            _ => Color.Gray
-        };
     }
 
     protected override void RenderCore(SpriteBatch spriteBatch)
@@ -61,18 +49,18 @@ public class StatProgressRowWidget : Widget
         int barY = (int)pos.Y + 4;
 
         // Background
-        spriteBatch.Draw(pixel, new Rectangle(barX, barY, ProgressBarWidth, ProgressBarHeight), new Color(40, 40, 40));
+        spriteBatch.Draw(pixel, new Rectangle(barX, barY, ProgressBarWidth, ProgressBarHeight), UITheme.StatusBar.ProgressBackground);
 
         // Fill
         int fillWidth = (int)(ProgressBarWidth * (Progress / 100f));
         if (fillWidth > 0)
         {
-            var fillColor = GetStatColor(StatType);
+            var fillColor = UITheme.Stats.GetColorForStat(StatType);
             spriteBatch.Draw(pixel, new Rectangle(barX, barY, fillWidth, ProgressBarHeight), fillColor);
         }
 
         // Border
-        var borderColor = new Color(80, 80, 80);
+        var borderColor = UITheme.Panel.BorderColor;
         spriteBatch.Draw(pixel, new Rectangle(barX, barY, ProgressBarWidth, 1), borderColor);
         spriteBatch.Draw(pixel, new Rectangle(barX, barY + ProgressBarHeight - 1, ProgressBarWidth, 1), borderColor);
         spriteBatch.Draw(pixel, new Rectangle(barX, barY, 1, ProgressBarHeight), borderColor);
@@ -83,7 +71,7 @@ public class StatProgressRowWidget : Widget
         var percentSize = Font.MeasureString(percentText);
         float percentX = barX + (ProgressBarWidth - percentSize.X) / 2;
         // Draw with shadow for readability
-        spriteBatch.DrawString(Font, percentText, new Vector2(percentX + 1, pos.Y + 1), Color.Black * 0.5f);
-        spriteBatch.DrawString(Font, percentText, new Vector2(percentX, pos.Y), Color.White);
+        spriteBatch.DrawString(Font, percentText, new Vector2(percentX + 1, pos.Y + 1), UITheme.Text.Shadow * 0.5f);
+        spriteBatch.DrawString(Font, percentText, new Vector2(percentX, pos.Y), UITheme.Text.Primary);
     }
 }

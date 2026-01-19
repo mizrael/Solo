@@ -15,7 +15,7 @@ public class SexStepPanel : Widget
     private readonly Action _onSelectionChanged;
     private KeyboardState _previousKeyboardState;
 
-    private readonly Color _selectedColor = new Color(80, 70, 50);
+    private readonly Color _selectedColor;
     private readonly Color _normalColor;
 
     public SexStepPanel(SpriteFont font, Game game, Vector2 size, Action onSelectionChanged)
@@ -23,6 +23,7 @@ public class SexStepPanel : Widget
         _onSelectionChanged = onSelectionChanged;
         Size = size;
 
+        _selectedColor = UITheme.Selection.SelectedBackground;
         _normalColor = UITheme.Button.BackgroundColor;
 
         float buttonWidth = 150;

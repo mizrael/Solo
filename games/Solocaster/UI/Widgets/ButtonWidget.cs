@@ -19,8 +19,8 @@ public class ButtonWidget : PanelWidget
 
     public string Text { get; set; } = string.Empty;
     public SpriteFont? Font { get; set; }
-    public Color TextColor { get; set; } = Color.White;
-    public Color HoverColor { get; set; } = new Color(80, 80, 80, 230);
+    public Color TextColor { get; set; } = UITheme.Text.Primary;
+    public Color HoverColor { get; set; } = UITheme.Selection.HoverBackground;
 
     protected override void UpdateCore(GameTime gameTime, MouseState mouseState, MouseState previousMouseState)
     {

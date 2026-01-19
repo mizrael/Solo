@@ -36,9 +36,9 @@ public class RaceStepPanel : Widget
             Font = font,
             Position = new Vector2(0, 0),
             Size = new Vector2(150, size.Y),
-            BackgroundColor = new Color(30, 30, 35, 200),
+            BackgroundColor = UITheme.Panel.BackgroundColor,
             BorderColor = UITheme.Panel.BorderColor,
-            BorderWidth = 2
+            BorderWidth = UITheme.Panel.BorderWidth
         };
         _raceList.OnSelectionChanged += OnRaceSelected;
         AddChild(_raceList);
@@ -47,7 +47,7 @@ public class RaceStepPanel : Widget
         _detailPanel = new PanelWidget
         {
             ShowCloseButton = false,
-            BackgroundColor = new Color(30, 30, 35, 200),
+            BackgroundColor = UITheme.Panel.BackgroundColor,
             BorderColor = UITheme.Panel.BorderColor,
             BorderWidth = 2,
             ContentPadding = 0,
@@ -62,7 +62,7 @@ public class RaceStepPanel : Widget
         _nameLabel = new LabelWidget
         {
             Font = font,
-            TextColor = new Color(220, 200, 160),
+            TextColor = UITheme.Text.Title,
             Position = new Vector2(padding, y),
             Size = new Vector2(_detailPanel.Size.X - padding * 2, 30)
         };
@@ -72,7 +72,7 @@ public class RaceStepPanel : Widget
         _descriptionLabel = new LabelWidget
         {
             Font = font,
-            TextColor = Color.LightGray,
+            TextColor = UITheme.Text.Secondary,
             Position = new Vector2(padding, y),
             Size = new Vector2(_detailPanel.Size.X - padding * 2, 80),
             WordWrap = true
@@ -83,7 +83,7 @@ public class RaceStepPanel : Widget
         _bonusesLabel = new LabelWidget
         {
             Font = font,
-            TextColor = Color.White,
+            TextColor = UITheme.Text.Primary,
             Position = new Vector2(padding, y),
             Size = new Vector2(_detailPanel.Size.X - padding * 2, 150)
         };

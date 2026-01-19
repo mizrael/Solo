@@ -2,6 +2,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Solocaster.UI;
 
 namespace Solocaster.UI.Widgets;
 
@@ -21,8 +22,8 @@ public class PanelWidget : Widget
     {
     }
 
-    public Color BackgroundColor { get; set; } = new Color(40, 40, 40, 220);
-    public Color BorderColor { get; set; } = new Color(80, 80, 80);
+    public Color BackgroundColor { get; set; } = UITheme.Panel.BackgroundColor;
+    public Color BorderColor { get; set; } = UITheme.Panel.BorderColor;
     public int BorderWidth { get; set; } = 2;
     public bool ShowCloseButton { get; set; } = true;
     public bool Scrollable { get; set; }
@@ -219,7 +220,7 @@ public class PanelWidget : Widget
         int scrollbarHeight = contentBounds.Height;
 
         // Track
-        spriteBatch.Draw(pixel, new Rectangle(scrollbarX, contentBounds.Y, ScrollbarWidth, scrollbarHeight), new Color(40, 40, 40, 150));
+        spriteBatch.Draw(pixel, new Rectangle(scrollbarX, contentBounds.Y, ScrollbarWidth, scrollbarHeight), UITheme.Scrollbar.Track);
 
         // Thumb
         float thumbRatio = contentBounds.Height / (contentBounds.Height + MaxScrollOffset);
@@ -227,7 +228,7 @@ public class PanelWidget : Widget
         float scrollRatio = MaxScrollOffset > 0 ? _scrollOffset / MaxScrollOffset : 0;
         int thumbY = contentBounds.Y + (int)((scrollbarHeight - thumbHeight) * scrollRatio);
 
-        spriteBatch.Draw(pixel, new Rectangle(scrollbarX, thumbY, ScrollbarWidth, thumbHeight), new Color(120, 120, 120, 200));
+        spriteBatch.Draw(pixel, new Rectangle(scrollbarX, thumbY, ScrollbarWidth, thumbHeight), UITheme.Scrollbar.Thumb);
     }
 
     protected override void RenderCore(SpriteBatch spriteBatch)
@@ -261,8 +262,8 @@ public class PanelWidget : Widget
     private void RenderCloseButton(SpriteBatch spriteBatch, Texture2D pixel)
     {
         var closeBounds = CloseButtonBounds;
-        var closeColor = new Color(180, 60, 60);
-        var xColor = Color.White;
+        var closeColor = UITheme.Selection.CloseButton;
+        var xColor = UITheme.Text.Primary;
 
         // Button background
         spriteBatch.Draw(pixel, closeBounds, closeColor);

@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Solocaster.UI;
 
 namespace Solocaster.UI.Widgets;
 
@@ -12,8 +13,8 @@ public class MetricRowWidget : Widget
     public string Label { get; set; } = string.Empty;
     public string Value { get; set; } = string.Empty;
     public SpriteFont? Font { get; set; }
-    public Color LabelColor { get; set; } = Color.LightGray;
-    public Color ValueColor { get; set; } = Color.White;
+    public Color LabelColor { get; set; } = UITheme.Text.Secondary;
+    public Color ValueColor { get; set; } = UITheme.Text.Primary;
 
     protected override void RenderCore(SpriteBatch spriteBatch)
     {

@@ -93,7 +93,7 @@ public class InventoryPanel : PanelWidget
         {
             Text = "Inventory",
             Font = _font,
-            TextColor = new Color(200, 180, 140),
+            TextColor = UITheme.Text.Highlight,
             Position = new Vector2(padding, padding),
             Size = new Vector2(totalWidth - padding * 2, 30),
             CenterHorizontally = true
@@ -113,7 +113,7 @@ public class InventoryPanel : PanelWidget
         _weightLabel = new LabelWidget
         {
             Font = _font,
-            TextColor = Color.Gray,
+            TextColor = UITheme.Text.Muted,
             Position = new Vector2(padding, totalHeight - padding - 20),
             Size = new Vector2(totalWidth - padding * 2, 20)
         };
@@ -129,7 +129,7 @@ public class InventoryPanel : PanelWidget
         {
             Text = "Equipment",
             Font = _font,
-            TextColor = Color.LightGray,
+            TextColor = UITheme.Text.Secondary,
             Position = new Vector2(startX, startY),
             Size = new Vector2(width, 20)
         };
@@ -172,7 +172,7 @@ public class InventoryPanel : PanelWidget
         {
             Text = "Backpack",
             Font = _font,
-            TextColor = Color.LightGray,
+            TextColor = UITheme.Text.Secondary,
             Position = new Vector2(startX, startY),
             Size = new Vector2(width, 20)
         };
@@ -598,11 +598,11 @@ public class InventoryPanel : PanelWidget
 
         float ratio = current / max;
         if (ratio > 0.9f)
-            _weightLabel.TextColor = Color.Red;
+            _weightLabel.TextColor = UITheme.Text.Error;
         else if (ratio > 0.7f)
-            _weightLabel.TextColor = Color.Yellow;
+            _weightLabel.TextColor = UITheme.Text.Warning;
         else
-            _weightLabel.TextColor = Color.Gray;
+            _weightLabel.TextColor = UITheme.Text.Muted;
     }
 
 }

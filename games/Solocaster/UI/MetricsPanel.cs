@@ -70,12 +70,12 @@ public class MetricsPanel : PanelWidget
         float y = 0;
 
         // Title
-        var titleLabel = CreateLabel("Progress & Metrics", contentWidth, ref y, new Color(200, 180, 140), true);
+        var titleLabel = CreateLabel("Progress & Metrics", contentWidth, ref y, UITheme.Text.Highlight, true);
         AddChild(titleLabel);
         y += SectionSpacing;
 
         // Stat Progress Section
-        var statHeader = CreateLabel("-- Stat Progress --", contentWidth, ref y, new Color(150, 150, 150));
+        var statHeader = CreateLabel("-- Stat Progress --", contentWidth, ref y, UITheme.Text.SectionHeader);
         AddChild(statHeader);
         y += 4;
 
@@ -94,7 +94,7 @@ public class MetricsPanel : PanelWidget
         y += SectionSpacing;
 
         // Combat Section
-        var combatHeader = CreateLabel("-- Combat --", contentWidth, ref y, new Color(150, 150, 150));
+        var combatHeader = CreateLabel("-- Combat --", contentWidth, ref y, UITheme.Text.SectionHeader);
         AddChild(combatHeader);
         y += 4;
 
@@ -117,7 +117,7 @@ public class MetricsPanel : PanelWidget
         y += SectionSpacing;
 
         // Magic Section
-        var magicHeader = CreateLabel("-- Magic --", contentWidth, ref y, new Color(150, 150, 150));
+        var magicHeader = CreateLabel("-- Magic --", contentWidth, ref y, UITheme.Text.SectionHeader);
         AddChild(magicHeader);
         y += 4;
 
@@ -134,7 +134,7 @@ public class MetricsPanel : PanelWidget
         y += SectionSpacing;
 
         // Movement Section
-        var movementHeader = CreateLabel("-- Movement --", contentWidth, ref y, new Color(150, 150, 150));
+        var movementHeader = CreateLabel("-- Movement --", contentWidth, ref y, UITheme.Text.SectionHeader);
         AddChild(movementHeader);
         y += 4;
 
@@ -151,7 +151,7 @@ public class MetricsPanel : PanelWidget
         y += SectionSpacing;
 
         // Social & Trade Section
-        var socialHeader = CreateLabel("-- Social & Trade --", contentWidth, ref y, new Color(150, 150, 150));
+        var socialHeader = CreateLabel("-- Social & Trade --", contentWidth, ref y, UITheme.Text.SectionHeader);
         AddChild(socialHeader);
         y += 4;
 
@@ -172,7 +172,7 @@ public class MetricsPanel : PanelWidget
         y += SectionSpacing;
 
         // Item Usage Section
-        var itemHeader = CreateLabel("-- Item Usage --", contentWidth, ref y, new Color(150, 150, 150));
+        var itemHeader = CreateLabel("-- Item Usage --", contentWidth, ref y, UITheme.Text.SectionHeader);
         AddChild(itemHeader);
         y += 4;
 

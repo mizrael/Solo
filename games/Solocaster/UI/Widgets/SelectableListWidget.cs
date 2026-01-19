@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Solocaster.UI;
 
 namespace Solocaster.UI.Widgets;
 
@@ -23,10 +24,10 @@ public class SelectableListWidget : PanelWidget
     public SpriteFont? Font { get; set; }
     public int ItemHeight { get; set; } = 30;
     public int ItemPadding { get; set; } = 8;
-    public Color SelectedColor { get; set; } = new Color(80, 70, 50);
-    public Color HoverColor { get; set; } = new Color(60, 60, 60);
-    public Color TextColor { get; set; } = Color.White;
-    public Color SelectedTextColor { get; set; } = new Color(220, 200, 160);
+    public Color SelectedColor { get; set; } = UITheme.Selection.SelectedBackground;
+    public Color HoverColor { get; set; } = UITheme.Selection.HoverBackground;
+    public Color TextColor { get; set; } = UITheme.Text.Primary;
+    public Color SelectedTextColor { get; set; } = UITheme.Text.Title;
 
     public event Action<int>? OnSelectionChanged;
 

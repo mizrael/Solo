@@ -6,5 +6,5 @@ public class CharacterData
     public string ClassId { get; set; } = "warrior";
     public Sex Sex { get; set; } = Sex.Male;
     public string AvatarSpriteName { get; set; } = "human_warrior_male";
-    public string Name { get; set; } = "Adventurer";
+    public string Name { get; set; } = "The Nameless One";
 }
