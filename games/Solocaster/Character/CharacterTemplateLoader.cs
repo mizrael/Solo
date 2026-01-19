@@ -52,7 +52,8 @@ public static class CharacterTemplateLoader
                 Description = raceData.Description ?? string.Empty,
                 StatBonuses = ParseStatDictionary(raceData.StatBonuses),
                 ProgressRates = ParseStatDictionary(raceData.ProgressRates),
-                GainMultipliers = ParseStatDictionary(raceData.GainMultipliers)
+                GainMultipliers = ParseStatDictionary(raceData.GainMultipliers),
+                ActionProgress = ParseActionProgressDictionary(raceData.ActionProgress)
             };
 
             _races[template.Id] = template;
@@ -98,6 +99,26 @@ public static class CharacterTemplateLoader
         {
             if (Enum.TryParse<StatType>(kvp.Key, true, out var statType))
                 result[statType] = kvp.Value;
+        }
+
+        return result;
+    }
+
+    private static Dictionary<MetricType, Dictionary<StatType, float>> ParseActionProgressDictionary(
+        Dictionary<string, Dictionary<string, float>>? source)
+    {
+        var result = new Dictionary<MetricType, Dictionary<StatType, float>>();
+        if (source == null)
+            return result;
+
+        foreach (var actionKvp in source)
+        {
+            if (!Enum.TryParse<MetricType>(actionKvp.Key, true, out var metricType))
+                continue;
+
+            var statDict = ParseStatDictionary(actionKvp.Value);
+            if (statDict.Count > 0)
+                result[metricType] = statDict;
         }
 
         return result;
@@ -150,6 +171,7 @@ public static class CharacterTemplateLoader
         public Dictionary<string, float>? StatBonuses { get; set; }
         public Dictionary<string, float>? ProgressRates { get; set; }
         public Dictionary<string, float>? GainMultipliers { get; set; }
+        public Dictionary<string, Dictionary<string, float>>? ActionProgress { get; set; }
     }
 
     private class ClassFileData

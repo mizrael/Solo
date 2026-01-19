@@ -17,4 +17,7 @@ public class RaceTemplate
 
     // Multiplier for stat gain amount when progress reaches 100% (1.0 = normal)
     public Dictionary<StatType, float> GainMultipliers { get; set; } = new();
+
+    // How much stat progress each action grants (action → stat → multiplier of BaseProgressPerAction)
+    public Dictionary<MetricType, Dictionary<StatType, float>> ActionProgress { get; set; } = new();
 }

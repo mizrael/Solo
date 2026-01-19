@@ -53,7 +53,6 @@ public class StatsComponent : Component
         InitializeBaseStats();
         InitializeStatProgress();
 
-        // Subscribe to metrics to update stat progress
         Metrics.OnMetricChanged += OnMetricChanged;
     }
 
@@ -116,58 +115,17 @@ public class StatsComponent : Component
         }
     }
 
-    private void OnMetricChanged(string metricName, float value)
+    private void OnMetricChanged(MetricType metricType, float value)
     {
-        // Map metrics to stat progress
-        switch (metricName)
+        if (Race == null || !Race.ActionProgress.TryGetValue(metricType, out var statProgress))
+            return;
+
+        // LockPick has special handling: failure gives only 20% of the progress
+        float failureMultiplier = (metricType == MetricType.LockPick && value <= 0) ? 0.2f : 1f;
+
+        foreach (var (stat, multiplier) in statProgress)
         {
-            case PlayerMetrics.Metric.MeleeAttack:
-                AddStatProgress(StatType.Strength, BaseProgressPerAction);
-                break;
-            case PlayerMetrics.Metric.RangedAttack:
-                AddStatProgress(StatType.Agility, BaseProgressPerAction * 0.5f);
-                AddStatProgress(StatType.Strength, BaseProgressPerAction * 0.5f);
-                break;
-            case PlayerMetrics.Metric.DamageTaken:
-                AddStatProgress(StatType.Vitality, BaseProgressPerAction * 0.5f);
-                break;
-            case PlayerMetrics.Metric.DamageBlocked:
-                AddStatProgress(StatType.Vitality, BaseProgressPerAction);
-                AddStatProgress(StatType.Strength, BaseProgressPerAction * 0.3f);
-                break;
-            case PlayerMetrics.Metric.SpellCast:
-                AddStatProgress(StatType.Intelligence, BaseProgressPerAction);
-                break;
-            case PlayerMetrics.Metric.MagicDamage:
-                AddStatProgress(StatType.Intelligence, BaseProgressPerAction * 0.5f);
-                break;
-            case PlayerMetrics.Metric.Healing:
-                AddStatProgress(StatType.Wisdom, BaseProgressPerAction);
-                break;
-            case PlayerMetrics.Metric.Running:
-                AddStatProgress(StatType.Agility, BaseProgressPerAction * 0.2f);
-                AddStatProgress(StatType.Vitality, BaseProgressPerAction * 0.1f);
-                break;
-            case PlayerMetrics.Metric.Walking:
-                AddStatProgress(StatType.Vitality, BaseProgressPerAction * 0.05f);
-                break;
-            case PlayerMetrics.Metric.Sneaking:
-            case PlayerMetrics.Metric.Hiding:
-                AddStatProgress(StatType.Agility, BaseProgressPerAction * 0.3f);
-                break;
-            case PlayerMetrics.Metric.LockPick:
-                if (value > 0) // success
-                    AddStatProgress(StatType.Agility, BaseProgressPerAction);
-                else
-                    AddStatProgress(StatType.Agility, BaseProgressPerAction * 0.2f);
-                break;
-            case PlayerMetrics.Metric.NPCInteraction:
-                AddStatProgress(StatType.Wisdom, BaseProgressPerAction * 0.3f);
-                break;
-            case PlayerMetrics.Metric.ItemBought:
-            case PlayerMetrics.Metric.ItemSold:
-                AddStatProgress(StatType.Wisdom, BaseProgressPerAction * 0.2f);
-                break;
+            AddStatProgress(stat, BaseProgressPerAction * multiplier * failureMultiplier);
         }
     }
 
