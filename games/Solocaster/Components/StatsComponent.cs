@@ -12,12 +12,43 @@ public class StatsComponent : Component
     private readonly Dictionary<StatType, float> _baseStats = new();
     private readonly Dictionary<StatType, float> _equipmentBonuses = new();
 
+    private float _currentHealth;
+    private float _currentMana;
+
+    public float CurrentHealth
+    {
+        get => _currentHealth;
+        set
+        {
+            _currentHealth = Math.Clamp(value, 0, GetTotalStat(StatType.MaxHealth));
+            OnStatsChanged?.Invoke();
+        }
+    }
+
+    public float CurrentMana
+    {
+        get => _currentMana;
+        set
+        {
+            _currentMana = Math.Clamp(value, 0, GetTotalStat(StatType.MaxMana));
+            OnStatsChanged?.Invoke();
+        }
+    }
+
     public StatsComponent(GameObject owner) : base(owner)
     {
         _baseStats[StatType.Strength] = 10;
         _baseStats[StatType.Agility] = 10;
         _baseStats[StatType.Vitality] = 10;
         _baseStats[StatType.Intelligence] = 10;
+    }
+
+    protected override void InitCore()
+    {
+        base.InitCore();
+        // Initialize current values to max
+        _currentHealth = GetTotalStat(StatType.MaxHealth);
+        _currentMana = GetTotalStat(StatType.MaxMana);
     }
 
     public float GetBaseStat(StatType stat)
