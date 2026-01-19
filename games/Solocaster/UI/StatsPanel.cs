@@ -4,6 +4,7 @@ using Solo.Assets.Loaders;
 using Solocaster.Character;
 using Solocaster.Components;
 using Solocaster.Inventory;
+using Solocaster.State;
 using Solocaster.UI.Widgets;
 
 namespace Solocaster.UI;
@@ -157,6 +158,12 @@ public class StatsPanel : PanelWidget
 
     private string GetAvatarSpriteName()
     {
+        // Use the avatar selected in character creation
+        var avatarFromState = GameState.CurrentCharacter?.AvatarSpriteName;
+        if (!string.IsNullOrEmpty(avatarFromState))
+            return avatarFromState;
+
+        // Fallback to constructing from race/class/sex
         var race = _stats.Race?.Id ?? "human";
         var cls = _stats.Class?.Id ?? "warrior";
         var sex = _stats.Sex == Sex.Female ? "female" : "male";

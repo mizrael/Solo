@@ -7,12 +7,17 @@ A wizard-style character creation scene that appears before PlayScene, allowing 
 ## Wizard Flow
 
 **6 Steps:**
-1. **Race** - Select from Human, Dwarf, Elf
-2. **Class** - Select from Warrior, Cleric, Thief, Mage
-3. **Sex** - Select Male or Female
+1. **Race** - Select from races loaded from `data/templates/character/races.json`
+2. **Class** - Select from classes loaded from `data/templates/character/classes.json`
+3. **Sex** - Select Male or Female (hardcoded enum, fixed options)
 4. **Avatar** - Pick from available avatars for the race/class/sex combo
 5. **Name** - Text input + Random name button
 6. **Summary** - Review all choices, see final stats, Start Game button
+
+**Data Loading:**
+- Races and classes are data-driven, loaded via `CharacterTemplateLoader`
+- Sex is a fixed enum (`Sex.Male`, `Sex.Female`) - not configurable
+- Avatars are loaded from `avatars` spritesheet, filtered by `{race}_{class}_{sex}` naming convention
 
 ## Navigation
 

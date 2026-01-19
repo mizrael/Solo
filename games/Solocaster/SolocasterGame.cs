@@ -43,8 +43,9 @@ public class SolocasterGame : Game
 
     protected override void LoadContent()
     {
+        _sceneManager.AddScene(SceneNames.CharacterBuilder, new CharacterBuilderScene(this));
         _sceneManager.AddScene(SceneNames.Play, new PlayScene(this));
-        _sceneManager.SetCurrentScene(SceneNames.Play);
+        _sceneManager.SetCurrentScene(SceneNames.CharacterBuilder);
     }
 
     protected override void Update(GameTime gameTime)

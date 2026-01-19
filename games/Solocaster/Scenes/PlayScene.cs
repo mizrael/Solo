@@ -7,6 +7,7 @@ using Solocaster.Character;
 using Solocaster.Components;
 using Solocaster.Inventory;
 using Solocaster.Persistence;
+using Solocaster.State;
 using Solocaster.UI;
 
 namespace Solocaster.Scenes;
@@ -41,7 +42,10 @@ public class PlayScene : Scene
         playerTransform.Local.Position = level.Map.GetStartingPosition();
         playerTransform.Local.Direction = new Vector2(-1, 0);
         var statsComponent = player.Components.Add<StatsComponent>();
-        statsComponent.SetCharacter("human", "warrior", Sex.Male);
+        GameState.EnsureCharacter();
+        var character = GameState.CurrentCharacter!;
+        statsComponent.SetCharacter(character.RaceId, character.ClassId, character.Sex);
+        statsComponent.Name = character.Name;
         var inventoryComponent = player.Components.Add<InventoryComponent>();
 
         var playerBrain = new PlayerBrain(player, level.Map);

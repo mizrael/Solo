@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Solo.Assets.Loaders;
 using Solocaster.Components;
 using Solocaster.Inventory;
+using Solocaster.State;
 using Solocaster.UI.Widgets;
 
 namespace Solocaster.UI;
@@ -49,7 +50,8 @@ public class PlayerStatusPanel : PanelWidget
         try
         {
             var spriteSheet = SpriteSheetLoader.Get("avatars", _game);
-            var sprite = spriteSheet.Get("human_warrior_male");
+            var avatarName = GameState.CurrentCharacter?.AvatarSpriteName ?? "human_warrior_male";
+            var sprite = spriteSheet.Get(avatarName);
             _avatarTexture = sprite.Texture;
             _avatarSourceRect = sprite.Bounds;
         }
