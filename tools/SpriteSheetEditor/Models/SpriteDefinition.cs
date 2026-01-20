@@ -1,15 +1,25 @@
 using System.Drawing;
 using System.Text.Json.Serialization;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace SpriteSheetEditor.Models;
 
-public class SpriteDefinition
+public partial class SpriteDefinition : ObservableObject
 {
-    public string Name { get; set; } = string.Empty;
-    public int X { get; set; }
-    public int Y { get; set; }
-    public int Width { get; set; }
-    public int Height { get; set; }
+    [ObservableProperty]
+    private string _name = string.Empty;
+
+    [ObservableProperty]
+    private int _x;
+
+    [ObservableProperty]
+    private int _y;
+
+    [ObservableProperty]
+    private int _width;
+
+    [ObservableProperty]
+    private int _height;
 
     [JsonIgnore]
     public Rectangle Bounds => new(X, Y, Width, Height);

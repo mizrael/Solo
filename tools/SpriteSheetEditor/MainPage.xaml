@@ -65,7 +65,9 @@
 
                         <Label Text="Name:" TextColor="#ccc" />
                         <Entry x:Name="NameEntry" Text="{Binding SelectedSprite.Name, Mode=TwoWay}"
-                               BackgroundColor="#333" TextColor="White" />
+                               BackgroundColor="#333" TextColor="White"
+                               Unfocused="OnNameEntryUnfocused" />
+                        <Label x:Name="NameErrorLabel" TextColor="#ff6b6b" FontSize="11" IsVisible="False" />
 
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                             <VerticalStackLayout Grid.Column="0">
@@ -106,6 +108,11 @@
             <Label x:Name="ImageSizeLabel" Text="Image: --" TextColor="White" />
             <Label x:Name="SpriteCountLabel" Text="Sprites: 0" TextColor="White" />
         </HorizontalStackLayout>
+
+        <!-- Grid Settings Dialog (modal overlay - must be last to appear on top) -->
+        <controls:GridSettingsDialog x:Name="GridDialog" Grid.RowSpan="4" IsVisible="False"
+                                     GenerateClicked="OnGridDialogGenerate"
+                                     CancelClicked="OnGridDialogCancel" />
     </Grid>
 
 </ContentPage>

@@ -61,8 +61,8 @@ public static class ColorFilter
 
                 if (distanceSquared <= toleranceThresholdSquared)
                 {
-                    // Set alpha to 0 (make transparent), keep RGB
-                    pixels[idx] = pixel & 0x00FFFFFF;
+                    // Set to fully transparent (premultiplied alpha requires RGB=0 when A=0)
+                    pixels[idx] = 0x00000000;
                 }
             }
         });
@@ -115,7 +115,11 @@ public static class ColorFilter
                     // Gradual alpha: 0 at exact match, fades to original at tolerance edge
                     var factor = distance / toleranceThreshold;
                     var newAlpha = (int)(a * factor);
-                    pixels[idx] = (uint)((newAlpha << 24) | (r << 16) | (g << 8) | b);
+                    // Premultiply RGB by the alpha ratio for premultiplied alpha format
+                    var newR = (int)(r * factor);
+                    var newG = (int)(g * factor);
+                    var newB = (int)(b * factor);
+                    pixels[idx] = (uint)((newAlpha << 24) | (newR << 16) | (newG << 8) | newB);
                 }
             }
         });
@@ -175,7 +179,11 @@ public static class ColorFilter
                     var satFactor = satDiff / satThreshold;
                     var factor = MathF.Max(hueFactor, satFactor);
                     var newAlpha = (int)(a * factor);
-                    pixels[idx] = (uint)((newAlpha << 24) | (r << 16) | (g << 8) | b);
+                    // Premultiply RGB by the alpha ratio for premultiplied alpha format
+                    var newR = (int)(r * factor);
+                    var newG = (int)(g * factor);
+                    var newB = (int)(b * factor);
+                    pixels[idx] = (uint)((newAlpha << 24) | (newR << 16) | (newG << 8) | newB);
                 }
             }
         });

@@ -10,6 +10,7 @@ namespace SpriteSheetEditor;
 public partial class MainPage : ContentPage
 {
     private readonly MainViewModel _viewModel = new();
+    private string? _nameBeforeEdit;
 
     public MainPage()
     {
@@ -23,6 +24,42 @@ public partial class MainPage : ContentPage
         Canvas.ColorPicked += OnCanvasColorPicked;
         Canvas.SpriteDrawn += OnSpriteDrawn;
         Canvas.SpriteModified += OnSpriteModified;
+        NameEntry.Focused += OnNameEntryFocused;
+    }
+
+    private void OnNameEntryFocused(object? sender, FocusEventArgs e)
+    {
+        _nameBeforeEdit = _viewModel.SelectedSprite?.Name;
+        NameErrorLabel.IsVisible = false;
+    }
+
+    private void OnNameEntryUnfocused(object? sender, FocusEventArgs e)
+    {
+        if (_viewModel.SelectedSprite is null || _nameBeforeEdit is null) return;
+
+        var newName = _viewModel.SelectedSprite.Name;
+
+        if (string.IsNullOrWhiteSpace(newName))
+        {
+            _viewModel.SelectedSprite.Name = _nameBeforeEdit;
+            NameErrorLabel.Text = "Name cannot be empty";
+            NameErrorLabel.IsVisible = true;
+            return;
+        }
+
+        var isDuplicate = _viewModel.Document.Sprites
+            .Any(s => s != _viewModel.SelectedSprite &&
+                      s.Name.Equals(newName, StringComparison.OrdinalIgnoreCase));
+
+        if (isDuplicate)
+        {
+            _viewModel.SelectedSprite.Name = _nameBeforeEdit;
+            NameErrorLabel.Text = $"Name '{newName}' is already used";
+            NameErrorLabel.IsVisible = true;
+            return;
+        }
+
+        NameErrorLabel.IsVisible = false;
     }
 
     private void OnSpriteDrawn(SpriteDefinition sprite)
@@ -267,37 +304,30 @@ public partial class MainPage : ContentPage
             return;
         }
 
-        var columnsStr = await DisplayPromptAsync("Grid Generation", "Number of columns:", initialValue: "4", keyboard: Keyboard.Numeric);
-        if (string.IsNullOrEmpty(columnsStr) || !int.TryParse(columnsStr, out var columns) || columns < 1) return;
+        GridDialog.Show(_viewModel.ImageWidth, _viewModel.ImageHeight, _viewModel.SpriteCount);
+    }
 
-        var rowsStr = await DisplayPromptAsync("Grid Generation", "Number of rows:", initialValue: "4", keyboard: Keyboard.Numeric);
-        if (string.IsNullOrEmpty(rowsStr) || !int.TryParse(rowsStr, out var rows) || rows < 1) return;
+    private void OnGridDialogGenerate(object? sender, Controls.GridSettingsEventArgs e)
+    {
+        GridDialog.Hide();
 
-        var (tileWidth, tileHeight) = GridGenerator.CalculateTileSize(_viewModel.ImageWidth, _viewModel.ImageHeight, columns, rows);
-        var totalSprites = columns * rows;
+        var newSprites = GridGenerator.GenerateSprites(
+            _viewModel.Document.SpriteSheetName,
+            _viewModel.ImageWidth,
+            _viewModel.ImageHeight,
+            e.Columns,
+            e.Rows);
 
-        var message = $"Tile size: {tileWidth}x{tileHeight}\nWill create {totalSprites} sprites.";
-
-        if (GridGenerator.HasUncoveredPixels(_viewModel.ImageWidth, _viewModel.ImageHeight, columns, rows))
-        {
-            var (uncoveredX, uncoveredY) = GridGenerator.GetUncoveredPixels(_viewModel.ImageWidth, _viewModel.ImageHeight, columns, rows);
-            message += $"\n\nWarning: {uncoveredX} pixel(s) horizontally and {uncoveredY} pixel(s) vertically will be uncovered.";
-        }
-
-        if (_viewModel.SpriteCount > 0)
-        {
-            message += $"\n\nThis will replace all {_viewModel.SpriteCount} existing sprites.";
-        }
-
-        var proceed = await DisplayAlert("Generate Grid", message, "Generate", "Cancel");
-        if (!proceed) return;
-
-        var newSprites = GridGenerator.GenerateSprites(_viewModel.Document.SpriteSheetName, _viewModel.ImageWidth, _viewModel.ImageHeight, columns, rows);
         var command = new GenerateGridCommand(_viewModel.Document, newSprites);
         _viewModel.UndoRedo.Execute(command);
         _viewModel.SelectedSprite = null;
         _viewModel.NotifySpriteCountChanged();
         UpdateDocumentLabel();
+    }
+
+    private void OnGridDialogCancel(object? sender, EventArgs e)
+    {
+        GridDialog.Hide();
     }
 
     private void OnFitClicked(object? sender, EventArgs e)

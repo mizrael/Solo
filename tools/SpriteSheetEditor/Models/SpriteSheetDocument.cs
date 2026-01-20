@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using SkiaSharp;
@@ -7,7 +8,7 @@ namespace SpriteSheetEditor.Models;
 public partial class SpriteSheetDocument
 {
     public string SpriteSheetName { get; set; } = string.Empty;
-    public List<SpriteDefinition> Sprites { get; set; } = [];
+    public ObservableCollection<SpriteDefinition> Sprites { get; set; } = [];
 
     [JsonIgnore]
     public SKBitmap? LoadedImage { get; set; }
