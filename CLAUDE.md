@@ -67,6 +67,11 @@ Components implement `IRenderable` to participate in rendering. The `RenderServi
 4. Create components inheriting from `Component`, override `UpdateCore()` for logic and implement `IRenderable` for rendering
 
 
+## Git Workflow
+- Every new implementation MUST happen in a feature branch
+- Never commit new features directly to main
+- If already on a feature branch, ask the user whether a sub-feature branch is needed before starting new work
+
 ## Coding Conventions
 - write comments only when strictly necessary (eg. the implementation is not obvious and the code is not self-explanatory)
 - prefer clear and descriptive names for classes, methods, variables

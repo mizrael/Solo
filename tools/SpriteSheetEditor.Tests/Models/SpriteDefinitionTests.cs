@@ -1,4 +1,3 @@
-using FluentAssertions;
 using SpriteSheetEditor.Models;
 using Xunit;
 
@@ -18,11 +17,11 @@ public class SpriteDefinitionTests
             Height = 128
         };
 
-        sprite.Name.Should().Be("test_sprite");
-        sprite.X.Should().Be(10);
-        sprite.Y.Should().Be(20);
-        sprite.Width.Should().Be(64);
-        sprite.Height.Should().Be(128);
+        Assert.Equal("test_sprite", sprite.Name);
+        Assert.Equal(10, sprite.X);
+        Assert.Equal(20, sprite.Y);
+        Assert.Equal(64, sprite.Width);
+        Assert.Equal(128, sprite.Height);
     }
 
     [Fact]
@@ -38,10 +37,10 @@ public class SpriteDefinitionTests
 
         var bounds = sprite.Bounds;
 
-        bounds.X.Should().Be(10);
-        bounds.Y.Should().Be(20);
-        bounds.Width.Should().Be(64);
-        bounds.Height.Should().Be(128);
+        Assert.Equal(10, bounds.X);
+        Assert.Equal(20, bounds.Y);
+        Assert.Equal(64, bounds.Width);
+        Assert.Equal(128, bounds.Height);
     }
 
     [Fact]
@@ -49,9 +48,9 @@ public class SpriteDefinitionTests
     {
         var sprite = new SpriteDefinition { X = 10, Y = 20, Width = 64, Height = 128 };
 
-        sprite.ContainsPoint(50, 80).Should().BeTrue();
-        sprite.ContainsPoint(10, 20).Should().BeTrue();  // top-left corner
-        sprite.ContainsPoint(73, 147).Should().BeTrue(); // bottom-right - 1
+        Assert.True(sprite.ContainsPoint(50, 80));
+        Assert.True(sprite.ContainsPoint(10, 20));  // top-left corner
+        Assert.True(sprite.ContainsPoint(73, 147)); // bottom-right - 1
     }
 
     [Fact]
@@ -59,9 +58,9 @@ public class SpriteDefinitionTests
     {
         var sprite = new SpriteDefinition { X = 10, Y = 20, Width = 64, Height = 128 };
 
-        sprite.ContainsPoint(5, 80).Should().BeFalse();   // left of bounds
-        sprite.ContainsPoint(80, 80).Should().BeFalse();  // right of bounds
-        sprite.ContainsPoint(50, 10).Should().BeFalse();  // above bounds
-        sprite.ContainsPoint(50, 200).Should().BeFalse(); // below bounds
+        Assert.False(sprite.ContainsPoint(5, 80));   // left of bounds
+        Assert.False(sprite.ContainsPoint(80, 80));  // right of bounds
+        Assert.False(sprite.ContainsPoint(50, 10));  // above bounds
+        Assert.False(sprite.ContainsPoint(50, 200)); // below bounds
     }
 }

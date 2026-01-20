@@ -1,4 +1,3 @@
-using FluentAssertions;
 using SpriteSheetEditor.Models;
 using Xunit;
 
@@ -11,8 +10,8 @@ public class SpriteSheetDocumentTests
     {
         var doc = new SpriteSheetDocument();
 
-        doc.Sprites.Should().NotBeNull();
-        doc.Sprites.Should().BeEmpty();
+        Assert.NotNull(doc.Sprites);
+        Assert.Empty(doc.Sprites);
     }
 
     [Fact]
@@ -20,8 +19,8 @@ public class SpriteSheetDocumentTests
     {
         var doc = new SpriteSheetDocument { SpriteSheetName = "avatars" };
 
-        doc.GenerateSpriteName(0).Should().Be("avatars_sprite_0");
-        doc.GenerateSpriteName(5).Should().Be("avatars_sprite_5");
+        Assert.Equal("avatars_sprite_0", doc.GenerateSpriteName(0));
+        Assert.Equal("avatars_sprite_5", doc.GenerateSpriteName(5));
     }
 
     [Fact]
@@ -29,7 +28,7 @@ public class SpriteSheetDocumentTests
     {
         var doc = new SpriteSheetDocument { SpriteSheetName = "test" };
 
-        doc.GetNextSpriteIndex().Should().Be(0);
+        Assert.Equal(0, doc.GetNextSpriteIndex());
     }
 
     [Fact]
@@ -46,6 +45,6 @@ public class SpriteSheetDocumentTests
             ]
         };
 
-        doc.GetNextSpriteIndex().Should().Be(6);
+        Assert.Equal(6, doc.GetNextSpriteIndex());
     }
 }
