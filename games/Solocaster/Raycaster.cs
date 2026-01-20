@@ -752,7 +752,7 @@ public unsafe class Raycaster : IDisposable
                 continue;
             var transform = entity.Components.Get<TransformComponent>();
             var billboard = entity.Components.Get<BillboardComponent>();
-            var sprite = billboard.Sprite;
+            var frameProvider = billboard.FrameProvider;
             var isPickupable = entity.Components.Has<PickupableComponent>();
 
             var spritePos = transform.Local.Position;
@@ -807,7 +807,9 @@ public unsafe class Raycaster : IDisposable
             drawStartX = Math.Max(0, drawStartX);
             drawEndX = Math.Min(_frameWidth - 1, drawEndX);
 
-            var texturePtr = GetOrCacheSpriteTexture(sprite.Texture);
+            var texture = frameProvider.GetTexture();
+            var bounds = frameProvider.GetCurrentBounds();
+            var texturePtr = GetOrCacheSpriteTexture(texture);
 
             projections.Add(new SpriteProjection
             {
@@ -823,9 +825,9 @@ public unsafe class Raycaster : IDisposable
                 DrawStartX = drawStartX,
                 DrawEndX = drawEndX,
                 TexturePtr = texturePtr,
-                TexWidth = sprite.Texture.Width,
-                TexHeight = sprite.Texture.Height,
-                SpriteBounds = sprite.Bounds,
+                TexWidth = texture.Width,
+                TexHeight = texture.Height,
+                SpriteBounds = bounds,
                 Anchor = billboard.Anchor
             });
         }

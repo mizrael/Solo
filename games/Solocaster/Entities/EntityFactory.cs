@@ -56,7 +56,7 @@ public static class EntityFactory
         transform.Local.Position = new Vector2(posX, posY);
 
         var billboard = entity.Components.Add<BillboardComponent>();
-        billboard.Sprite = sprite;
+        billboard.FrameProvider = new StaticFrameProvider(sprite);
 
         float scaleX = 1f;
         if (definition.Properties.TryGetValue("scaleX", out var scaleXObj) && scaleXObj is float tmpScaleX)
@@ -121,7 +121,7 @@ public static class EntityFactory
                 var sprite = spriteSheet.Get(spriteParts[1]);
 
                 var billboard = entity.Components.Add<BillboardComponent>();
-                billboard.Sprite = sprite;
+                billboard.FrameProvider = new StaticFrameProvider(sprite);
                 billboard.Scale = new Vector2(itemTemplate.WorldSpriteScale, itemTemplate.WorldSpriteScale);
                 billboard.Anchor = BillboardAnchor.Bottom;
             }
