@@ -14,17 +14,12 @@ public enum BillboardAnchor
 
 public class BillboardComponent : Component
 {
-    private IFrameProvider _frameProvider;
-
-    private BillboardComponent(GameObject owner) : base(owner)
+    public BillboardComponent(GameObject owner, IFrameProvider frameProvider) : base(owner)
     {
+        FrameProvider = frameProvider ?? throw new ArgumentNullException(nameof(frameProvider));
     }
 
-    public IFrameProvider FrameProvider
-    {
-        get => _frameProvider;
-        set => _frameProvider = value ?? throw new ArgumentNullException(nameof(value));
-    }
+    public IFrameProvider FrameProvider { get; }
 
     public Vector2 Scale { get; set; } = Vector2.One;
     public BillboardAnchor Anchor { get; set; } = BillboardAnchor.Center;

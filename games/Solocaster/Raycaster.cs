@@ -750,12 +750,9 @@ public unsafe class Raycaster : IDisposable
         {
             if (!entity.Components.Has<BillboardComponent>())
                 continue;
-            var transform = entity.Components.Get<TransformComponent>();
-            var billboard = entity.Components.Get<BillboardComponent>();
-            var frameProvider = billboard.FrameProvider;
-            var isPickupable = entity.Components.Has<PickupableComponent>();
 
-            var spritePos = transform.Local.Position;
+            var transform = entity.Components.Get<TransformComponent>();
+            var spritePos = transform.World.Position;
 
             // Relative position
             var relX = spritePos.X - playerTransform.World.Position.X;
@@ -766,8 +763,15 @@ public unsafe class Raycaster : IDisposable
             var transformX = invDet * (playerTransform.World.Direction.Y * relX - playerTransform.World.Direction.X * relY);
             var transformY = invDet * (-playerBrain.Plane.Y * relX + playerBrain.Plane.X * relY);
 
+            // check if behind camera
             if (transformY <= 0)
-                continue; // Behind camera
+                continue;
+
+            //TODO: check if it's completely occluded by walls
+
+            var billboard = entity.Components.Get<BillboardComponent>();
+            var frameProvider = billboard.FrameProvider;
+            var isPickupable = entity.Components.Has<PickupableComponent>();
 
             var screenY = (int)((_frameHeight / 2) * (1 + transformX / transformY));
             var baseSpriteSize = Math.Abs((int)(_frameHeight / transformY));
@@ -808,6 +812,9 @@ public unsafe class Raycaster : IDisposable
             drawEndX = Math.Min(_frameWidth - 1, drawEndX);
 
             var texture = frameProvider.GetTexture();
+            if (texture is null)
+                continue;
+
             var bounds = frameProvider.GetCurrentBounds();
             var texturePtr = GetOrCacheSpriteTexture(texture);
 

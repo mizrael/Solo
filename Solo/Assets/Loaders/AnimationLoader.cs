@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace Solo.Assets.Loaders;
 
-[Obsolete]
+[Obsolete(message:"use AnimatedSpriteSheetLoader instead")]
 public class AnimationLoader
 {
     public Animation Load(string assetPath, Game game)

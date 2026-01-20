@@ -6,5 +6,5 @@ namespace Solocaster.Components;
 public interface IFrameProvider
 {
     Rectangle GetCurrentBounds();
-    Texture2D GetTexture();
+    Texture2D? GetTexture();
 }

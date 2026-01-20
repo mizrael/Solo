@@ -1,4 +1,6 @@
-﻿using Solo.Assets;
+using Solo;
+using Solo.Assets;
+using System.Collections.Generic;
 
 namespace Solocaster.Entities;
 
@@ -11,4 +13,6 @@ public class Level
     public required Sprite[] WallSprites { get; init; }
 
     public required Sprite[] DoorSprites { get; init; }
+
+    public List<GameObject> Monsters { get; set; } = new();
 }

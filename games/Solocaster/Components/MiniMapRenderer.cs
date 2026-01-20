@@ -6,6 +6,8 @@ using Solo.Services;
 using Solocaster.Entities;
 using System;
 using System.Collections.Generic;
+//using Map = Solocaster.Entities.Map;
+//using Random = System.Random;
 
 namespace Solocaster.Components;
 
@@ -21,7 +23,9 @@ public class MiniMapRenderer : Component, IRenderable
     private Texture2D _texture;
     private Vector2 _cellCenter;
 
-    public readonly Color[] CellColors;
+    private static readonly Color _wallsColor = Color.DarkSlateGray;
+    private static readonly Color _doorsColor = Color.Brown;
+    private static readonly Color _emptyColor = Color.DarkGray;
 
     public MiniMapRenderer(
         GameObject owner,
@@ -30,27 +34,6 @@ public class MiniMapRenderer : Component, IRenderable
     {
         _map = map;
         _player = player;
-
-        var cellTypes = new HashSet<int>();
-        for (int row = 0; row != _map.Rows; row++)
-            for (int col = 0; col != _map.Cols; col++)
-            {
-                var cell = _map.Cells[row][col];
-                cellTypes.Add(cell);
-            }
-
-        var colorsCount = cellTypes.Count;
-
-        CellColors = new Color[colorsCount];
-        CellColors[0] = Color.DarkSlateGray;
-        for (int c = 1; c != colorsCount; c++)
-        {
-            CellColors[c] = new Color(
-                (byte)Random.Shared.Next(100, 220),
-                (byte)Random.Shared.Next(100, 220),
-                (byte)Random.Shared.Next(100, 220),
-                (byte)255);
-        }
     }
 
     protected override void InitCore()
@@ -79,19 +62,19 @@ public class MiniMapRenderer : Component, IRenderable
         for (int row = 0; row != _map.Rows; row++)
             for (int col = 0; col != _map.Cols; col++)
             {
-                var cell = _map.Cells[row][col];
-                if (cell == TileTypes.Floor || cell == TileTypes.StartingPosition) continue;
+                var color = _emptyColor;
+                var isOpenDoor = (_map.GetDoor(col, row) is Door door && !door.IsBlocking);
 
-                if(_map.GetDoor(col, row) is Door door && !door.IsBlocking)
+                if (!isOpenDoor)
                 {
-                    continue;
+                    var cell = _map.Cells[row][col];
+                    color = cell switch
+                    {
+                        TileTypes.Floor or TileTypes.StartingPosition => _emptyColor,
+                        TileTypes.DoorVertical or TileTypes.DoorHorizontal => _doorsColor,
+                        _ => _wallsColor,
+                    };
                 }
-
-                var color = cell switch
-                {
-                    TileTypes.DoorVertical or TileTypes.DoorHorizontal => Color.Brown,
-                    _ => CellColors[cell],
-                };
 
                 var dest = new Rectangle(
                     col * _cellWidth,

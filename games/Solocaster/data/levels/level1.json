@@ -101,5 +101,22 @@
         }
       }
     ]
+  },
+  "monsters": {
+    "density": 0.015,
+    "encounters": [
+      {
+        "weight": 70,
+        "groups": [
+          { "id": "skeleton", "min": 1, "max": 2 }
+        ]
+      },
+      {
+        "weight": 30,
+        "groups": [
+          { "id": "skeleton", "min": 2, "max": 3 }
+        ]
+      }
+    ]
   }
 }

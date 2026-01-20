@@ -223,6 +223,8 @@ public class StatsComponent : Component
             StatType.MaxHealth => CalculateMaxHealth(),
             StatType.MaxWeight => CalculateMaxWeight(),
             StatType.MaxMana => CalculateMaxMana(),
+            StatType.Damage => CalculateDamage(),
+            StatType.Defense => CalculateDefense(),
             _ => GetBaseStat(stat) + GetEquipmentBonus(stat)
         };
     }
@@ -249,6 +251,20 @@ public class StatsComponent : Component
         float bonusMana = GetEquipmentBonus(StatType.MaxMana);
         // Base 20 MP + 3 per Intelligence + 2 per Wisdom
         return 20 + intelligence * 3 + wisdom * 2 + bonusMana;
+    }
+
+    private float CalculateDamage()
+    {
+        float strength = GetBaseStat(StatType.Strength) + GetEquipmentBonus(StatType.Strength);
+        float bonusDamage = GetEquipmentBonus(StatType.Damage);
+        return strength * 0.5f + bonusDamage;
+    }
+
+    private float CalculateDefense()
+    {
+        float agility = GetBaseStat(StatType.Agility) + GetEquipmentBonus(StatType.Agility);
+        float bonusDefense = GetEquipmentBonus(StatType.Defense);
+        return agility * 0.3f + bonusDefense;
     }
 
     public void OnItemEquipped(ItemInstance item)

@@ -1,15 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.Xna.Framework;
 using Solo;
 using Solo.Assets;
 using Solo.Assets.Loaders;
 using Solocaster.Entities;
 using Solocaster.Persistence.MapBuilding;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Solocaster.Persistence;
 
@@ -58,6 +58,17 @@ public class LevelLoader
             WallSprites = mapResult.WallSprites,
             DoorSprites = doorSprites
         };
+    }
+
+    public static List<GameObject> SpawnMonsters(string levelPath, Level level, Game game, GameObject sceneRoot, SpatialGrid spatialGrid, GameObject player)
+    {
+        var levelData = ParseLevelFile(levelPath);
+
+        if (levelData.Monsters == null)
+            return new List<GameObject>();
+
+        var spawner = new MonsterSpawner();
+        return spawner.Spawn(levelData.Monsters, level.Map, game, sceneRoot, spatialGrid, player);
     }
 
     private static LevelData ParseLevelFile(string path)
@@ -157,6 +168,7 @@ public class LevelLoader
         public required string[] Spritesheets { get; init; }
         public required MapData Map { get; init; }
         public List<EntityData>? Entities { get; init; }
+        public MonsterSpawnConfig? Monsters { get; init; }
     }
 
     private class EntityData

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Solo;
@@ -6,6 +7,7 @@ using Solo.Services;
 using Solocaster.Character;
 using Solocaster.Components;
 using Solocaster.Inventory;
+using Solocaster.Monsters;
 using Solocaster.Persistence;
 using Solocaster.State;
 using Solocaster.UI;
@@ -31,11 +33,13 @@ public class PlayScene : Scene
         UITheme.Load("./data/ui/theme.json");
         ItemTemplateLoader.LoadAllFromFolder("./data/templates/items/");
         CharacterTemplateLoader.LoadAll("./data/templates/character/");
+        MonsterTemplateLoader.LoadAllFromFolder("./data/templates/monsters/");
 
         var frameBufferWidth = renderService.Graphics.GraphicsDevice.Viewport.Height / FrameBufferScale;
         var frameBufferHeight = renderService.Graphics.GraphicsDevice.Viewport.Width / FrameBufferScale;
 
-        var level = LevelLoader.LoadFromJson("./data/levels/level1.json", Game, Root, spatialGrid);
+        var levelPath = "./data/levels/level1.json";
+        var level = LevelLoader.LoadFromJson(levelPath, Game, Root, spatialGrid);
 
         var player = new GameObject();
         var playerTransform = player.Components.Add<TransformComponent>();
@@ -54,6 +58,9 @@ public class PlayScene : Scene
 
         this.Root.AddChild(player);
 
+        var monsters = LevelLoader.SpawnMonsters(levelPath, level, Game, Root, spatialGrid, player);
+        level.Monsters = monsters;
+
         var raycaster = new Raycaster(level, spatialGrid, frameBufferWidth, frameBufferHeight);
         playerBrain.Raycaster = raycaster;
 
@@ -70,7 +77,7 @@ public class PlayScene : Scene
         miniMapEntity.Components.Add(miniMapRenderer);
         miniMapRenderer.LayerIndex = 1;
         miniMapEntity.Enabled = false;
-        mapEntity.AddChild(miniMapEntity);
+        Root.AddChild(miniMapEntity);
         playerBrain.MiniMapEntity = miniMapEntity;
 
         var font = Game.Content.Load<SpriteFont>("Font");
@@ -80,7 +87,9 @@ public class PlayScene : Scene
         var debugUI = new DebugUIRenderer(debugUIEntity, font, player);
         debugUIEntity.Components.Add(debugUI);
         debugUI.LayerIndex = 2;
+        debugUIEntity.Enabled = false;
         Root.AddChild(debugUIEntity);
+        playerBrain.DebugUIEntity = debugUIEntity;
 
         var characterPanel = new CharacterPanel(inventoryComponent, statsComponent, uiService.DragDropManager, font, Game);
         characterPanel.CenterOnScreen(

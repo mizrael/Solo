@@ -1,0 +1,43 @@
+{
+  "animationName": "skeleton_walk_front",
+  "spriteSheetName": "characters/skeleton/skeleton_walk_front",
+  "fps": 10,
+  "frames": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 170,
+      "height": 290
+    },
+    {
+      "x": 170,
+      "y": 0,
+      "width": 170,
+      "height": 290
+    },
+    {
+      "x": 340,
+      "y": 0,
+      "width": 170,
+      "height": 290
+    },
+    {
+      "x": 510,
+      "y": 0,
+      "width": 170,
+      "height": 290
+    },
+    {
+      "x": 680,
+      "y": 0,
+      "width": 170,
+      "height": 290
+    },
+    {
+      "x": 850,
+      "y": 0,
+      "width": 174,
+      "height": 290
+    }
+  ]
+}

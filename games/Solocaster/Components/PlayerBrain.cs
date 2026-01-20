@@ -27,6 +27,11 @@ public class PlayerBrain : Component
     public Raycaster? Raycaster { get; set; }
     public GameObject? MiniMapEntity { get; set; }
 
+    //TODO: not sure I like this here. should be in the camera
+    public Vector2 Plane => _plane;
+
+    public GameObject? DebugUIEntity { get; set; }
+
     public PlayerBrain(GameObject owner, Map map) : base(owner)
     {
         _map = map;
@@ -61,6 +66,13 @@ public class PlayerBrain : Component
         {
             if (MiniMapEntity != null)
                 MiniMapEntity.Enabled = !MiniMapEntity.Enabled;
+        }
+
+        // Toggle minimap with M
+        if (keyboardState.IsKeyDown(Keys.L) && !_previousKeyboardState.IsKeyDown(Keys.L))
+        {
+            if (DebugUIEntity != null)
+                DebugUIEntity.Enabled = !DebugUIEntity.Enabled;
         }
 
         // Toggle metrics panel with C
@@ -186,7 +198,4 @@ public class PlayerBrain : Component
 
         return false;
     }
-
-    //TODO: not sure I like this here. should be in the camera
-    public Vector2 Plane => _plane;
 }
