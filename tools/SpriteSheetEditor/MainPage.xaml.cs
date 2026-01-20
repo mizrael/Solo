@@ -1,4 +1,5 @@
 using SkiaSharp;
+using SpriteSheetEditor.Filters;
 using SpriteSheetEditor.Services;
 using SpriteSheetEditor.ViewModels;
 
@@ -17,6 +18,12 @@ public partial class MainPage : ContentPage
         UpdateToolButtons();
         UpdateDocumentLabel();
         this.Focused += (s, e) => Focus();
+        Canvas.ColorPicked += OnCanvasColorPicked;
+    }
+
+    private void OnCanvasColorPicked(SkiaSharp.SKColor color)
+    {
+        SetPickedColor(color);
     }
 
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -31,6 +38,7 @@ public partial class MainPage : ContentPage
             ? $"Image: {_viewModel.ImageWidth}x{_viewModel.ImageHeight}"
             : "Image: --";
         SpriteCountLabel.Text = $"Sprites: {_viewModel.SpriteCount}";
+        FiltersButton.IsEnabled = _viewModel.ImageWidth > 0;
     }
 
     private void UpdateDocumentLabel()
@@ -86,6 +94,39 @@ public partial class MainPage : ContentPage
         _viewModel.NotifyImageChanged();
         UpdateDocumentLabel();
         Canvas.FitToWindow();
+    }
+
+    private async void OnSaveImageClicked(object? sender, EventArgs e)
+    {
+        if (_viewModel.Document.LoadedImage is null)
+        {
+            await DisplayAlert("No Image", "Please load an image first.", "OK");
+            return;
+        }
+
+#if WINDOWS
+        var fileName = !string.IsNullOrEmpty(_viewModel.Document.ImageFilePath)
+            ? Path.GetFileNameWithoutExtension(_viewModel.Document.ImageFilePath) + "_edited.png"
+            : "image.png";
+
+        var hwnd = ((MauiWinUIWindow)Application.Current!.Windows[0].Handler!.PlatformView!).WindowHandle;
+        var savePicker = new Windows.Storage.Pickers.FileSavePicker
+        {
+            SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary,
+            SuggestedFileName = fileName
+        };
+        savePicker.FileTypeChoices.Add("PNG Image", [".png"]);
+
+        WinRT.Interop.InitializeWithWindow.Initialize(savePicker, hwnd);
+        var file = await savePicker.PickSaveFileAsync();
+
+        if (file is not null)
+        {
+            using var stream = await file.OpenStreamForWriteAsync();
+            _viewModel.Document.LoadedImage.Encode(stream, SKEncodedImageFormat.Png, 100);
+            await DisplayAlert("Saved", $"Image saved to {file.Path}", "OK");
+        }
+#endif
     }
 
     private async void OnOpenJsonClicked(object? sender, EventArgs e)
@@ -201,6 +242,98 @@ public partial class MainPage : ContentPage
     private void OnDeleteSpriteClicked(object? sender, EventArgs e)
     {
         _viewModel.DeleteSelectedSprite();
+    }
+
+    private void OnFiltersClicked(object? sender, EventArgs e)
+    {
+#if WINDOWS
+        if (FiltersButton.Handler?.PlatformView is Microsoft.UI.Xaml.Controls.Button nativeButton)
+        {
+            var flyout = new Microsoft.UI.Xaml.Controls.MenuFlyout();
+            var item = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem { Text = "Color to Transparent" };
+            item.Click += (s, args) => OnColorToTransparentClicked(s, EventArgs.Empty);
+            flyout.Items.Add(item);
+            flyout.ShowAt(nativeButton);
+        }
+#endif
+    }
+
+    private async void OnColorToTransparentClicked(object? sender, EventArgs e)
+    {
+        if (_viewModel.ImageWidth == 0)
+        {
+            await DisplayAlert("No Image", "Please load an image first.", "OK");
+            return;
+        }
+
+        _viewModel.BeginFilterPreview();
+        FilterPanel.IsVisible = true;
+        ApplyFilterPreview();
+    }
+
+    private void OnFilterApplyClicked(object? sender, EventArgs e)
+    {
+        _viewModel.ApplyFilter();
+        FilterPanel.IsVisible = false;
+        FilterPanel.IsPickingColor = false;
+        UpdateDocumentLabel();
+    }
+
+    private void OnFilterCancelClicked(object? sender, EventArgs e)
+    {
+        _viewModel.CancelFilter();
+        FilterPanel.IsVisible = false;
+        FilterPanel.IsPickingColor = false;
+        Canvas.InvalidateSurface();
+    }
+
+    private void OnFilterPickColorClicked(object? sender, EventArgs e)
+    {
+        Canvas.IsEyedropperMode = FilterPanel.IsPickingColor;
+    }
+
+    private void OnFilterSettingsChanged(object? sender, EventArgs e)
+    {
+        ApplyFilterPreview();
+    }
+
+    private void ApplyFilterPreview()
+    {
+        if (_viewModel.OriginalImage is null) return;
+
+        var filtered = FilterPanel.Mode switch
+        {
+            BackgroundRemovalMode.Hard => ColorFilter.ApplyColorToTransparent(
+                _viewModel.OriginalImage,
+                FilterPanel.TargetColor,
+                FilterPanel.Tolerance),
+            BackgroundRemovalMode.SoftAlpha => ColorFilter.ApplyColorToTransparentSoft(
+                _viewModel.OriginalImage,
+                FilterPanel.TargetColor,
+                FilterPanel.Tolerance),
+            BackgroundRemovalMode.ChromaKey => ColorFilter.ApplyChromaKey(
+                _viewModel.OriginalImage,
+                FilterPanel.TargetColor,
+                FilterPanel.Tolerance),
+            _ => ColorFilter.ApplyColorToTransparentSoft(
+                _viewModel.OriginalImage,
+                FilterPanel.TargetColor,
+                FilterPanel.Tolerance)
+        };
+
+        _viewModel.Document.LoadedImage?.Dispose();
+        _viewModel.Document.LoadedImage = filtered;
+        _viewModel.NotifyImageChanged();
+        Canvas.InvalidateSurface();
+    }
+
+    public void SetPickedColor(SKColor color)
+    {
+        if (FilterPanel.IsVisible && FilterPanel.IsPickingColor)
+        {
+            FilterPanel.SetPickedColor(color);
+            FilterPanel.IsPickingColor = false;
+        }
     }
 
     protected override void OnHandlerChanged()

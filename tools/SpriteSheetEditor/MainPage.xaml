@@ -6,10 +6,11 @@
              x:Class="SpriteSheetEditor.MainPage"
              Title="SpriteSheet Editor">
 
-    <Grid RowDefinitions="Auto,*,Auto">
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
         <!-- Toolbar -->
         <HorizontalStackLayout Grid.Row="0" Padding="8" Spacing="8" BackgroundColor="#2d2d30">
             <Button Text="Open Image" Clicked="OnOpenImageClicked" />
+            <Button Text="Save Image" Clicked="OnSaveImageClicked" />
             <Button Text="Open JSON" Clicked="OnOpenJsonClicked" />
             <Button Text="Save JSON" Clicked="OnSaveJsonClicked" />
             <BoxView WidthRequest="1" BackgroundColor="#555" />
@@ -18,10 +19,19 @@
             <BoxView WidthRequest="1" BackgroundColor="#555" />
             <Button Text="Grid..." Clicked="OnGridClicked" />
             <Button Text="Fit" Clicked="OnFitClicked" />
+            <BoxView WidthRequest="1" BackgroundColor="#555" />
+            <Button x:Name="FiltersButton" Text="Filters ▼" Clicked="OnFiltersClicked" IsEnabled="False" />
         </HorizontalStackLayout>
 
+        <!-- Filter Panel (initially hidden) -->
+        <controls:FilterPanel x:Name="FilterPanel" Grid.Row="1"
+                              ApplyClicked="OnFilterApplyClicked"
+                              CancelClicked="OnFilterCancelClicked"
+                              PickColorClicked="OnFilterPickColorClicked"
+                              SettingsChanged="OnFilterSettingsChanged" />
+
         <!-- Main Content -->
-        <Grid Grid.Row="1" ColumnDefinitions="*,280">
+        <Grid Grid.Row="2" ColumnDefinitions="*,280">
             <!-- Canvas Area -->
             <Grid Grid.Column="0" RowDefinitions="Auto,*">
                 <Label x:Name="DocumentLabel" Grid.Row="0" Text="No document loaded"
@@ -93,7 +103,7 @@
         </Grid>
 
         <!-- Status Bar -->
-        <HorizontalStackLayout Grid.Row="2" Padding="8,4" Spacing="16" BackgroundColor="#007acc">
+        <HorizontalStackLayout Grid.Row="3" Padding="8,4" Spacing="16" BackgroundColor="#007acc">
             <Label x:Name="ZoomLabel" Text="Zoom: 100%" TextColor="White" />
             <Label x:Name="ImageSizeLabel" Text="Image: --" TextColor="White" />
             <Label x:Name="SpriteCountLabel" Text="Sprites: 0" TextColor="White" />

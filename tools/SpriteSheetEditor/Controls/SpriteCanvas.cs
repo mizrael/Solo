@@ -2,6 +2,7 @@ using SkiaSharp;
 using SkiaSharp.Views.Maui;
 using SkiaSharp.Views.Maui.Controls;
 using SpriteSheetEditor.Models;
+using SpriteSheetEditor.Utils;
 using SpriteSheetEditor.ViewModels;
 
 namespace SpriteSheetEditor.Controls;
@@ -39,6 +40,9 @@ public class SpriteCanvas : SKCanvasView
 
     private bool _isResizing;
     private int _resizeHandle = -1;
+
+    public bool IsEyedropperMode { get; set; }
+    public event Action<SKColor>? ColorPicked;
 
     public SpriteCanvas()
     {
@@ -227,6 +231,21 @@ public class SpriteCanvas : SKCanvasView
     {
         if (ViewModel is null) return;
 
+        if (IsEyedropperMode && ViewModel.Document.LoadedImage is SKBitmap image)
+        {
+            var imageX = (int)imagePoint.X;
+            var imageY = (int)imagePoint.Y;
+
+            if (imageX >= 0 && imageX < image.Width && imageY >= 0 && imageY < image.Height)
+            {
+                var color = image.GetPixel(imageX, imageY);
+                ColorPicked?.Invoke(color);
+            }
+
+            IsEyedropperMode = false;
+            return;
+        }
+
         if (ViewModel.CurrentTool == EditorTool.Draw)
         {
             _isDrawing = true;
@@ -241,7 +260,7 @@ public class SpriteCanvas : SKCanvasView
                 var handles = GetHandlePositions(rect);
                 for (var i = 0; i < handles.Length; i++)
                 {
-                    if (IsNearPoint(imagePoint, handles[i], HandleSize))
+                    if (SKColorUtils.IsNearPoint(imagePoint, handles[i], HandleSize))
                     {
                         _isResizing = true;
                         _resizeHandle = i;
@@ -362,11 +381,6 @@ public class SpriteCanvas : SKCanvasView
         _dragSprite = null;
         _isResizing = false;
         _resizeHandle = -1;
-    }
-
-    private static bool IsNearPoint(SKPoint a, SKPoint b, float threshold)
-    {
-        return Math.Abs(a.X - b.X) <= threshold && Math.Abs(a.Y - b.Y) <= threshold;
     }
 
     public void ZoomIn() { if (ViewModel != null) ViewModel.ZoomLevel = Math.Min(ViewModel.ZoomLevel * 1.25f, 10f); }
