@@ -6,16 +6,26 @@ public static class GridGenerator
 {
     public static SpriteSheetDocument Generate(string sheetName, int imageWidth, int imageHeight, int columns, int rows)
     {
-        var (tileWidth, tileHeight) = CalculateTileSize(imageWidth, imageHeight, columns, rows);
-
         var doc = new SpriteSheetDocument { SpriteSheetName = sheetName };
+        var sprites = GenerateSprites(sheetName, imageWidth, imageHeight, columns, rows);
+        foreach (var sprite in sprites)
+        {
+            doc.Sprites.Add(sprite);
+        }
+        return doc;
+    }
+
+    public static List<SpriteDefinition> GenerateSprites(string sheetName, int imageWidth, int imageHeight, int columns, int rows)
+    {
+        var (tileWidth, tileHeight) = CalculateTileSize(imageWidth, imageHeight, columns, rows);
+        var sprites = new List<SpriteDefinition>();
         var index = 0;
 
         for (var row = 0; row < rows; row++)
         {
             for (var col = 0; col < columns; col++)
             {
-                doc.Sprites.Add(new SpriteDefinition
+                sprites.Add(new SpriteDefinition
                 {
                     Name = $"{sheetName}_sprite_{index}",
                     X = col * tileWidth,
@@ -27,7 +37,7 @@ public static class GridGenerator
             }
         }
 
-        return doc;
+        return sprites;
     }
 
     public static (int width, int height) CalculateTileSize(int imageWidth, int imageHeight, int columns, int rows)

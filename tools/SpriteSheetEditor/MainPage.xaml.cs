@@ -1,6 +1,8 @@
 using SkiaSharp;
 using SpriteSheetEditor.Filters;
+using SpriteSheetEditor.Models;
 using SpriteSheetEditor.Services;
+using SpriteSheetEditor.UndoRedo.Commands;
 using SpriteSheetEditor.ViewModels;
 
 namespace SpriteSheetEditor;
@@ -19,6 +21,22 @@ public partial class MainPage : ContentPage
         UpdateDocumentLabel();
         this.Focused += (s, e) => Focus();
         Canvas.ColorPicked += OnCanvasColorPicked;
+        Canvas.SpriteDrawn += OnSpriteDrawn;
+        Canvas.SpriteModified += OnSpriteModified;
+    }
+
+    private void OnSpriteDrawn(SpriteDefinition sprite)
+    {
+        var command = new AddSpriteCommand(_viewModel.Document, sprite);
+        _viewModel.UndoRedo.Execute(command);
+        _viewModel.SelectedSprite = sprite;
+        _viewModel.NotifySpriteCountChanged();
+    }
+
+    private void OnSpriteModified(SpriteDefinition sprite, SpriteState oldState, string description)
+    {
+        var command = ModifySpriteCommand.Create(sprite, oldState, description);
+        _viewModel.UndoRedo.Execute(command);
     }
 
     private void OnCanvasColorPicked(SkiaSharp.SKColor color)
@@ -200,10 +218,33 @@ public partial class MainPage : ContentPage
         _viewModel.Document.Sprites.Clear();
         _viewModel.Document.SpriteSheetName = "untitled";
         _viewModel.SelectedSprite = null;
+        _viewModel.UndoRedo.Clear();
         _viewModel.NotifyImageChanged();
         UpdateDocumentLabel();
         UpdateStatusBar();
         Canvas.InvalidateSurface();
+    }
+
+    private void OnUndoClicked(object? sender, EventArgs e)
+    {
+        if (_viewModel.UndoRedo.CanUndo)
+        {
+            _viewModel.UndoRedo.Undo();
+            _viewModel.NotifySpriteCountChanged();
+            _viewModel.NotifyImageChanged();
+            Canvas.InvalidateSurface();
+        }
+    }
+
+    private void OnRedoClicked(object? sender, EventArgs e)
+    {
+        if (_viewModel.UndoRedo.CanRedo)
+        {
+            _viewModel.UndoRedo.Redo();
+            _viewModel.NotifySpriteCountChanged();
+            _viewModel.NotifyImageChanged();
+            Canvas.InvalidateSurface();
+        }
     }
 
     private void OnSelectToolClicked(object? sender, EventArgs e)
@@ -251,11 +292,11 @@ public partial class MainPage : ContentPage
         var proceed = await DisplayAlert("Generate Grid", message, "Generate", "Cancel");
         if (!proceed) return;
 
-        var newDoc = GridGenerator.Generate(_viewModel.Document.SpriteSheetName, _viewModel.ImageWidth, _viewModel.ImageHeight, columns, rows);
-        newDoc.LoadedImage = _viewModel.Document.LoadedImage;
-        newDoc.ImageFilePath = _viewModel.Document.ImageFilePath;
-        _viewModel.Document = newDoc;
+        var newSprites = GridGenerator.GenerateSprites(_viewModel.Document.SpriteSheetName, _viewModel.ImageWidth, _viewModel.ImageHeight, columns, rows);
+        var command = new GenerateGridCommand(_viewModel.Document, newSprites);
+        _viewModel.UndoRedo.Execute(command);
         _viewModel.SelectedSprite = null;
+        _viewModel.NotifySpriteCountChanged();
         UpdateDocumentLabel();
     }
 
@@ -266,7 +307,12 @@ public partial class MainPage : ContentPage
 
     private void OnDeleteSpriteClicked(object? sender, EventArgs e)
     {
-        _viewModel.DeleteSelectedSprite();
+        if (_viewModel.SelectedSprite is null) return;
+
+        var command = new RemoveSpriteCommand(_viewModel.Document, _viewModel.SelectedSprite);
+        _viewModel.UndoRedo.Execute(command);
+        _viewModel.SelectedSprite = null;
+        _viewModel.NotifySpriteCountChanged();
     }
 
     private void OnFileClicked(object? sender, EventArgs e)
@@ -310,6 +356,40 @@ public partial class MainPage : ContentPage
 #endif
     }
 
+    private void OnEditClicked(object? sender, EventArgs e)
+    {
+#if WINDOWS
+        if (EditButton.Handler?.PlatformView is Microsoft.UI.Xaml.Controls.Button nativeButton)
+        {
+            var flyout = new Microsoft.UI.Xaml.Controls.MenuFlyout();
+
+            var undoItem = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem
+            {
+                Text = _viewModel.UndoRedo.CanUndo
+                    ? $"Undo {_viewModel.UndoRedo.UndoDescription}"
+                    : "Undo",
+                IsEnabled = _viewModel.UndoRedo.CanUndo,
+                KeyboardAcceleratorTextOverride = "Ctrl+Z"
+            };
+            undoItem.Click += (s, args) => OnUndoClicked(s, EventArgs.Empty);
+            flyout.Items.Add(undoItem);
+
+            var redoItem = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem
+            {
+                Text = _viewModel.UndoRedo.CanRedo
+                    ? $"Redo {_viewModel.UndoRedo.RedoDescription}"
+                    : "Redo",
+                IsEnabled = _viewModel.UndoRedo.CanRedo,
+                KeyboardAcceleratorTextOverride = "Ctrl+Y"
+            };
+            redoItem.Click += (s, args) => OnRedoClicked(s, EventArgs.Empty);
+            flyout.Items.Add(redoItem);
+
+            flyout.ShowAt(nativeButton);
+        }
+#endif
+    }
+
     private void OnFiltersClicked(object? sender, EventArgs e)
     {
 #if WINDOWS
@@ -339,6 +419,18 @@ public partial class MainPage : ContentPage
 
     private void OnFilterApplyClicked(object? sender, EventArgs e)
     {
+        if (_viewModel.OriginalImage is not null && _viewModel.Document.LoadedImage is not null)
+        {
+            var filterName = FilterPanel.Mode switch
+            {
+                BackgroundRemovalMode.Hard => "Hard Color Removal",
+                BackgroundRemovalMode.SoftAlpha => "Soft Alpha",
+                BackgroundRemovalMode.ChromaKey => "Chroma Key",
+                _ => "Color Filter"
+            };
+            var command = new ApplyFilterCommand(_viewModel.Document, _viewModel.OriginalImage, _viewModel.Document.LoadedImage, filterName);
+            _viewModel.UndoRedo.Execute(command);
+        }
         _viewModel.ApplyFilter();
         FilterPanel.IsVisible = false;
         FilterPanel.IsPickingColor = false;
@@ -425,6 +517,15 @@ public partial class MainPage : ContentPage
 
         switch (e.Key)
         {
+            case Windows.System.VirtualKey.Z when ctrl && !shift:
+                OnUndoClicked(null, EventArgs.Empty);
+                e.Handled = true;
+                break;
+            case Windows.System.VirtualKey.Y when ctrl:
+            case Windows.System.VirtualKey.Z when ctrl && shift:
+                OnRedoClicked(null, EventArgs.Empty);
+                e.Handled = true;
+                break;
             case Windows.System.VirtualKey.O when ctrl && shift:
                 OnOpenJsonClicked(null, EventArgs.Empty);
                 e.Handled = true;

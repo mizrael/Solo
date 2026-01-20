@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using SkiaSharp;
 using SpriteSheetEditor.Models;
+using SpriteSheetEditor.UndoRedo;
 
 namespace SpriteSheetEditor.ViewModels;
 
@@ -35,6 +36,8 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private SKBitmap? _originalImage;  // Backup of image before filter preview
+
+    public UndoRedoManager UndoRedo { get; } = new();
 
     public int ImageWidth => Document.LoadedImage?.Width ?? 0;
     public int ImageHeight => Document.LoadedImage?.Height ?? 0;
@@ -77,6 +80,11 @@ public partial class MainViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(ImageWidth));
         OnPropertyChanged(nameof(ImageHeight));
+    }
+
+    public void NotifySpriteCountChanged()
+    {
+        OnPropertyChanged(nameof(SpriteCount));
     }
 
     public void BeginFilterPreview()

@@ -2,6 +2,7 @@ using SkiaSharp;
 using SkiaSharp.Views.Maui;
 using SkiaSharp.Views.Maui.Controls;
 using SpriteSheetEditor.Models;
+using SpriteSheetEditor.UndoRedo.Commands;
 using SpriteSheetEditor.Utils;
 using SpriteSheetEditor.ViewModels;
 
@@ -40,9 +41,12 @@ public class SpriteCanvas : SKCanvasView
 
     private bool _isResizing;
     private int _resizeHandle = -1;
+    private SpriteState? _dragStartState;
 
     public bool IsEyedropperMode { get; set; }
     public event Action<SKColor>? ColorPicked;
+    public event Action<SpriteDefinition>? SpriteDrawn;
+    public event Action<SpriteDefinition, SpriteState, string>? SpriteModified;
 
     public SpriteCanvas()
     {
@@ -264,6 +268,7 @@ public class SpriteCanvas : SKCanvasView
                     {
                         _isResizing = true;
                         _resizeHandle = i;
+                        _dragStartState = SpriteState.From(selected);
                         return;
                     }
                 }
@@ -276,6 +281,7 @@ public class SpriteCanvas : SKCanvasView
                 _isDragging = true;
                 _dragSprite = sprite;
                 _dragOffset = new SKPoint(imagePoint.X - sprite.X, imagePoint.Y - sprite.Y);
+                _dragStartState = SpriteState.From(sprite);
             }
             else
             {
@@ -367,7 +373,23 @@ public class SpriteCanvas : SKCanvasView
                     Width = (int)rect.Width,
                     Height = (int)rect.Height
                 };
-                ViewModel.AddSprite(sprite);
+                SpriteDrawn?.Invoke(sprite);
+            }
+        }
+        else if (_isDragging && _dragSprite != null && _dragStartState.HasValue)
+        {
+            var currentState = SpriteState.From(_dragSprite);
+            if (!currentState.Equals(_dragStartState.Value))
+            {
+                SpriteModified?.Invoke(_dragSprite, _dragStartState.Value, "Move sprite");
+            }
+        }
+        else if (_isResizing && ViewModel?.SelectedSprite is { } resizedSprite && _dragStartState.HasValue)
+        {
+            var currentState = SpriteState.From(resizedSprite);
+            if (!currentState.Equals(_dragStartState.Value))
+            {
+                SpriteModified?.Invoke(resizedSprite, _dragStartState.Value, "Resize sprite");
             }
         }
 
@@ -381,6 +403,7 @@ public class SpriteCanvas : SKCanvasView
         _dragSprite = null;
         _isResizing = false;
         _resizeHandle = -1;
+        _dragStartState = null;
     }
 
     public void ZoomIn() { if (ViewModel != null) ViewModel.ZoomLevel = Math.Min(ViewModel.ZoomLevel * 1.25f, 10f); }

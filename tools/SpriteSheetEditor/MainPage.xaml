@@ -10,6 +10,7 @@
         <!-- Toolbar -->
         <HorizontalStackLayout Grid.Row="0" Padding="8" Spacing="8" BackgroundColor="#2d2d30">
             <Button x:Name="FileButton" Text="File ▼" Clicked="OnFileClicked" />
+            <Button x:Name="EditButton" Text="Edit ▼" Clicked="OnEditClicked" />
             <BoxView WidthRequest="1" BackgroundColor="#555" />
             <Button x:Name="SelectToolButton" Text="Select" Clicked="OnSelectToolClicked" BackgroundColor="#0078d4" />
             <Button x:Name="DrawToolButton" Text="Draw" Clicked="OnDrawToolClicked" />
