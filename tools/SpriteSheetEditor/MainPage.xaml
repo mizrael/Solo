@@ -9,10 +9,7 @@
     <Grid RowDefinitions="Auto,Auto,*,Auto">
         <!-- Toolbar -->
         <HorizontalStackLayout Grid.Row="0" Padding="8" Spacing="8" BackgroundColor="#2d2d30">
-            <Button Text="Open Image" Clicked="OnOpenImageClicked" />
-            <Button Text="Save Image" Clicked="OnSaveImageClicked" />
-            <Button Text="Open JSON" Clicked="OnOpenJsonClicked" />
-            <Button Text="Save JSON" Clicked="OnSaveJsonClicked" />
+            <Button x:Name="FileButton" Text="File ▼" Clicked="OnFileClicked" />
             <BoxView WidthRequest="1" BackgroundColor="#555" />
             <Button x:Name="SelectToolButton" Text="Select" Clicked="OnSelectToolClicked" BackgroundColor="#0078d4" />
             <Button x:Name="DrawToolButton" Text="Draw" Clicked="OnDrawToolClicked" />

@@ -181,6 +181,31 @@ public partial class MainPage : ContentPage
 #endif
     }
 
+    private async void OnCloseProjectClicked(object? sender, EventArgs e)
+    {
+        if (_viewModel.Document.LoadedImage is null && _viewModel.Document.Sprites.Count == 0)
+        {
+            return; // Nothing to close
+        }
+
+        var confirm = await DisplayAlert("Close Project",
+            "Are you sure you want to close the current project? Any unsaved changes will be lost.",
+            "Close", "Cancel");
+
+        if (!confirm) return;
+
+        _viewModel.Document.LoadedImage?.Dispose();
+        _viewModel.Document.LoadedImage = null;
+        _viewModel.Document.ImageFilePath = null;
+        _viewModel.Document.Sprites.Clear();
+        _viewModel.Document.SpriteSheetName = "untitled";
+        _viewModel.SelectedSprite = null;
+        _viewModel.NotifyImageChanged();
+        UpdateDocumentLabel();
+        UpdateStatusBar();
+        Canvas.InvalidateSurface();
+    }
+
     private void OnSelectToolClicked(object? sender, EventArgs e)
     {
         _viewModel.CurrentTool = EditorTool.Select;
@@ -242,6 +267,47 @@ public partial class MainPage : ContentPage
     private void OnDeleteSpriteClicked(object? sender, EventArgs e)
     {
         _viewModel.DeleteSelectedSprite();
+    }
+
+    private void OnFileClicked(object? sender, EventArgs e)
+    {
+#if WINDOWS
+        if (FileButton.Handler?.PlatformView is Microsoft.UI.Xaml.Controls.Button nativeButton)
+        {
+            var flyout = new Microsoft.UI.Xaml.Controls.MenuFlyout();
+
+            var openImage = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem { Text = "Open Image..." };
+            openImage.Click += (s, args) => OnOpenImageClicked(s, EventArgs.Empty);
+            flyout.Items.Add(openImage);
+
+            var saveImage = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem { Text = "Save Image..." };
+            saveImage.Click += (s, args) => OnSaveImageClicked(s, EventArgs.Empty);
+            flyout.Items.Add(saveImage);
+
+            flyout.Items.Add(new Microsoft.UI.Xaml.Controls.MenuFlyoutSeparator());
+
+            var openJson = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem { Text = "Open JSON..." };
+            openJson.Click += (s, args) => OnOpenJsonClicked(s, EventArgs.Empty);
+            flyout.Items.Add(openJson);
+
+            var saveJson = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem { Text = "Save JSON..." };
+            saveJson.Click += (s, args) => OnSaveJsonClicked(s, EventArgs.Empty);
+            flyout.Items.Add(saveJson);
+
+            flyout.Items.Add(new Microsoft.UI.Xaml.Controls.MenuFlyoutSeparator());
+
+            var hasProject = _viewModel.Document.LoadedImage is not null || _viewModel.Document.Sprites.Count > 0;
+            var closeProject = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem
+            {
+                Text = "Close Project",
+                IsEnabled = hasProject
+            };
+            closeProject.Click += (s, args) => OnCloseProjectClicked(s, EventArgs.Empty);
+            flyout.Items.Add(closeProject);
+
+            flyout.ShowAt(nativeButton);
+        }
+#endif
     }
 
     private void OnFiltersClicked(object? sender, EventArgs e)
