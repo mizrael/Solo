@@ -113,6 +113,11 @@
         <controls:GridSettingsDialog x:Name="GridDialog" Grid.RowSpan="4" IsVisible="False"
                                      GenerateClicked="OnGridDialogGenerate"
                                      CancelClicked="OnGridDialogCancel" />
+
+        <!-- Import Images Dialog -->
+        <controls:ImportImagesDialog x:Name="ImportDialog" Grid.RowSpan="4" IsVisible="False"
+                                     ImportClicked="OnImportDialogImport"
+                                     CancelClicked="OnImportDialogCancel" />
     </Grid>
 
 </ContentPage>

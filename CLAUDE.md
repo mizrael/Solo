@@ -80,3 +80,4 @@ Components implement `IRenderable` to participate in rendering. The `RenderServi
 - follow SOLID principles and best practices
 - classes should be small and focused on a single responsibility
 - avoid magic strings; use `const string`, `nameof()`, or similar approaches instead
+- favor interfaces over concrete implementations (e.g., `IEnumerable<T>` over `List<T>`, `IReadOnlyList<T>` over arrays)

@@ -1,4 +1,5 @@
 using SkiaSharp;
+using SpriteSheetEditor.Controls;
 using SpriteSheetEditor.Filters;
 using SpriteSheetEditor.Models;
 using SpriteSheetEditor.Services;
@@ -362,6 +363,12 @@ public partial class MainPage : ContentPage
 
             flyout.Items.Add(new Microsoft.UI.Xaml.Controls.MenuFlyoutSeparator());
 
+            var importImages = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem { Text = "Import Images..." };
+            importImages.Click += (s, args) => OnImportImagesClicked(s, EventArgs.Empty);
+            flyout.Items.Add(importImages);
+
+            flyout.Items.Add(new Microsoft.UI.Xaml.Controls.MenuFlyoutSeparator());
+
             var openJson = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem { Text = "Open JSON..." };
             openJson.Click += (s, args) => OnOpenJsonClicked(s, EventArgs.Empty);
             flyout.Items.Add(openJson);
@@ -522,6 +529,78 @@ public partial class MainPage : ContentPage
             FilterPanel.SetPickedColor(color);
             FilterPanel.IsPickingColor = false;
         }
+    }
+
+    private async void OnImportImagesClicked(object? sender, EventArgs e)
+    {
+        var hasUnsavedChanges = _viewModel.UndoRedo.CanUndo ||
+                                _viewModel.Document.LoadedImage is not null ||
+                                _viewModel.Document.Sprites.Count > 0;
+
+        if (hasUnsavedChanges)
+        {
+            var confirm = await DisplayAlert("Import Images",
+                "Import will replace the current document. You may have unsaved changes. Continue?",
+                "Continue", "Cancel");
+
+            if (!confirm) return;
+        }
+
+#if WINDOWS
+        var hwnd = ((MauiWinUIWindow)Application.Current!.Windows[0].Handler!.PlatformView!).WindowHandle;
+        var picker = new Windows.Storage.Pickers.FileOpenPicker
+        {
+            SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary,
+            ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail
+        };
+        picker.FileTypeFilter.Add(".png");
+        picker.FileTypeFilter.Add(".jpg");
+        picker.FileTypeFilter.Add(".jpeg");
+        picker.FileTypeFilter.Add(".bmp");
+
+        WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+        var files = await picker.PickMultipleFilesAsync();
+
+        if (files is null || files.Count == 0) return;
+
+        var filePaths = files.Select(f => f.Path).ToList();
+        ImportDialog.Show(filePaths);
+#endif
+    }
+
+    private async void OnImportDialogImport(object? sender, ImportImagesEventArgs e)
+    {
+        ImportDialog.Hide();
+
+        try
+        {
+            var result = await ImageImporter.ImportImagesAsync(e.FilePaths, e.Padding);
+
+            var command = new ImportImagesCommand(
+                _viewModel.Document,
+                result.CompositeImage,
+                result.Document.Sprites.ToList(),
+                result.Document.SpriteSheetName);
+
+            _viewModel.UndoRedo.Execute(command);
+            _viewModel.SelectedSprite = null;
+            _viewModel.NotifyImageChanged();
+            _viewModel.NotifySpriteCountChanged();
+            UpdateDocumentLabel();
+            UpdateStatusBar();
+            Canvas.FitToWindow();
+
+            result.CompositeImage.Dispose();
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Import Error", $"Failed to import images: {ex.Message}", "OK");
+        }
+    }
+
+    private void OnImportDialogCancel(object? sender, EventArgs e)
+    {
+        ImportDialog.Hide();
     }
 
     protected override void OnHandlerChanged()
