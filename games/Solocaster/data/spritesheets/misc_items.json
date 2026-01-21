@@ -1,0 +1,789 @@
+{
+  "spriteSheetName": "misc_items",
+  "sprites": [
+    {
+      "name": "barrel_1",
+      "x": 0,
+      "y": 0,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "crate_1",
+      "x": 64,
+      "y": 0,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "open_chest_2",
+      "x": 128,
+      "y": 0,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "barrel_2",
+      "x": 192,
+      "y": 0,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "barrel_3",
+      "x": 256,
+      "y": 0,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_5",
+      "x": 320,
+      "y": 0,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_6",
+      "x": 384,
+      "y": 0,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_7",
+      "x": 448,
+      "y": 0,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_8",
+      "x": 512,
+      "y": 0,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_9",
+      "x": 576,
+      "y": 0,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_10",
+      "x": 640,
+      "y": 0,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_11",
+      "x": 704,
+      "y": 0,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_12",
+      "x": 768,
+      "y": 0,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "potion_1",
+      "x": 832,
+      "y": 0,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_14",
+      "x": 0,
+      "y": 64,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_15",
+      "x": 64,
+      "y": 64,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "crystal_1",
+      "x": 128,
+      "y": 64,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_17",
+      "x": 192,
+      "y": 64,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_18",
+      "x": 256,
+      "y": 64,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_19",
+      "x": 320,
+      "y": 64,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_20",
+      "x": 384,
+      "y": 64,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_21",
+      "x": 448,
+      "y": 64,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_22",
+      "x": 512,
+      "y": 64,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_23",
+      "x": 576,
+      "y": 64,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_24",
+      "x": 640,
+      "y": 64,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_25",
+      "x": 704,
+      "y": 64,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_26",
+      "x": 768,
+      "y": 64,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "iron_shortsword_1",
+      "x": 832,
+      "y": 64,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "bones_1",
+      "x": 0,
+      "y": 128,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "skulls_1",
+      "x": 64,
+      "y": 128,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "bones_2",
+      "x": 128,
+      "y": 128,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_31",
+      "x": 192,
+      "y": 128,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_32",
+      "x": 256,
+      "y": 128,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_33",
+      "x": 320,
+      "y": 128,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_34",
+      "x": 384,
+      "y": 128,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_35",
+      "x": 448,
+      "y": 128,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_36",
+      "x": 512,
+      "y": 128,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_37",
+      "x": 576,
+      "y": 128,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "iron_axe_1",
+      "x": 640,
+      "y": 128,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_39",
+      "x": 704,
+      "y": 128,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_40",
+      "x": 768,
+      "y": 128,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_41",
+      "x": 832,
+      "y": 128,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_42",
+      "x": 0,
+      "y": 192,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "grimoire_1",
+      "x": 64,
+      "y": 192,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_44",
+      "x": 128,
+      "y": 192,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_45",
+      "x": 192,
+      "y": 192,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "scroll_1",
+      "x": 255,
+      "y": 192,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "runes_1",
+      "x": 320,
+      "y": 192,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_48",
+      "x": 384,
+      "y": 192,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_49",
+      "x": 448,
+      "y": 192,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_50",
+      "x": 512,
+      "y": 192,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_51",
+      "x": 576,
+      "y": 192,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_52",
+      "x": 640,
+      "y": 192,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_53",
+      "x": 704,
+      "y": 192,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_54",
+      "x": 768,
+      "y": 192,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_55",
+      "x": 832,
+      "y": 192,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "iron_pickaxe_1",
+      "x": 0,
+      "y": 256,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_57",
+      "x": 64,
+      "y": 256,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "iron_hammer_1",
+      "x": 128,
+      "y": 256,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_59",
+      "x": 192,
+      "y": 256,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_60",
+      "x": 256,
+      "y": 256,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_61",
+      "x": 320,
+      "y": 256,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_62",
+      "x": 384,
+      "y": 256,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_63",
+      "x": 448,
+      "y": 256,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "iron_key_1",
+      "x": 512,
+      "y": 256,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_65",
+      "x": 576,
+      "y": 256,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_66",
+      "x": 640,
+      "y": 256,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_67",
+      "x": 704,
+      "y": 256,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_68",
+      "x": 768,
+      "y": 256,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "iron_key_2",
+      "x": 832,
+      "y": 256,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_70",
+      "x": 0,
+      "y": 320,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_71",
+      "x": 64,
+      "y": 320,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_72",
+      "x": 128,
+      "y": 320,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_73",
+      "x": 192,
+      "y": 320,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_74",
+      "x": 256,
+      "y": 320,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_75",
+      "x": 320,
+      "y": 320,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_76",
+      "x": 384,
+      "y": 320,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_77",
+      "x": 448,
+      "y": 320,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_78",
+      "x": 512,
+      "y": 320,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_79",
+      "x": 576,
+      "y": 320,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_80",
+      "x": 640,
+      "y": 320,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_81",
+      "x": 704,
+      "y": 320,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_82",
+      "x": 768,
+      "y": 320,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_83",
+      "x": 832,
+      "y": 320,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_84",
+      "x": 0,
+      "y": 384,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_85",
+      "x": 64,
+      "y": 384,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_86",
+      "x": 128,
+      "y": 384,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_87",
+      "x": 192,
+      "y": 384,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_88",
+      "x": 256,
+      "y": 384,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_89",
+      "x": 320,
+      "y": 384,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "chest_1",
+      "x": 384,
+      "y": 384,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "open_chest_1",
+      "x": 448,
+      "y": 384,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "sack_1",
+      "x": 512,
+      "y": 383,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "grimoire_2",
+      "x": 576,
+      "y": 384,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_94",
+      "x": 640,
+      "y": 384,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "open_chest_3",
+      "x": 704,
+      "y": 384,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "chest_2",
+      "x": 768,
+      "y": 384,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_97",
+      "x": 832,
+      "y": 384,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "wooden_shield_2",
+      "x": 0,
+      "y": 448,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "iron_helmet_1",
+      "x": 64,
+      "y": 448,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "iron_gauntlet_1",
+      "x": 128,
+      "y": 448,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "iron_sword_1",
+      "x": 192,
+      "y": 448,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "quiver_1",
+      "x": 256,
+      "y": 448,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "short_bow_1",
+      "x": 320,
+      "y": 448,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "iron_shield_1",
+      "x": 384,
+      "y": 448,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_105",
+      "x": 448,
+      "y": 448,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "iron_shield_2",
+      "x": 512,
+      "y": 448,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "backpack_1",
+      "x": 576,
+      "y": 448,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "potion_2",
+      "x": 640,
+      "y": 448,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "scroll_2",
+      "x": 703,
+      "y": 448,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "wooden_shield_1",
+      "x": 768,
+      "y": 448,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "misc_items_sprite_111",
+      "x": 832,
+      "y": 448,
+      "width": 64,
+      "height": 64
+    }
+  ]
+}

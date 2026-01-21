@@ -22,8 +22,9 @@ public class PlayScene : Scene
     {
         var gameState = new GameState();
 
-        var spriteSheet = new SpriteSheetLoader().Load("meta/spritesheet.json", Game);
-        var collisionService = GameServicesManager.Instance.GetRequired<CollisionService>();
+        SpriteSheetLoader.BasePath = "./meta";
+        var spriteSheet = SpriteSheetLoader.Get("spritesheet", Game);
+        var collisionService = GameServicesManager.Instance.GetRequired<BoundingBoxCollisionService>();
 
         var bus = GameServicesManager.Instance.GetRequired<MessageBus>();
         var magicPillEatenTopic = bus.GetTopic<MagicPillEaten>();
@@ -57,7 +58,7 @@ public class PlayScene : Scene
         return uiObj;
     }
 
-    private GameObject AddPlayer(SpriteSheet spriteSheet, CollisionService collisionService, GameObject map, GameState gameState)
+    private GameObject AddPlayer(SpriteSheet spriteSheet, BoundingBoxCollisionService collisionService, GameObject map, GameState gameState)
     {
         var player = new GameObject();
         var transform = player.Components.Add<TransformComponent>();
@@ -107,7 +108,7 @@ public class PlayScene : Scene
         return player;
     }
 
-    private GameObject AddMap(SpriteSheet spriteSheet, CollisionService collisionService, GameState gameState)
+    private GameObject AddMap(SpriteSheet spriteSheet, BoundingBoxCollisionService collisionService, GameState gameState)
     {
         var map = new GameObject();
         
@@ -124,7 +125,7 @@ public class PlayScene : Scene
         return map;
     }
 
-    private void AddPellets(SpriteSheet spriteSheet, CollisionService collisionService, GameState gameState, GameObject map, MessageTopic<MagicPillEaten> magicPillEatenTopic)
+    private void AddPellets(SpriteSheet spriteSheet, BoundingBoxCollisionService collisionService, GameState gameState, GameObject map, MessageTopic<MagicPillEaten> magicPillEatenTopic)
     {
         var container = new GameObject();
 
@@ -156,7 +157,7 @@ public class PlayScene : Scene
         TransformComponent mapTransform, 
         Sprite pelletSprite, 
         TileInfo tile,
-        CollisionService collisionService,
+        BoundingBoxCollisionService collisionService,
         RenderService renderService,
         GameState gameState,
         bool isMagicPill = false,
@@ -215,7 +216,7 @@ public class PlayScene : Scene
     private void AddGhost(
         GhostTypes ghostType,
         SpriteSheet spriteSheet,
-        CollisionService collisionService,
+        BoundingBoxCollisionService collisionService,
         GameObject map,
         GameObject player)
     {

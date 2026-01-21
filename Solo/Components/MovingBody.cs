@@ -29,7 +29,7 @@ public class MovingBody : Component
         _rotationVelocity *= (1f - dt * RotationDrag);
         _transform.Local.Rotation += _rotationVelocity * dt; 
 
-        var dir = _transform.Local.GetDirection();
+        var dir = _transform.Local.Direction;
 
         var traction = dir * this.Thrust;
 

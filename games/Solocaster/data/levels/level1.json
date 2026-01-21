@@ -1,0 +1,122 @@
+{
+  "spritesheets": [
+    "dungeon1",
+    "dungeon_doors1",
+    "misc_items2"
+  ],
+  "map": {
+    "type": "random",
+    "wallSprites": {
+      "base": {
+        "stone_wall_clean": 50,
+        "brick_wall_gray": 10,
+        "wood_wall_gray": 40
+      },
+      "accent": [ "stone_wall_bloodstained", "brick_wall_aged", "wood_wall_dusty", "wood_wall_bloodstained" ]
+    },
+    "doorSprites": [ "door1", "door2", "door3", "door4" ],
+    "decorations": [
+      {
+        "density": 0.04,
+        "placement": "floor",
+        "items": {
+          "misc_items2:barrel_upright_01": 15,
+          "misc_items2:barrel_upright_02": 15,
+          "misc_items2:barrel_upright_mossy": 10,
+          "misc_items2:barrel_mossy_upright": 10,
+          "misc_items2:barrel_clean_upright": 10,
+          "misc_items2:barrel_side_01": 8,
+          "misc_items2:barrel_side_mossy_01": 6,
+          "misc_items2:barrel_side_mossy_02": 6,
+          "misc_items2:crate_closed_01": 12,
+          "misc_items2:crate_closed_02": 12,
+          "misc_items2:crate_01": 10,
+          "misc_items2:crate_02": 10,
+          "misc_items2:crate_mossy_01": 8,
+          "misc_items2:crate_mossy_02": 8,
+          "misc_items2:crate_cloth_01": 6,
+          "misc_items2:crate_cloth_bloody": 4
+        }
+      },
+      {
+        "density": 0.03,
+        "placement": "floor",
+        "items": {
+          "misc_items2:bones_skull_01": 25,
+          "misc_items2:bones_pile_01": 20,
+          "misc_items2:bones_pile_02": 20,
+          "misc_items2:bones_scattered": 15
+        }
+      }     
+    ],
+    "pickupableItems": [
+      {
+        "density": 0.015,
+        "items": {
+          "iron_sword": 20,
+          "steel_sword": 10,
+          "battle_axe": 8,
+          "morningstar": 12
+        }
+      },
+      {
+        "density": 0.012,
+        "items": {
+          "leather_helm": 20,
+          "iron_helm": 12,
+          "great_helm": 5,
+          "knight_helm": 8,
+          "iron_chestplate": 10,
+          "steel_chestplate": 5,
+          "iron_greaves": 12
+        }
+      },
+      {
+        "density": 0.01,
+        "items": {
+          "wooden_shield": 20,
+          "buckler": 15,
+          "heater_shield": 10,
+          "round_shield": 12
+        }
+      },
+      {
+        "density": 0.02,
+        "minQuantity": 1,
+        "maxQuantity": 3,
+        "items": {
+          "health_potion": 50,
+          "mana_potion": 30,
+          "strength_elixir": 20
+        }
+      },
+      {
+        "density": 0.008,
+        "items": {
+          "gold_ring": 25,
+          "silver_ring": 25,
+          "ring_of_strength": 15,
+          "silver_amulet": 20,
+          "amulet_of_wisdom": 15
+        }
+      }
+    ]
+  },
+  "monsters": {
+    "density": 0.015,
+    "encounters": [
+      {
+        "weight": 70,
+        "groups": [
+          { "id": "skeleton", "min": 1, "max": 2 }
+        ]
+      },
+      {
+        "weight": 30,
+        "groups": [
+          { "id": "skeleton", "min": 2, "max": 3 }
+        ]
+      }
+    ]
+  }
+}

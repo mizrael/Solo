@@ -18,7 +18,8 @@ public class MainTitleScene : Scene
 
     protected override void EnterCore()
     {
-        var spriteSheet = new SpriteSheetLoader().Load("meta/spritesheet.json", Game);
+        SpriteSheetLoader.BasePath = "./meta";
+        var spriteSheet = SpriteSheetLoader.Get("spritesheet", Game);
 
         var mainTitle = new GameObject();
         

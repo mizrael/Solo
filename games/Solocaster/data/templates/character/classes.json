@@ -1,0 +1,108 @@
+{
+  "classes": [
+    {
+      "id": "warrior",
+      "name": "Warrior",
+      "description": "Masters of martial combat, warriors excel in strength and endurance.",
+      "statBonuses": {
+        "Strength": 3,
+        "Agility": 1,
+        "Vitality": 2,
+        "Intelligence": -2,
+        "Wisdom": -1
+      },
+      "progressRates": {
+        "Strength": 1.3,
+        "Agility": 1.0,
+        "Vitality": 1.2,
+        "Intelligence": 0.6,
+        "Wisdom": 0.7
+      },
+      "gainMultipliers": {
+        "Strength": 1.2,
+        "Agility": 1.0,
+        "Vitality": 1.15,
+        "Intelligence": 0.7,
+        "Wisdom": 0.8
+      }
+    },
+    {
+      "id": "cleric",
+      "name": "Cleric",
+      "description": "Divine spellcasters who channel holy power to heal and protect.",
+      "statBonuses": {
+        "Strength": 0,
+        "Agility": -1,
+        "Vitality": 1,
+        "Intelligence": 1,
+        "Wisdom": 3
+      },
+      "progressRates": {
+        "Strength": 0.9,
+        "Agility": 0.8,
+        "Vitality": 1.1,
+        "Intelligence": 1.0,
+        "Wisdom": 1.3
+      },
+      "gainMultipliers": {
+        "Strength": 0.9,
+        "Agility": 0.9,
+        "Vitality": 1.1,
+        "Intelligence": 1.0,
+        "Wisdom": 1.2
+      }
+    },
+    {
+      "id": "thief",
+      "name": "Thief",
+      "description": "Cunning rogues who rely on speed, stealth, and precision strikes.",
+      "statBonuses": {
+        "Strength": -1,
+        "Agility": 3,
+        "Vitality": 0,
+        "Intelligence": 1,
+        "Wisdom": 0
+      },
+      "progressRates": {
+        "Strength": 0.8,
+        "Agility": 1.3,
+        "Vitality": 0.9,
+        "Intelligence": 1.1,
+        "Wisdom": 0.9
+      },
+      "gainMultipliers": {
+        "Strength": 0.9,
+        "Agility": 1.2,
+        "Vitality": 0.95,
+        "Intelligence": 1.05,
+        "Wisdom": 0.95
+      }
+    },
+    {
+      "id": "mage",
+      "name": "Mage",
+      "description": "Wielders of arcane power who command devastating magical forces.",
+      "statBonuses": {
+        "Strength": -2,
+        "Agility": 0,
+        "Vitality": -1,
+        "Intelligence": 4,
+        "Wisdom": 2
+      },
+      "progressRates": {
+        "Strength": 0.5,
+        "Agility": 0.9,
+        "Vitality": 0.7,
+        "Intelligence": 1.4,
+        "Wisdom": 1.1
+      },
+      "gainMultipliers": {
+        "Strength": 0.7,
+        "Agility": 0.9,
+        "Vitality": 0.8,
+        "Intelligence": 1.25,
+        "Wisdom": 1.1
+      }
+    }
+  ]
+}

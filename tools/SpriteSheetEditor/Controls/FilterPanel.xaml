@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SpriteSheetEditor.Controls.FilterPanel"
+             BackgroundColor="#2d2d30"
+             IsVisible="False">
+    <HorizontalStackLayout Padding="8" Spacing="16">
+        <!-- Mode Section -->
+        <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+            <Label Text="Mode:" TextColor="White" VerticalOptions="Center" />
+            <Picker x:Name="ModePicker"
+                    WidthRequest="100"
+                    BackgroundColor="#333"
+                    TextColor="White"
+                    SelectedIndexChanged="OnModeChanged">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Hard</x:String>
+                        <x:String>Soft Alpha</x:String>
+                        <x:String>Chroma Key</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+        </HorizontalStackLayout>
+
+        <BoxView WidthRequest="1" BackgroundColor="#555" />
+
+        <!-- Color Section -->
+        <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+            <Label Text="Color:" TextColor="White" VerticalOptions="Center" />
+            <BoxView x:Name="ColorSwatch"
+                     WidthRequest="24" HeightRequest="24"
+                     Color="#FF00FF"
+                     VerticalOptions="Center" />
+            <Entry x:Name="HexEntry"
+                   Text="#FF00FF"
+                   WidthRequest="80"
+                   BackgroundColor="#333"
+                   TextColor="White"
+                   VerticalOptions="Center"
+                   TextChanged="OnHexEntryTextChanged" />
+            <Button x:Name="PickButton"
+                    Text="Pick"
+                    Clicked="OnPickButtonClicked"
+                    VerticalOptions="Center" />
+        </HorizontalStackLayout>
+
+        <BoxView WidthRequest="1" BackgroundColor="#555" />
+
+        <!-- Tolerance Section -->
+        <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+            <Label Text="Tolerance:" TextColor="White" VerticalOptions="Center" />
+            <Slider x:Name="ToleranceSlider"
+                    Minimum="0" Maximum="100" Value="0"
+                    WidthRequest="120"
+                    VerticalOptions="Center"
+                    ValueChanged="OnToleranceSliderValueChanged" />
+            <Label x:Name="ToleranceValueLabel"
+                   Text="0%"
+                   TextColor="White"
+                   WidthRequest="40"
+                   VerticalOptions="Center" />
+        </HorizontalStackLayout>
+
+        <BoxView WidthRequest="1" BackgroundColor="#555" />
+
+        <!-- Action Buttons -->
+        <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+            <Button Text="Apply"
+                    BackgroundColor="#0078d4"
+                    TextColor="White"
+                    Clicked="OnApplyButtonClicked" />
+            <Button Text="Cancel"
+                    Clicked="OnCancelButtonClicked" />
+        </HorizontalStackLayout>
+    </HorizontalStackLayout>
+</ContentView>

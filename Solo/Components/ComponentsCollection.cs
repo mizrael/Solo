@@ -15,6 +15,15 @@ public class ComponentsCollection : IEnumerable<Component>
         _items = new Dictionary<Type, Component>();
     }
 
+    public TC Add<TC>(TC component) where TC : Component
+    {
+        var type = typeof(TC);
+        if (_items.ContainsKey(type))
+            throw new ComponentAlreadyAddedException(_owner, component);
+        _items.Add(type, component);
+        return component;
+    }
+
     public TC Add<TC>() where TC : Component
     {
         var type = typeof(TC);

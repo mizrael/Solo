@@ -1,0 +1,460 @@
+{
+  "spriteSheetName": "misc_items2",
+  "sprites": [
+    {
+      "name": "barrel_upright_mossy",
+      "x": 0,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "barrel_side_01",
+      "x": 128,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "barrel_upright_01",
+      "x": 256,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "crate_cloth_01",
+      "x": 384,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "crate_cloth_bloody",
+      "x": 512,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "crate_closed_01",
+      "x": 640,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "crate_closed_02",
+      "x": 768,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "armor_chest_rusted",
+      "x": 896,
+      "y": 0,
+      "width": 128,
+      "height": 128
+    },
+
+    {
+      "name": "barrel_side_mossy_01",
+      "x": 0,
+      "y": 128,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "barrel_upright_02",
+      "x": 128,
+      "y": 128,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "bones_skull_01",
+      "x": 256,
+      "y": 128,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "sword_ground_01",
+      "x": 384,
+      "y": 128,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "sword_ground_02",
+      "x": 512,
+      "y": 128,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "bones_pile_01",
+      "x": 640,
+      "y": 128,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "bones_scattered",
+      "x": 768,
+      "y": 128,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "barrel_side_mossy_02",
+      "x": 896,
+      "y": 128,
+      "width": 128,
+      "height": 128
+    },
+
+    {
+      "name": "crate_01",
+      "x": 0,
+      "y": 256,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "crate_02",
+      "x": 128,
+      "y": 256,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "crate_03",
+      "x": 256,
+      "y": 256,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "sword_ground_03",
+      "x": 384,
+      "y": 256,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "crate_04",
+      "x": 512,
+      "y": 256,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "crate_05",
+      "x": 640,
+      "y": 256,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "crate_06",
+      "x": 768,
+      "y": 256,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "barrel_mossy_upright",
+      "x": 896,
+      "y": 256,
+      "width": 128,
+      "height": 128
+    },
+
+    {
+      "name": "barrel_clean_upright",
+      "x": 0,
+      "y": 384,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "crate_mossy_01",
+      "x": 128,
+      "y": 384,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "bones_pile_02",
+      "x": 256,
+      "y": 384,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "sword_ground_04",
+      "x": 384,
+      "y": 384,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "sword_ground_05",
+      "x": 512,
+      "y": 384,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "helmet_great_01",
+      "x": 640,
+      "y": 384,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "shield_wood_01",
+      "x": 768,
+      "y": 384,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "armor_chest_damaged",
+      "x": 896,
+      "y": 384,
+      "width": 128,
+      "height": 128
+    },
+
+    {
+      "name": "sword_ground_bloody",
+      "x": 0,
+      "y": 512,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "axe_ground_01",
+      "x": 128,
+      "y": 512,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "mace_morningstar",
+      "x": 256,
+      "y": 512,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "sword_ground_06",
+      "x": 384,
+      "y": 512,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "axe_ground_02",
+      "x": 512,
+      "y": 512,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "shield_buckler",
+      "x": 640,
+      "y": 512,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "mace_heavy",
+      "x": 768,
+      "y": 512,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "shield_heater_01",
+      "x": 896,
+      "y": 512,
+      "width": 128,
+      "height": 128
+    },
+
+    {
+      "name": "mace_flail_style",
+      "x": 0,
+      "y": 640,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "sword_ground_07",
+      "x": 128,
+      "y": 640,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "sword_ground_08",
+      "x": 256,
+      "y": 640,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "sword_ground_broken",
+      "x": 384,
+      "y": 640,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "sword_ground_09",
+      "x": 512,
+      "y": 640,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "shield_heater_02",
+      "x": 640,
+      "y": 640,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "crate_mossy_02",
+      "x": 768,
+      "y": 640,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "shield_round_wood",
+      "x": 896,
+      "y": 640,
+      "width": 128,
+      "height": 128
+    },
+
+    {
+      "name": "crate_07",
+      "x": 0,
+      "y": 768,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "armor_greave_01",
+      "x": 128,
+      "y": 768,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "mace_scepter",
+      "x": 256,
+      "y": 768,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "helmet_closed_01",
+      "x": 384,
+      "y": 768,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "helmet_broken_01",
+      "x": 512,
+      "y": 768,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "shield_round_01",
+      "x": 640,
+      "y": 768,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "crate_08",
+      "x": 768,
+      "y": 768,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "helmet_knight_01",
+      "x": 896,
+      "y": 768,
+      "width": 128,
+      "height": 128
+    },
+
+    {
+      "name": "crate_09",
+      "x": 0,
+      "y": 896,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "crate_10",
+      "x": 128,
+      "y": 896,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "sword_ground_10",
+      "x": 256,
+      "y": 896,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "sword_ground_11",
+      "x": 384,
+      "y": 896,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "sword_ground_12",
+      "x": 512,
+      "y": 896,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "helmet_open_01",
+      "x": 640,
+      "y": 896,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "armor_chest_01",
+      "x": 768,
+      "y": 896,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "name": "armor_chest_02",
+      "x": 896,
+      "y": 896,
+      "width": 128,
+      "height": 128
+    }
+  ]
+}

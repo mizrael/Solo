@@ -3,16 +3,16 @@ using Solo.Components;
 
 namespace Solo.Services;
 
-public class CollisionService : IGameService
+public class BoundingBoxCollisionService : IGameService
 {
-    private CollisionBucket[,] _buckets;
+    private BoundingBoxCollisionBucket[,] _buckets;
     private SceneManager _sceneManager;
     private RenderService _renderService;
     private readonly Point _bucketSize;
-    private readonly Dictionary<int, IList<CollisionBucket>> _bucketsByCollider = new();
+    private readonly Dictionary<int, IList<BoundingBoxCollisionBucket>> _bucketsByCollider = new();
 
 
-    public CollisionService(Point bucketSize)
+    public BoundingBoxCollisionService(Point bucketSize)
     {
         _bucketSize = bucketSize;
     }
@@ -34,7 +34,7 @@ public class CollisionService : IGameService
     {
         var rows = _renderService.Graphics.GraphicsDevice.Viewport.Height / _bucketSize.Y;
         var cols = _renderService.Graphics.GraphicsDevice.Viewport.Width / _bucketSize.X;
-        _buckets = new CollisionBucket[rows, cols];
+        _buckets = new BoundingBoxCollisionBucket[rows, cols];
 
         for (int row = 0; row < rows; row++)
             for (int col = 0; col < cols; col++)
@@ -44,7 +44,7 @@ public class CollisionService : IGameService
                     row * _bucketSize.Y,
                     _bucketSize.X,
                     _bucketSize.Y);
-                _buckets[row, col] = new CollisionBucket(bounds);
+                _buckets[row, col] = new BoundingBoxCollisionBucket(bounds);
             }
 
         _bucketsByCollider.Clear();
@@ -78,11 +78,11 @@ public class CollisionService : IGameService
         var endY = (int)(rows * ((float)collider.Bounds.Bottom / _renderService.Graphics.GraphicsDevice.Viewport.Height));
 
         if (!_bucketsByCollider.ContainsKey(collider.Owner.Id))
-            _bucketsByCollider[collider.Owner.Id] = new List<CollisionBucket>();
+            _bucketsByCollider[collider.Owner.Id] = new List<BoundingBoxCollisionBucket>();
 
         if (!_bucketsByCollider.TryGetValue(collider.Owner.Id, out var colliderBuckets))
         {
-            _bucketsByCollider[collider.Owner.Id] = colliderBuckets = new List<CollisionBucket>();
+            _bucketsByCollider[collider.Owner.Id] = colliderBuckets = new List<BoundingBoxCollisionBucket>();
         }
         else
         {

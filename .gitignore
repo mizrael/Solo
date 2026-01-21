@@ -3,3 +3,5 @@ bin/
 obj/
 node_modules/
 build/
+tmpclaude-*
+nul

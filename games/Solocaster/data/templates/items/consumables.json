@@ -1,0 +1,43 @@
+{
+  "items": [
+    {
+      "id": "health_potion",
+      "name": "Health Potion",
+      "description": "A red potion that restores 50 health.",
+      "iconPath": "misc_items2:barrel_upright_01",
+      "worldSpritePath": "misc_items2:barrel_upright_01",
+      "worldSpriteScale": 0.25,
+      "itemType": "Consumable",
+      "equipSlot": "None",
+      "weight": 0.5,
+      "stackable": true,
+      "maxStackSize": 10
+    },
+    {
+      "id": "mana_potion",
+      "name": "Mana Potion",
+      "description": "A blue potion that restores 30 mana.",
+      "iconPath": "misc_items2:barrel_upright_02",
+      "worldSpritePath": "misc_items2:barrel_upright_02",
+      "worldSpriteScale": 0.25,
+      "itemType": "Consumable",
+      "equipSlot": "None",
+      "weight": 0.5,
+      "stackable": true,
+      "maxStackSize": 10
+    },
+    {
+      "id": "strength_elixir",
+      "name": "Elixir of Strength",
+      "description": "Temporarily increases strength by 5.",
+      "iconPath": "misc_items2:barrel_clean_upright",
+      "worldSpritePath": "misc_items2:barrel_clean_upright",
+      "worldSpriteScale": 0.25,
+      "itemType": "Consumable",
+      "equipSlot": "None",
+      "weight": 0.5,
+      "stackable": true,
+      "maxStackSize": 5
+    }
+  ]
+}

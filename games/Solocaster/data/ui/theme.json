@@ -1,0 +1,26 @@
+{
+  "panel": {
+    "backgroundColor": [20, 20, 25, 240],
+    "borderColor": [100, 80, 60],
+    "borderWidth": 3,
+    "contentPadding": 20
+  },
+  "button": {
+    "backgroundColor": [60, 60, 60, 230],
+    "borderColor": [100, 100, 100],
+    "borderWidth": 2,
+    "contentPadding": 8
+  },
+  "itemSlot": {
+    "backgroundColor": [30, 30, 30, 200],
+    "borderColor": [70, 70, 70],
+    "borderWidth": 2,
+    "contentPadding": 4
+  },
+  "tooltip": {
+    "backgroundColor": [20, 20, 25, 250],
+    "borderColor": [100, 80, 60],
+    "borderWidth": 2,
+    "contentPadding": 8
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build:*)",
+      "Skill(superpowers:brainstorming)",
+      "Bash(git -C C:sourcesprototypesSolo status)",
+      "Skill(superpowers:writing-plans)",
+      "Skill(superpowers:subagent-driven-development)",
+      "Bash(dotnet sln:*)",
+      "Bash(dotnet --list-sdks:*)",
+      "Bash(dotnet workload:*)",
+      "Bash(dotnet test:*)"
+    ]
+  }
+}

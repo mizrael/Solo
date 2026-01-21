@@ -1,0 +1,74 @@
+{
+  "items": [
+    {
+      "id": "iron_sword",
+      "name": "Iron Sword",
+      "description": "A basic iron sword, reliable and sturdy.",
+      "iconPath": "misc_items2:sword_ground_01",
+      "worldSpritePath": "misc_items2:sword_ground_01",
+      "worldSpriteScale": 0.35,
+      "itemType": "Weapon",
+      "equipSlot": "RightHand",
+      "weight": 3.0,
+      "stackable": false,
+      "statModifiers": { "Damage": 8 },
+      "requirements": { "Strength": 5 }
+    },
+    {
+      "id": "steel_sword",
+      "name": "Steel Sword",
+      "description": "A well-crafted steel sword with superior edge.",
+      "iconPath": "misc_items2:sword_ground_02",
+      "worldSpritePath": "misc_items2:sword_ground_02",
+      "worldSpriteScale": 0.35,
+      "itemType": "Weapon",
+      "equipSlot": "RightHand",
+      "weight": 3.5,
+      "stackable": false,
+      "statModifiers": { "Damage": 12 },
+      "requirements": { "Strength": 8 }
+    },
+    {
+      "id": "battle_axe",
+      "name": "Battle Axe",
+      "description": "A heavy two-handed axe that cleaves through armor.",
+      "iconPath": "misc_items2:axe_ground_01",
+      "worldSpritePath": "misc_items2:axe_ground_01",
+      "worldSpriteScale": 0.4,
+      "itemType": "Weapon",
+      "equipSlot": "RightHand",
+      "weight": 5.0,
+      "stackable": false,
+      "statModifiers": { "Damage": 15 },
+      "requirements": { "Strength": 12 }
+    },
+    {
+      "id": "morningstar",
+      "name": "Morningstar",
+      "description": "A spiked mace that crushes armor and bone alike.",
+      "iconPath": "misc_items2:mace_morningstar",
+      "worldSpritePath": "misc_items2:mace_morningstar",
+      "worldSpriteScale": 0.38,
+      "itemType": "Weapon",
+      "equipSlot": "RightHand",
+      "weight": 4.0,
+      "stackable": false,
+      "statModifiers": { "Damage": 10, "CriticalChance": 5 },
+      "requirements": { "Strength": 7 }
+    },
+    {
+      "id": "scepter",
+      "name": "Arcane Scepter",
+      "description": "A magical scepter that channels arcane energy.",
+      "iconPath": "misc_items2:mace_scepter",
+      "worldSpritePath": "misc_items2:mace_scepter",
+      "worldSpriteScale": 0.35,
+      "itemType": "Weapon",
+      "equipSlot": "RightHand",
+      "weight": 2.0,
+      "stackable": false,
+      "statModifiers": { "SpellPower": 8, "Damage": 3 },
+      "requirements": { "Intelligence": 8 }
+    }
+  ]
+}

@@ -3,13 +3,13 @@ using Solo.Components;
 
 namespace Solo.Services;
 
-internal class CollisionBucket
+internal class BoundingBoxCollisionBucket
 {
     private readonly HashSet<BoundingBoxComponent> _colliders = new();
     private readonly HashSet<BoundingBoxComponent> _collidersToRemove = new();
     private readonly Queue<BoundingBoxComponent> _collidersToAdd = new();
 
-    public CollisionBucket(Rectangle bounds)
+    public BoundingBoxCollisionBucket(Rectangle bounds)
     {
         Bounds = bounds;
     }

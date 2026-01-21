@@ -35,7 +35,7 @@ public class SpaceInvadersGame : Game
 
         GameServicesManager.Instance.AddService(new MessageBus());
 
-        GameServicesManager.Instance.AddService(new CollisionService(new Point(64, 64)));
+        GameServicesManager.Instance.AddService(new BoundingBoxCollisionService(new Point(64, 64)));
 
         base.Initialize();
     }
