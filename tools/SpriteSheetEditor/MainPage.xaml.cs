@@ -130,26 +130,76 @@ public partial class MainPage : ContentPage
             ? Color.FromArgb("#0078d4") : Color.FromArgb("#3e3e42");
     }
 
-    private async void OnOpenImageClicked(object? sender, EventArgs e)
+    private async void OnLoadImagesClicked(object? sender, EventArgs e)
     {
-        var result = await FilePicker.PickAsync(new PickOptions
+        var hasUnsavedChanges = _viewModel.UndoRedo.CanUndo ||
+                                _viewModel.Document.LoadedImage is not null ||
+                                _viewModel.Document.Sprites.Count > 0;
+
+        if (hasUnsavedChanges)
         {
-            PickerTitle = "Select Image",
-            FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
-            {
-                { DevicePlatform.WinUI, [".png", ".jpg", ".jpeg", ".bmp"] }
-            })
-        });
+            var confirm = await DisplayAlert("Load Images",
+                "Loading images will replace the current document. You may have unsaved changes. Continue?",
+                "Continue", "Cancel");
 
-        if (result is null) return;
+            if (!confirm) return;
+        }
 
-        using var stream = await result.OpenReadAsync();
-        _viewModel.Document.LoadedImage = SKBitmap.Decode(stream);
-        _viewModel.Document.ImageFilePath = result.FullPath;
-        _viewModel.Document.SpriteSheetName = Path.GetFileNameWithoutExtension(result.FileName);
-        _viewModel.NotifyImageChanged();
-        UpdateDocumentLabel();
-        Canvas.FitToWindow();
+#if WINDOWS
+        var hwnd = ((MauiWinUIWindow)Application.Current!.Windows[0].Handler!.PlatformView!).WindowHandle;
+        var picker = new Windows.Storage.Pickers.FileOpenPicker
+        {
+            SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary,
+            ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail
+        };
+        picker.FileTypeFilter.Add(".png");
+        picker.FileTypeFilter.Add(".jpg");
+        picker.FileTypeFilter.Add(".jpeg");
+        picker.FileTypeFilter.Add(".bmp");
+
+        WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+        var files = await picker.PickMultipleFilesAsync();
+
+        if (files is null || files.Count == 0) return;
+
+        var filePaths = files.Select(f => f.Path).ToList();
+        LoadImagesDialog.Show(filePaths, "Load Images", "Load", isImportMode: false);
+#endif
+    }
+
+    private async void OnLoadImagesDialogConfirm(object? sender, ImportImagesEventArgs e)
+    {
+        LoadImagesDialog.Hide();
+
+        try
+        {
+            var result = await ImageImporter.LoadImagesAsync(e.FilePaths, e.Padding, e.Layout);
+
+            var command = new ImportImagesCommand(
+                _viewModel.Document,
+                result.CompositeImage,
+                result.Document.Sprites.ToList(),
+                result.Document.SpriteSheetName);
+
+            _viewModel.UndoRedo.Execute(command);
+            _viewModel.SelectedSprite = null;
+            _viewModel.NotifyImageChanged();
+            _viewModel.NotifySpriteCountChanged();
+            UpdateDocumentLabel();
+            UpdateStatusBar();
+            Canvas.FitToWindow();
+
+            result.CompositeImage.Dispose();
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Load Error", $"Failed to load images: {ex.Message}", "OK");
+        }
+    }
+
+    private void OnLoadImagesDialogCancel(object? sender, EventArgs e)
+    {
+        LoadImagesDialog.Hide();
     }
 
     private async void OnSaveImageClicked(object? sender, EventArgs e)
@@ -209,7 +259,7 @@ public partial class MainPage : ContentPage
 
         if (loadImage)
         {
-            OnOpenImageClicked(sender, e);
+            OnLoadImagesClicked(sender, e);
         }
     }
 
@@ -331,11 +381,6 @@ public partial class MainPage : ContentPage
         GridDialog.Hide();
     }
 
-    private void OnFitClicked(object? sender, EventArgs e)
-    {
-        Canvas.FitToWindow();
-    }
-
     private void OnDeleteSpriteClicked(object? sender, EventArgs e)
     {
         if (_viewModel.SelectedSprite is null) return;
@@ -353,9 +398,9 @@ public partial class MainPage : ContentPage
         {
             var flyout = new Microsoft.UI.Xaml.Controls.MenuFlyout();
 
-            var openImage = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem { Text = "Open Image..." };
-            openImage.Click += (s, args) => OnOpenImageClicked(s, EventArgs.Empty);
-            flyout.Items.Add(openImage);
+            var loadImages = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem { Text = "Load Images..." };
+            loadImages.Click += (s, args) => OnLoadImagesClicked(s, EventArgs.Empty);
+            flyout.Items.Add(loadImages);
 
             var saveImage = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem { Text = "Save Image..." };
             saveImage.Click += (s, args) => OnSaveImageClicked(s, EventArgs.Empty);
@@ -421,6 +466,16 @@ public partial class MainPage : ContentPage
             };
             redoItem.Click += (s, args) => OnRedoClicked(s, EventArgs.Empty);
             flyout.Items.Add(redoItem);
+
+            flyout.Items.Add(new Microsoft.UI.Xaml.Controls.MenuFlyoutSeparator());
+
+            var fitToWindow = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem
+            {
+                Text = "Fit to window",
+                IsEnabled = _viewModel.Document.LoadedImage is not null
+            };
+            fitToWindow.Click += (s, args) => Canvas.FitToWindow();
+            flyout.Items.Add(fitToWindow);
 
             flyout.ShowAt(nativeButton);
         }
@@ -533,17 +588,10 @@ public partial class MainPage : ContentPage
 
     private async void OnImportImagesClicked(object? sender, EventArgs e)
     {
-        var hasUnsavedChanges = _viewModel.UndoRedo.CanUndo ||
-                                _viewModel.Document.LoadedImage is not null ||
-                                _viewModel.Document.Sprites.Count > 0;
-
-        if (hasUnsavedChanges)
+        if (_viewModel.Document.LoadedImage is null)
         {
-            var confirm = await DisplayAlert("Import Images",
-                "Import will replace the current document. You may have unsaved changes. Continue?",
-                "Continue", "Cancel");
-
-            if (!confirm) return;
+            await DisplayAlert("No Image", "Please load images first before importing additional images.", "OK");
+            return;
         }
 
 #if WINDOWS
@@ -564,7 +612,7 @@ public partial class MainPage : ContentPage
         if (files is null || files.Count == 0) return;
 
         var filePaths = files.Select(f => f.Path).ToList();
-        ImportDialog.Show(filePaths);
+        ImportDialog.Show(filePaths, isImportMode: true);
 #endif
     }
 
@@ -574,13 +622,17 @@ public partial class MainPage : ContentPage
 
         try
         {
-            var result = await ImageImporter.ImportImagesAsync(e.FilePaths, e.Padding);
+            var result = await ImageImporter.AppendImagesAsync(
+                e.FilePaths,
+                _viewModel.Document.LoadedImage!,
+                _viewModel.Document.Sprites,
+                e.Padding,
+                e.Layout);
 
-            var command = new ImportImagesCommand(
+            var command = new AppendImagesCommand(
                 _viewModel.Document,
-                result.CompositeImage,
-                result.Document.Sprites.ToList(),
-                result.Document.SpriteSheetName);
+                result.ExpandedImage,
+                result.NewSprites);
 
             _viewModel.UndoRedo.Execute(command);
             _viewModel.SelectedSprite = null;
@@ -590,7 +642,7 @@ public partial class MainPage : ContentPage
             UpdateStatusBar();
             Canvas.FitToWindow();
 
-            result.CompositeImage.Dispose();
+            result.ExpandedImage.Dispose();
         }
         catch (Exception ex)
         {
@@ -640,7 +692,7 @@ public partial class MainPage : ContentPage
                 e.Handled = true;
                 break;
             case Windows.System.VirtualKey.O when ctrl:
-                OnOpenImageClicked(null, EventArgs.Empty);
+                OnLoadImagesClicked(null, EventArgs.Empty);
                 e.Handled = true;
                 break;
             case Windows.System.VirtualKey.S when ctrl:
@@ -649,10 +701,6 @@ public partial class MainPage : ContentPage
                 break;
             case Windows.System.VirtualKey.G when ctrl:
                 OnGridClicked(null, EventArgs.Empty);
-                e.Handled = true;
-                break;
-            case Windows.System.VirtualKey.Number0 when ctrl:
-                Canvas.FitToWindow();
                 e.Handled = true;
                 break;
             case Windows.System.VirtualKey.Number1:
@@ -671,16 +719,6 @@ public partial class MainPage : ContentPage
                 break;
             case Windows.System.VirtualKey.Escape:
                 _viewModel.SelectedSprite = null;
-                e.Handled = true;
-                break;
-            case Windows.System.VirtualKey.Add:
-            case (Windows.System.VirtualKey)187:
-                Canvas.ZoomIn();
-                e.Handled = true;
-                break;
-            case Windows.System.VirtualKey.Subtract:
-            case (Windows.System.VirtualKey)189:
-                Canvas.ZoomOut();
                 e.Handled = true;
                 break;
         }

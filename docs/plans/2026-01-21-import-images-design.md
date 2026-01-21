@@ -1,103 +1,63 @@
-# SpriteSheetEditor: Import Images Feature Design
+# SpriteSheetEditor: Load & Import Images Feature Design
 
 ## Overview
 
-Add functionality to import a group of images and arrange them into a spritesheet using bin packing. Imported images can be of different sizes. The system calculates sprite bounds based on individual image sizes. Filenames (without extensions) become sprite names. Importing replaces the active document entirely.
+Add functionality to load and import groups of images into the SpriteSheetEditor:
+
+1. **Load Images** - Replaces the current document with a new spritesheet created from bin-packed images
+2. **Import Images** - Appends images to the existing spritesheet, expanding the canvas to the right
 
 ## User Flow
 
-1. User clicks **File → Import Images...**
-2. If there are unsaved changes, show confirmation dialog: *"Import will replace the current document. You have unsaved changes. Continue?"*
+### Load Images (File → Load Images...)
+1. User clicks **File → Load Images...**
+2. If there are unsaved changes, show confirmation dialog
 3. Multi-file picker opens (PNG, JPG, BMP supported)
-4. Import dialog appears showing: file count, padding input (default 0px), OK/Cancel buttons
+4. Load dialog appears showing: file count, padding input (default 0px), Load/Cancel buttons
 5. System processes images:
    - Load all selected images
    - Run bin packing algorithm to determine positions
    - Calculate smallest power-of-two canvas that fits the packed result
    - Create composite image with configured padding between sprites
    - Generate sprite definitions using filenames (without extension) as names
-6. Replace current document with new spritesheet image and sprite definitions
-7. Register as undoable command (can undo back to previous state)
+6. Replace current document with new spritesheet
+7. Register as undoable command
+
+### Import Images (File → Import Images...)
+1. User clicks **File → Import Images...**
+2. If no image is loaded, show error "Please load images first"
+3. Multi-file picker opens
+4. Import dialog appears showing: file count, padding input (default 0px), Import/Cancel buttons
+5. System processes images:
+   - Pack new images among themselves
+   - Position packed block to the right of existing image
+   - Expand canvas to power-of-two dimensions
+   - Append new sprite definitions
+6. Register as undoable command (preserves existing sprites)
 
 ## Bin Packing Algorithm
 
 **Approach: Shelf-based packing with height-sorted input**
 
-1. Sort images by height descending (taller images first produces better packing)
-2. Estimate initial canvas size: square root of (sum of all areas + padding), rounded to power-of-two
-3. Place rectangles left-to-right on "shelves" (rows):
-   - When a rectangle doesn't fit on current shelf, start a new shelf below
-   - Track actual used bounds during placement
-4. If packing fails (exceeds canvas), double canvas size and retry
-5. Final step: find smallest power-of-two dimensions (width × height) that contain all placed sprites
-
-**Padding:** User-configurable (default 0px). Padding is added around each sprite during placement, but sprite bounds in JSON remain the actual image dimensions.
-
-## Data Structures
-
-```csharp
-// Input: what needs to be packed
-public record PackingItem(string Name, int Width, int Height, SKBitmap Image);
-
-// Output: where each item was placed
-public record PackedResult(
-    IReadOnlyList<PackedItem> Items,
-    int CanvasWidth,
-    int CanvasHeight
-);
-
-public record PackedItem(string Name, int X, int Y, int Width, int Height, SKBitmap Image);
-```
+1. Sort images by height descending
+2. Place rectangles left-to-right on "shelves" (rows)
+3. Find smallest power-of-two dimensions that contain all sprites
 
 ## Implementation Components
 
 ### New Files
 
-1. **`Services/BinPacker.cs`**
-   - `Pack(IEnumerable<PackingItem> items, int padding)` method
-   - Returns `PackedResult` with positions and power-of-two canvas dimensions
-
-2. **`Services/ImageImporter.cs`**
-   - `ImportImagesAsync(IEnumerable<string> filePaths, int padding)` method
-   - Loads images, calls bin packer, composites final bitmap
-   - Returns new `SpriteSheetDocument` with image and sprite definitions
-
-3. **`ImportImagesDialog.xaml/.cs`**
-   - Simple dialog showing: file count, padding input (default 0), OK/Cancel buttons
-
-4. **`UndoRedo/Commands/ImportImagesCommand.cs`**
-   - Captures previous document state (image + sprites + sheet name)
-   - Enables full undo of the import operation
+1. **`Services/BinPacker.cs`** - Shelf-based bin packing with power-of-two sizing
+2. **`Services/ImageImporter.cs`** - `LoadImagesAsync` (replace) and `AppendImagesAsync` (append)
+3. **`Controls/ImportImagesDialog.xaml/.cs`** - Reusable dialog with configurable title
+4. **`UndoRedo/Commands/ImportImagesCommand.cs`** - For Load Images (full document replace)
+5. **`UndoRedo/Commands/AppendImagesCommand.cs`** - For Import Images (append only)
 
 ### Modified Files
 
-5. **`MainPage.xaml`**
-   - Add "Import Images..." menu item under File menu
-
-6. **`MainPage.xaml.cs`**
-   - Handle menu click: check unsaved changes → file picker → dialog → execute import
-
-## Undo/Redo Integration
-
-```csharp
-public class ImportImagesCommand : IUndoableCommand
-{
-    // Captures previous state
-    private readonly SKBitmap _previousImage;
-    private readonly IReadOnlyList<SpriteDefinition> _previousSprites;
-    private readonly string _previousSheetName;
-
-    // New state to apply
-    private readonly SKBitmap _newImage;
-    private readonly IReadOnlyList<SpriteDefinition> _newSprites;
-    private readonly string _newSheetName;
-
-    public string Description => "Import Images";
-}
-```
+6. **`MainPage.xaml`** - Two dialog instances (LoadImagesDialog, ImportDialog)
+7. **`MainPage.xaml.cs`** - Handlers for both operations
 
 ## Sprite Naming
 
 Use `Path.GetFileNameWithoutExtension(filePath)` for each imported file.
-
-Example: importing `walk_01.png`, `walk_02.png`, `idle.png` produces sprites named `walk_01`, `walk_02`, `idle`.

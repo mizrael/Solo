@@ -5,19 +5,44 @@ namespace SpriteSheetEditor.Services;
 
 public record ImportResult(SpriteSheetDocument Document, SKBitmap CompositeImage);
 
+public record AppendResult(IReadOnlyList<SpriteDefinition> NewSprites, SKBitmap ExpandedImage);
+
 public static class ImageImporter
 {
-    public static async Task<ImportResult> ImportImagesAsync(IEnumerable<string> filePaths, int padding = 0)
+    public static async Task<ImportResult> LoadImagesAsync(
+        IEnumerable<string> filePaths,
+        int padding = 0,
+        PackingLayout layout = PackingLayout.Grid)
     {
-        var packingItems = await LoadImagesAsync(filePaths);
+        var packingItems = await LoadImagesFromFilesAsync(filePaths);
         if (packingItems.Count == 0)
         {
-            throw new InvalidOperationException("No valid images to import.");
+            throw new InvalidOperationException("No valid images to load.");
         }
 
-        var packedResult = BinPacker.Pack(packingItems, padding);
-        var compositeImage = CreateCompositeImage(packedResult);
-        var document = CreateDocument(packedResult);
+        SKBitmap compositeImage;
+        SpriteSheetDocument document;
+
+        if (packingItems.Count == 1)
+        {
+            var item = packingItems[0];
+            compositeImage = item.Image.Copy();
+            document = new SpriteSheetDocument { SpriteSheetName = item.Name };
+            document.Sprites.Add(new SpriteDefinition
+            {
+                Name = item.Name,
+                X = 0,
+                Y = 0,
+                Width = item.Width,
+                Height = item.Height
+            });
+        }
+        else
+        {
+            var packedResult = BinPacker.Pack(packingItems, padding, layout);
+            compositeImage = CreateCompositeImage(packedResult);
+            document = CreateDocument(packedResult);
+        }
 
         foreach (var item in packingItems)
         {
@@ -27,7 +52,73 @@ public static class ImageImporter
         return new ImportResult(document, compositeImage);
     }
 
-    private static async Task<List<PackingItem>> LoadImagesAsync(IEnumerable<string> filePaths)
+    public static async Task<AppendResult> AppendImagesAsync(
+        IEnumerable<string> filePaths,
+        SKBitmap existingImage,
+        IEnumerable<SpriteDefinition> existingSprites,
+        int padding = 0,
+        PackingLayout layout = PackingLayout.Grid)
+    {
+        var packingItems = await LoadImagesFromFilesAsync(filePaths);
+        if (packingItems.Count == 0)
+        {
+            throw new InvalidOperationException("No valid images to import.");
+        }
+
+        var offsetX = existingSprites.Any()
+            ? existingSprites.Max(s => s.X + s.Width)
+            : 0;
+        int appendWidth;
+        int appendHeight;
+        IReadOnlyList<PackedItem> packedItems;
+
+        if (packingItems.Count == 1)
+        {
+            var item = packingItems[0];
+            appendWidth = item.Width;
+            appendHeight = item.Height;
+            packedItems = [new PackedItem(item.Name, 0, 0, item.Width, item.Height, item.Image)];
+        }
+        else
+        {
+            var packedResult = BinPacker.Pack(packingItems, padding, layout);
+            appendWidth = packedResult.CanvasWidth;
+            appendHeight = packedResult.CanvasHeight;
+            packedItems = packedResult.Items;
+        }
+
+        var newWidth = offsetX + appendWidth;
+        var newHeight = Math.Max(existingImage.Height, appendHeight);
+
+        var expandedImage = new SKBitmap(newWidth, newHeight, SKColorType.Bgra8888, SKAlphaType.Premul);
+        using var canvas = new SKCanvas(expandedImage);
+        canvas.Clear(SKColors.Transparent);
+        canvas.DrawBitmap(existingImage, 0, 0);
+
+        var newSprites = new List<SpriteDefinition>();
+        foreach (var item in packedItems)
+        {
+            var adjustedX = item.X + offsetX;
+            canvas.DrawBitmap(item.Image, adjustedX, item.Y);
+            newSprites.Add(new SpriteDefinition
+            {
+                Name = item.Name,
+                X = adjustedX,
+                Y = item.Y,
+                Width = item.Width,
+                Height = item.Height
+            });
+        }
+
+        foreach (var item in packingItems)
+        {
+            item.Image.Dispose();
+        }
+
+        return new AppendResult(newSprites, expandedImage);
+    }
+
+    private static async Task<List<PackingItem>> LoadImagesFromFilesAsync(IEnumerable<string> filePaths)
     {
         var items = new List<PackingItem>();
 
@@ -70,7 +161,7 @@ public static class ImageImporter
     {
         var document = new SpriteSheetDocument
         {
-            SpriteSheetName = "imported_spritesheet"
+            SpriteSheetName = "spritesheet"
         };
 
         foreach (var item in packedResult.Items)

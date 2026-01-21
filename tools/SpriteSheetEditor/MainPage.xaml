@@ -16,7 +16,6 @@
             <Button x:Name="DrawToolButton" Text="Draw" Clicked="OnDrawToolClicked" />
             <BoxView WidthRequest="1" BackgroundColor="#555" />
             <Button Text="Grid..." Clicked="OnGridClicked" />
-            <Button Text="Fit" Clicked="OnFitClicked" />
             <BoxView WidthRequest="1" BackgroundColor="#555" />
             <Button x:Name="FiltersButton" Text="Filters ▼" Clicked="OnFiltersClicked" IsEnabled="False" />
         </HorizontalStackLayout>
@@ -114,7 +113,12 @@
                                      GenerateClicked="OnGridDialogGenerate"
                                      CancelClicked="OnGridDialogCancel" />
 
-        <!-- Import Images Dialog -->
+        <!-- Load Images Dialog (replaces document) -->
+        <controls:ImportImagesDialog x:Name="LoadImagesDialog" Grid.RowSpan="4" IsVisible="False"
+                                     ImportClicked="OnLoadImagesDialogConfirm"
+                                     CancelClicked="OnLoadImagesDialogCancel" />
+
+        <!-- Import Images Dialog (appends to document) -->
         <controls:ImportImagesDialog x:Name="ImportDialog" Grid.RowSpan="4" IsVisible="False"
                                      ImportClicked="OnImportDialogImport"
                                      CancelClicked="OnImportDialogCancel" />

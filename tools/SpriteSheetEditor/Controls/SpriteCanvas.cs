@@ -99,6 +99,9 @@ public class SpriteCanvas : SKCanvasView
         var width = ViewModel?.ImageWidth ?? 512;
         var height = ViewModel?.ImageHeight ?? 512;
 
+        canvas.Save();
+        canvas.ClipRect(new SKRect(0, 0, width, height));
+
         using var lightPaint = new SKPaint { Color = CheckerLight };
         using var darkPaint = new SKPaint { Color = CheckerDark };
 
@@ -111,6 +114,8 @@ public class SpriteCanvas : SKCanvasView
                 canvas.DrawRect(x, y, CheckerSize, CheckerSize, paint);
             }
         }
+
+        canvas.Restore();
     }
 
     private void DrawImage(SKCanvas canvas)
@@ -406,8 +411,17 @@ public class SpriteCanvas : SKCanvasView
         _dragStartState = null;
     }
 
-    public void ZoomIn() { if (ViewModel != null) ViewModel.ZoomLevel = Math.Min(ViewModel.ZoomLevel * 1.25f, 10f); }
-    public void ZoomOut() { if (ViewModel != null) ViewModel.ZoomLevel = Math.Max(ViewModel.ZoomLevel / 1.25f, 0.1f); }
+    public void ZoomIn()
+    {
+        if (ViewModel?.Document.LoadedImage is null) return;
+        ViewModel.ZoomLevel = Math.Min(ViewModel.ZoomLevel * 1.25f, 10f);
+    }
+
+    public void ZoomOut()
+    {
+        if (ViewModel?.Document.LoadedImage is null) return;
+        ViewModel.ZoomLevel = Math.Max(ViewModel.ZoomLevel / 1.25f, 0.1f);
+    }
 
     public void FitToWindow()
     {
@@ -419,4 +433,33 @@ public class SpriteCanvas : SKCanvasView
         ViewModel.PanOffsetX = (float)(Width - ViewModel.ImageWidth * ViewModel.ZoomLevel) / 2;
         ViewModel.PanOffsetY = (float)(Height - ViewModel.ImageHeight * ViewModel.ZoomLevel) / 2;
     }
+
+    protected override void OnHandlerChanged()
+    {
+        base.OnHandlerChanged();
+
+#if WINDOWS
+        if (Handler?.PlatformView is Microsoft.UI.Xaml.UIElement element)
+        {
+            element.PointerWheelChanged += OnPointerWheelChanged;
+        }
+#endif
+    }
+
+#if WINDOWS
+    private void OnPointerWheelChanged(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        if (ViewModel?.Document.LoadedImage is null) return;
+
+        var point = e.GetCurrentPoint((Microsoft.UI.Xaml.UIElement)sender);
+        var delta = point.Properties.MouseWheelDelta;
+
+        if (delta > 0)
+            ZoomIn();
+        else if (delta < 0)
+            ZoomOut();
+
+        e.Handled = true;
+    }
+#endif
 }

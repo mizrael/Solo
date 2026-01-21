@@ -8,7 +8,7 @@
            HorizontalOptions="Center" VerticalOptions="Center"
            Padding="20" MinimumWidthRequest="320">
         <VerticalStackLayout Spacing="16">
-            <Label Text="Import Images" FontSize="18" FontAttributes="Bold" TextColor="White" />
+            <Label x:Name="TitleLabel" Text="Import Images" FontSize="18" FontAttributes="Bold" TextColor="White" />
 
             <Label x:Name="FileCountLabel" Text="0 images selected" TextColor="#ccc" />
 
@@ -16,6 +16,35 @@
                 <Label Text="Padding (pixels):" TextColor="#ccc" />
                 <Entry x:Name="PaddingEntry" Text="0" Keyboard="Numeric"
                        BackgroundColor="#333" TextColor="White" />
+            </VerticalStackLayout>
+
+            <!-- Layout selection for Load mode -->
+            <VerticalStackLayout x:Name="LayoutPanel" Spacing="8">
+                <Label Text="Layout:" TextColor="#ccc" />
+                <HorizontalStackLayout Spacing="16">
+                    <RadioButton x:Name="GridRadio" Content="Grid" IsChecked="True"
+                                 TextColor="White" GroupName="Layout" />
+                    <RadioButton x:Name="ColumnRadio" Content="Column"
+                                 TextColor="White" GroupName="Layout" />
+                    <RadioButton x:Name="RowRadio" Content="Row"
+                                 TextColor="White" GroupName="Layout" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <!-- Change layout option for Import mode -->
+            <VerticalStackLayout x:Name="ChangeLayoutPanel" Spacing="8" IsVisible="False">
+                <HorizontalStackLayout>
+                    <CheckBox x:Name="ChangeLayoutCheckBox" CheckedChanged="OnChangeLayoutChecked" />
+                    <Label Text="Change layout" TextColor="#ccc" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+                <HorizontalStackLayout x:Name="ImportLayoutOptions" Spacing="16" IsVisible="False">
+                    <RadioButton x:Name="ImportGridRadio" Content="Grid" IsChecked="True"
+                                 TextColor="White" GroupName="ImportLayout" />
+                    <RadioButton x:Name="ImportColumnRadio" Content="Column"
+                                 TextColor="White" GroupName="ImportLayout" />
+                    <RadioButton x:Name="ImportRowRadio" Content="Row"
+                                 TextColor="White" GroupName="ImportLayout" />
+                </HorizontalStackLayout>
             </VerticalStackLayout>
 
             <Label x:Name="InfoLabel" TextColor="#aaa" FontSize="12" />
