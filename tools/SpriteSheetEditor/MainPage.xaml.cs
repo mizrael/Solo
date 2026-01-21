@@ -124,10 +124,7 @@ public partial class MainPage : ContentPage
 
     private void UpdateToolButtons()
     {
-        SelectToolButton.BackgroundColor = _viewModel.CurrentTool == EditorTool.Select
-            ? Color.FromArgb("#0078d4") : Color.FromArgb("#3e3e42");
-        DrawToolButton.BackgroundColor = _viewModel.CurrentTool == EditorTool.Draw
-            ? Color.FromArgb("#0078d4") : Color.FromArgb("#3e3e42");
+        // Tool selection moved to Sprites menu - no toolbar buttons to update
     }
 
     private async void OnLoadImagesClicked(object? sender, EventArgs e)
@@ -163,8 +160,44 @@ public partial class MainPage : ContentPage
         if (files is null || files.Count == 0) return;
 
         var filePaths = files.Select(f => f.Path).ToList();
-        LoadImagesDialog.Show(filePaths, "Load Images", "Load", isImportMode: false);
+
+        if (filePaths.Count == 1)
+        {
+            await LoadImagesDirect(filePaths, padding: 0, PackingLayout.Grid);
+        }
+        else
+        {
+            LoadImagesDialog.Show(filePaths, "Load Images", "Load", isImportMode: false);
+        }
 #endif
+    }
+
+    private async Task LoadImagesDirect(IReadOnlyList<string> filePaths, int padding, PackingLayout layout)
+    {
+        try
+        {
+            var result = await ImageImporter.LoadImagesAsync(filePaths, padding, layout);
+
+            var command = new ImportImagesCommand(
+                _viewModel.Document,
+                result.CompositeImage,
+                result.Document.Sprites.ToList(),
+                result.Document.SpriteSheetName);
+
+            _viewModel.UndoRedo.Execute(command);
+            _viewModel.SelectedSprite = null;
+            _viewModel.NotifyImageChanged();
+            _viewModel.NotifySpriteCountChanged();
+            UpdateDocumentLabel();
+            UpdateStatusBar();
+            Canvas.FitToWindow();
+
+            result.CompositeImage.Dispose();
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Load Error", $"Failed to load images: {ex.Message}", "OK");
+        }
     }
 
     private async void OnLoadImagesDialogConfirm(object? sender, ImportImagesEventArgs e)
@@ -402,13 +435,22 @@ public partial class MainPage : ContentPage
             loadImages.Click += (s, args) => OnLoadImagesClicked(s, EventArgs.Empty);
             flyout.Items.Add(loadImages);
 
-            var saveImage = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem { Text = "Save Image..." };
+            var hasDocument = _viewModel.Document.LoadedImage is not null;
+            var saveImage = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem
+            {
+                Text = "Save Image...",
+                IsEnabled = hasDocument
+            };
             saveImage.Click += (s, args) => OnSaveImageClicked(s, EventArgs.Empty);
             flyout.Items.Add(saveImage);
 
             flyout.Items.Add(new Microsoft.UI.Xaml.Controls.MenuFlyoutSeparator());
 
-            var importImages = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem { Text = "Import Images..." };
+            var importImages = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem
+            {
+                Text = "Import Images...",
+                IsEnabled = hasDocument
+            };
             importImages.Click += (s, args) => OnImportImagesClicked(s, EventArgs.Empty);
             flyout.Items.Add(importImages);
 
@@ -418,7 +460,11 @@ public partial class MainPage : ContentPage
             openJson.Click += (s, args) => OnOpenJsonClicked(s, EventArgs.Empty);
             flyout.Items.Add(openJson);
 
-            var saveJson = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem { Text = "Save JSON..." };
+            var saveJson = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem
+            {
+                Text = "Save JSON...",
+                IsEnabled = hasDocument
+            };
             saveJson.Click += (s, args) => OnSaveJsonClicked(s, EventArgs.Empty);
             flyout.Items.Add(saveJson);
 
@@ -476,6 +522,47 @@ public partial class MainPage : ContentPage
             };
             fitToWindow.Click += (s, args) => Canvas.FitToWindow();
             flyout.Items.Add(fitToWindow);
+
+            flyout.Items.Add(new Microsoft.UI.Xaml.Controls.MenuFlyoutSeparator());
+
+            var rearrangeLayout = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem
+            {
+                Text = "Rearrange layout...",
+                IsEnabled = _viewModel.Document.LoadedImage is not null && _viewModel.Document.Sprites.Count > 1
+            };
+            rearrangeLayout.Click += (s, args) => OnRearrangeLayoutClicked(s, EventArgs.Empty);
+            flyout.Items.Add(rearrangeLayout);
+
+            flyout.ShowAt(nativeButton);
+        }
+#endif
+    }
+
+    private void OnSpritesClicked(object? sender, EventArgs e)
+    {
+#if WINDOWS
+        if (SpritesButton.Handler?.PlatformView is Microsoft.UI.Xaml.Controls.Button nativeButton)
+        {
+            var flyout = new Microsoft.UI.Xaml.Controls.MenuFlyout();
+            var hasDocument = _viewModel.Document.LoadedImage is not null;
+
+            var selectItem = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem
+            {
+                Text = _viewModel.CurrentTool == EditorTool.Select ? "✓ Select" : "   Select",
+                IsEnabled = hasDocument,
+                KeyboardAcceleratorTextOverride = "1"
+            };
+            selectItem.Click += (s, args) => OnSelectToolClicked(s, EventArgs.Empty);
+            flyout.Items.Add(selectItem);
+
+            var drawItem = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem
+            {
+                Text = _viewModel.CurrentTool == EditorTool.Draw ? "✓ Draw" : "   Draw",
+                IsEnabled = hasDocument,
+                KeyboardAcceleratorTextOverride = "2"
+            };
+            drawItem.Click += (s, args) => OnDrawToolClicked(s, EventArgs.Empty);
+            flyout.Items.Add(drawItem);
 
             flyout.ShowAt(nativeButton);
         }
@@ -653,6 +740,43 @@ public partial class MainPage : ContentPage
     private void OnImportDialogCancel(object? sender, EventArgs e)
     {
         ImportDialog.Hide();
+    }
+
+    private void OnRearrangeLayoutClicked(object? sender, EventArgs e)
+    {
+        RearrangeDialog.ShowForRearrange(_viewModel.Document.Sprites.Count);
+    }
+
+    private void OnRearrangeDialogConfirm(object? sender, ImportImagesEventArgs e)
+    {
+        RearrangeDialog.Hide();
+
+        if (_viewModel.Document.LoadedImage is null || _viewModel.Document.Sprites.Count < 2)
+            return;
+
+        try
+        {
+            var result = ImageImporter.RearrangeLayout(
+                _viewModel.Document.LoadedImage,
+                _viewModel.Document.Sprites,
+                e.Padding,
+                e.Layout);
+
+            var command = new RearrangeLayoutCommand(_viewModel.Document, result.Image, result.Sprites);
+            _viewModel.UndoRedo.Execute(command);
+
+            UpdateDocumentLabel();
+            Canvas.InvalidateSurface();
+        }
+        catch (Exception ex)
+        {
+            DisplayAlert("Rearrange Error", $"Failed to rearrange layout: {ex.Message}", "OK");
+        }
+    }
+
+    private void OnRearrangeDialogCancel(object? sender, EventArgs e)
+    {
+        RearrangeDialog.Hide();
     }
 
     protected override void OnHandlerChanged()

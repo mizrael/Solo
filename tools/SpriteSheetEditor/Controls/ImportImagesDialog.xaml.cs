@@ -48,6 +48,28 @@ public partial class ImportImagesDialog : ContentView
         IsVisible = false;
     }
 
+    public void ShowForRearrange(int spriteCount)
+    {
+        _filePaths = [];
+        _isImportMode = false;
+
+        TitleLabel.Text = "Rearrange Layout";
+        ImportButton.Text = "Apply";
+        FileCountLabel.Text = $"{spriteCount} sprite{(spriteCount == 1 ? "" : "s")}";
+        PaddingEntry.Text = "0";
+        InfoLabel.Text = string.Empty;
+        ImportButton.IsEnabled = spriteCount > 1;
+
+        // Reset layout options
+        GridRadio.IsChecked = true;
+
+        // Show layout panel for rearranging
+        LayoutPanel.IsVisible = true;
+        ChangeLayoutPanel.IsVisible = false;
+
+        IsVisible = true;
+    }
+
     private void OnChangeLayoutChecked(object? sender, CheckedChangedEventArgs e)
     {
         ImportLayoutOptions.IsVisible = e.Value;

@@ -7,6 +7,8 @@ public record ImportResult(SpriteSheetDocument Document, SKBitmap CompositeImage
 
 public record AppendResult(IReadOnlyList<SpriteDefinition> NewSprites, SKBitmap ExpandedImage);
 
+public record RearrangeResult(IReadOnlyList<SpriteDefinition> Sprites, SKBitmap Image);
+
 public static class ImageImporter
 {
     public static async Task<ImportResult> LoadImagesAsync(
@@ -116,6 +118,56 @@ public static class ImageImporter
         }
 
         return new AppendResult(newSprites, expandedImage);
+    }
+
+    public static RearrangeResult RearrangeLayout(
+        SKBitmap sourceImage,
+        IEnumerable<SpriteDefinition> sprites,
+        int padding = 0,
+        PackingLayout layout = PackingLayout.Grid)
+    {
+        var spriteList = sprites.ToList();
+        if (spriteList.Count == 0)
+        {
+            throw new InvalidOperationException("No sprites to rearrange.");
+        }
+
+        // Extract each sprite's pixels from the source image
+        var packingItems = new List<PackingItem>();
+        foreach (var sprite in spriteList)
+        {
+            var spriteBitmap = new SKBitmap(sprite.Width, sprite.Height, SKColorType.Bgra8888, SKAlphaType.Premul);
+            using var canvas = new SKCanvas(spriteBitmap);
+            canvas.Clear(SKColors.Transparent);
+            canvas.DrawBitmap(sourceImage,
+                new SKRect(sprite.X, sprite.Y, sprite.X + sprite.Width, sprite.Y + sprite.Height),
+                new SKRect(0, 0, sprite.Width, sprite.Height));
+            packingItems.Add(new PackingItem(sprite.Name, sprite.Width, sprite.Height, spriteBitmap));
+        }
+
+        // Pack sprites
+        var packedResult = BinPacker.Pack(packingItems, padding, layout);
+
+        // Create new composite image
+        var newImage = CreateCompositeImage(packedResult);
+
+        // Create updated sprite definitions
+        var newSprites = packedResult.Items.Select(item => new SpriteDefinition
+        {
+            Name = item.Name,
+            X = item.X,
+            Y = item.Y,
+            Width = item.Width,
+            Height = item.Height
+        }).ToList();
+
+        // Dispose extracted bitmaps
+        foreach (var item in packingItems)
+        {
+            item.Image.Dispose();
+        }
+
+        return new RearrangeResult(newSprites, newImage);
     }
 
     private static async Task<List<PackingItem>> LoadImagesFromFilesAsync(IEnumerable<string> filePaths)
