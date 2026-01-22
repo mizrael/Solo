@@ -263,9 +263,8 @@ When loading or importing multiple images, three layout algorithms are available
 
 1. Have a document already loaded
 2. File → Import Images... - Select additional image files
-3. Choose layout if changing from default Grid
-4. New images appended to the right of existing content
-5. Canvas expands automatically
+3. All sprites (existing + new) repacked using Grid layout
+4. Canvas resized to fit new layout
 
 ### Rearrange Existing Sprites
 

@@ -116,11 +116,6 @@
                                      ImportClicked="OnLoadImagesDialogConfirm"
                                      CancelClicked="OnLoadImagesDialogCancel" />
 
-        <!-- Import Images Dialog (appends to document) -->
-        <controls:ImportImagesDialog x:Name="ImportDialog" Grid.RowSpan="4" IsVisible="False"
-                                     ImportClicked="OnImportDialogImport"
-                                     CancelClicked="OnImportDialogCancel" />
-
         <!-- Rearrange Layout Dialog -->
         <controls:ImportImagesDialog x:Name="RearrangeDialog" Grid.RowSpan="4" IsVisible="False"
                                      ImportClicked="OnRearrangeDialogConfirm"

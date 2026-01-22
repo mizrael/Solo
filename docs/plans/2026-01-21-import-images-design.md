@@ -49,16 +49,13 @@ Functionality to load, import, and rearrange images in the SpriteSheetEditor:
 ### Import Images (File → Import Images...)
 1. User clicks **File → Import Images...** (disabled if no document loaded)
 2. Multi-file picker opens
-3. Import dialog appears showing:
-   - File count
-   - Optional layout change checkbox (defaults to Grid if unchecked)
-   - Import/Cancel buttons
-4. System processes images:
-   - Pack new images among themselves using selected layout
-   - Position packed block to the right of existing sprites (using max X + Width)
-   - Expand canvas to fit new content
-   - Append new sprite definitions
-5. Register as undoable command (preserves existing sprites)
+3. System processes images:
+   - Extract existing sprites from current image
+   - Load new images from selected files
+   - Pack all sprites (existing + new) together using Grid layout
+   - Create new composite image
+   - Replace all sprite definitions with new positions
+4. Register as undoable command
 
 ### Rearrange Layout (Edit → Rearrange layout...)
 1. User clicks **Edit → Rearrange layout...** (disabled if no document or only 1 sprite)
@@ -101,17 +98,17 @@ Functionality to load, import, and rearrange images in the SpriteSheetEditor:
 
 **`Services/ImageImporter.cs`**
 - `ImportResult` record: Document, CompositeImage
-- `AppendResult` record: NewSprites, ExpandedImage
+- `AppendResult` record: AllSprites, Image
 - `RearrangeResult` record: Sprites, Image
 - `LoadImagesAsync(filePaths, layout)` - Load and pack images into new document
-- `AppendImagesAsync(filePaths, existingImage, existingSprites, layout)` - Append to existing
+- `AppendImagesAsync(filePaths, existingImage, existingSprites)` - Append and rearrange all using Grid
 - `RearrangeLayout(sourceImage, sprites, layout)` - Rearrange existing sprites
 
 ### Controls
 
 **`Controls/ImportImagesDialog.xaml/.cs`**
-- Reusable dialog for Load, Import, and Rearrange operations
-- `Show(filePaths, title, buttonText, isImportMode)` - For Load/Import
+- Reusable dialog for Load and Rearrange operations
+- `Show(filePaths, isImportMode)` - For Load Images
 - `ShowForRearrange(spriteCount)` - For Rearrange
 - `ImportImagesEventArgs`: FilePaths, Layout
 
@@ -134,12 +131,13 @@ Functionality to load, import, and rearrange images in the SpriteSheetEditor:
 ### MainPage
 
 **`MainPage.xaml`**
-- Three dialog instances: LoadImagesDialog, ImportDialog, RearrangeDialog
+- Two dialog instances: LoadImagesDialog, RearrangeDialog
 - Sprites menu button replacing Select/Draw toolbar buttons
 
 **`MainPage.xaml.cs`**
 - Menu handlers with proper enable/disable logic
 - `OnSpritesClicked` - Shows Sprites menu with checkmarks
+- `OnImportImagesClicked` - Directly imports with Grid layout (no dialog)
 - `OnRearrangeLayoutClicked` - Shows rearrange dialog
 - `OnRearrangeDialogConfirm` - Executes rearrangement
 

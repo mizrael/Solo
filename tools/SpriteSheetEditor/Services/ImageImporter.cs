@@ -5,7 +5,7 @@ namespace SpriteSheetEditor.Services;
 
 public record ImportResult(SpriteSheetDocument Document, SKBitmap CompositeImage);
 
-public record AppendResult(IReadOnlyList<SpriteDefinition> NewSprites, SKBitmap ExpandedImage);
+public record AppendResult(IReadOnlyList<SpriteDefinition> AllSprites, SKBitmap Image);
 
 public record RearrangeResult(IReadOnlyList<SpriteDefinition> Sprites, SKBitmap Image);
 
@@ -56,68 +56,55 @@ public static class ImageImporter
     public static async Task<AppendResult> AppendImagesAsync(
         IEnumerable<string> filePaths,
         SKBitmap existingImage,
-        IEnumerable<SpriteDefinition> existingSprites,
-        PackingLayout layout = PackingLayout.Grid)
+        IEnumerable<SpriteDefinition> existingSprites)
     {
         var existingSpritesList = existingSprites.ToList();
         var existingNames = new HashSet<string>(existingSpritesList.Select(s => s.Name));
-        var packingItems = await LoadImagesFromFilesAsync(filePaths, existingNames);
-        if (packingItems.Count == 0)
+        var newPackingItems = await LoadImagesFromFilesAsync(filePaths, existingNames);
+        if (newPackingItems.Count == 0)
         {
             throw new InvalidOperationException("No valid images to import.");
         }
 
-        var offsetX = existingSpritesList.Count > 0
-            ? existingSpritesList.Max(s => s.X + s.Width)
-            : 0;
-        int appendWidth;
-        int appendHeight;
-        IReadOnlyList<PackedItem> packedItems;
-
-        if (packingItems.Count == 1)
+        // Extract existing sprites as packing items
+        var allPackingItems = new List<PackingItem>();
+        foreach (var sprite in existingSpritesList)
         {
-            var item = packingItems[0];
-            appendWidth = item.Width;
-            appendHeight = item.Height;
-            packedItems = [new PackedItem(item.Name, 0, 0, item.Width, item.Height, item.Image)];
-        }
-        else
-        {
-            var packedResult = BinPacker.Pack(packingItems, layout);
-            appendWidth = packedResult.CanvasWidth;
-            appendHeight = packedResult.CanvasHeight;
-            packedItems = packedResult.Items;
+            var spriteBitmap = new SKBitmap(sprite.Width, sprite.Height, SKColorType.Bgra8888, SKAlphaType.Premul);
+            using var canvas = new SKCanvas(spriteBitmap);
+            canvas.Clear(SKColors.Transparent);
+            canvas.DrawBitmap(existingImage,
+                new SKRect(sprite.X, sprite.Y, sprite.X + sprite.Width, sprite.Y + sprite.Height),
+                new SKRect(0, 0, sprite.Width, sprite.Height));
+            allPackingItems.Add(new PackingItem(sprite.Name, sprite.Width, sprite.Height, spriteBitmap));
         }
 
-        var newWidth = offsetX + appendWidth;
-        var newHeight = Math.Max(existingImage.Height, appendHeight);
+        // Add new images
+        allPackingItems.AddRange(newPackingItems);
 
-        var expandedImage = new SKBitmap(newWidth, newHeight, SKColorType.Bgra8888, SKAlphaType.Premul);
-        using var canvas = new SKCanvas(expandedImage);
-        canvas.Clear(SKColors.Transparent);
-        canvas.DrawBitmap(existingImage, 0, 0);
+        // Pack everything together using Grid layout
+        var packedResult = BinPacker.Pack(allPackingItems, PackingLayout.Grid);
 
-        var newSprites = new List<SpriteDefinition>();
-        foreach (var item in packedItems)
+        // Create new composite image
+        var newImage = CreateCompositeImage(packedResult);
+
+        // Create sprite definitions for all sprites
+        var allSprites = packedResult.Items.Select(item => new SpriteDefinition
         {
-            var adjustedX = item.X + offsetX;
-            canvas.DrawBitmap(item.Image, adjustedX, item.Y);
-            newSprites.Add(new SpriteDefinition
-            {
-                Name = item.Name,
-                X = adjustedX,
-                Y = item.Y,
-                Width = item.Width,
-                Height = item.Height
-            });
-        }
+            Name = item.Name,
+            X = item.X,
+            Y = item.Y,
+            Width = item.Width,
+            Height = item.Height
+        }).ToList();
 
-        foreach (var item in packingItems)
+        // Dispose extracted bitmaps
+        foreach (var item in allPackingItems)
         {
             item.Image.Dispose();
         }
 
-        return new AppendResult(newSprites, expandedImage);
+        return new AppendResult(allSprites, newImage);
     }
 
     public static RearrangeResult RearrangeLayout(

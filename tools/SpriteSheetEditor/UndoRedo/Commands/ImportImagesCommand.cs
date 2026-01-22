@@ -11,22 +11,22 @@ public class ImportImagesCommand : IUndoableCommand
     private readonly IReadOnlyList<SpriteDefinition> _previousSprites;
 
     private readonly SKBitmap _newImage;
-    private readonly IReadOnlyList<SpriteDefinition> _spritesToAdd;
+    private readonly IReadOnlyList<SpriteDefinition> _newSprites;
 
     public string Description => "Import Images";
 
     public ImportImagesCommand(
         SpriteSheetDocument document,
-        SKBitmap newExpandedImage,
-        IReadOnlyList<SpriteDefinition> spritesToAdd)
+        SKBitmap newImage,
+        IReadOnlyList<SpriteDefinition> allSprites)
     {
         _document = document;
 
         _previousImage = document.LoadedImage?.Copy();
         _previousSprites = document.Sprites.ToList();
 
-        _newImage = newExpandedImage;
-        _spritesToAdd = spritesToAdd.ToList();
+        _newImage = newImage;
+        _newSprites = allSprites.ToList();
     }
 
     public void Execute()
@@ -34,7 +34,8 @@ public class ImportImagesCommand : IUndoableCommand
         _document.LoadedImage?.Dispose();
         _document.LoadedImage = _newImage.Copy();
 
-        foreach (var sprite in _spritesToAdd)
+        _document.Sprites.Clear();
+        foreach (var sprite in _newSprites)
         {
             _document.Sprites.Add(new SpriteDefinition
             {

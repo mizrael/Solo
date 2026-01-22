@@ -674,26 +674,18 @@ public partial class MainPage : ContentPage
         if (files is null || files.Count == 0) return;
 
         var filePaths = files.Select(f => f.Path).ToList();
-        ImportDialog.Show(filePaths, isImportMode: true);
-#endif
-    }
-
-    private async void OnImportDialogImport(object? sender, ImportImagesEventArgs e)
-    {
-        ImportDialog.Hide();
 
         try
         {
             var result = await ImageImporter.AppendImagesAsync(
-                e.FilePaths,
+                filePaths,
                 _viewModel.Document.LoadedImage!,
-                _viewModel.Document.Sprites,
-                e.Layout);
+                _viewModel.Document.Sprites);
 
             var command = new ImportImagesCommand(
                 _viewModel.Document,
-                result.ExpandedImage,
-                result.NewSprites);
+                result.Image,
+                result.AllSprites);
 
             _viewModel.UndoRedo.Execute(command);
             _viewModel.SelectedSprite = null;
@@ -707,11 +699,7 @@ public partial class MainPage : ContentPage
         {
             await DisplayAlertAsync("Import Error", $"Failed to import images: {ex.Message}", "OK");
         }
-    }
-
-    private void OnImportDialogCancel(object? sender, EventArgs e)
-    {
-        ImportDialog.Hide();
+#endif
     }
 
     private void OnRearrangeLayoutClicked(object? sender, EventArgs e)
