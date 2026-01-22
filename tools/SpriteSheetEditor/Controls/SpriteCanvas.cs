@@ -43,15 +43,24 @@ public class SpriteCanvas : SKCanvasView
     private int _resizeHandle = -1;
     private SpriteState? _dragStartState;
 
+    private bool _isPanning;
+    private SKPoint _panStart;
+    private float _panStartOffsetX;
+    private float _panStartOffsetY;
+
     public bool IsEyedropperMode { get; set; }
+    public ScrollView? ParentScrollView { get; set; }
     public event Action<SKColor>? ColorPicked;
     public event Action<SpriteDefinition>? SpriteDrawn;
     public event Action<SpriteDefinition, SpriteState, string>? SpriteModified;
+    public event Action? PanChanged;
 
     public SpriteCanvas()
     {
+#if !WINDOWS
         EnableTouchEvents = true;
         Touch += OnTouch;
+#endif
     }
 
     private static void OnViewModelChanged(BindableObject bindable, object oldValue, object newValue)
@@ -73,6 +82,8 @@ public class SpriteCanvas : SKCanvasView
         InvalidateSurface();
     }
 
+    public bool UseScrollViewMode { get; set; } = true;
+
     protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
     {
         base.OnPaintSurface(e);
@@ -83,7 +94,12 @@ public class SpriteCanvas : SKCanvasView
         if (ViewModel is null) return;
 
         canvas.Save();
-        canvas.Translate(ViewModel.PanOffsetX, ViewModel.PanOffsetY);
+
+        if (!UseScrollViewMode)
+        {
+            canvas.Translate(ViewModel.PanOffsetX, ViewModel.PanOffsetY);
+        }
+
         canvas.Scale(ViewModel.ZoomLevel);
 
         DrawCheckerboard(canvas);
@@ -205,6 +221,9 @@ public class SpriteCanvas : SKCanvasView
     {
         if (ViewModel is null) return;
 
+        // Skip touch handling when panning
+        if (_isPanning) return;
+
         var imagePoint = ScreenToImage(e.Location);
 
         switch (e.ActionType)
@@ -230,6 +249,15 @@ public class SpriteCanvas : SKCanvasView
     private SKPoint ScreenToImage(SKPoint screenPoint)
     {
         if (ViewModel is null) return screenPoint;
+
+        if (UseScrollViewMode)
+        {
+            return new SKPoint(
+                screenPoint.X / ViewModel.ZoomLevel,
+                screenPoint.Y / ViewModel.ZoomLevel
+            );
+        }
+
         return new SKPoint(
             (screenPoint.X - ViewModel.PanOffsetX) / ViewModel.ZoomLevel,
             (screenPoint.Y - ViewModel.PanOffsetY) / ViewModel.ZoomLevel
@@ -427,11 +455,32 @@ public class SpriteCanvas : SKCanvasView
     {
         if (ViewModel is null || ViewModel.ImageWidth == 0) return;
 
-        var scaleX = (float)Width / ViewModel.ImageWidth;
-        var scaleY = (float)Height / ViewModel.ImageHeight;
+        var containerWidth = UseScrollViewMode && ParentScrollView is not null
+            ? (float)ParentScrollView.Width
+            : (float)Width;
+        var containerHeight = UseScrollViewMode && ParentScrollView is not null
+            ? (float)ParentScrollView.Height
+            : (float)Height;
+
+        if (containerWidth <= 0 || containerHeight <= 0) return;
+
+        var scaleX = containerWidth / ViewModel.ImageWidth;
+        var scaleY = containerHeight / ViewModel.ImageHeight;
         ViewModel.ZoomLevel = Math.Min(scaleX, scaleY) * 0.9f;
-        ViewModel.PanOffsetX = (float)(Width - ViewModel.ImageWidth * ViewModel.ZoomLevel) / 2;
-        ViewModel.PanOffsetY = (float)(Height - ViewModel.ImageHeight * ViewModel.ZoomLevel) / 2;
+
+        if (UseScrollViewMode && ParentScrollView is not null)
+        {
+            ViewModel.PanOffsetX = 0;
+            ViewModel.PanOffsetY = 0;
+            ParentScrollView.ScrollToAsync(0, 0, false);
+        }
+        else
+        {
+            ViewModel.PanOffsetX = (containerWidth - ViewModel.ImageWidth * ViewModel.ZoomLevel) / 2;
+            ViewModel.PanOffsetY = (containerHeight - ViewModel.ImageHeight * ViewModel.ZoomLevel) / 2;
+        }
+
+        PanChanged?.Invoke();
     }
 
     protected override void OnHandlerChanged()
@@ -442,6 +491,9 @@ public class SpriteCanvas : SKCanvasView
         if (Handler?.PlatformView is Microsoft.UI.Xaml.UIElement element)
         {
             element.PointerWheelChanged += OnPointerWheelChanged;
+            element.PointerPressed += OnPointerPressed;
+            element.PointerMoved += OnPointerMoved;
+            element.PointerReleased += OnPointerReleased;
         }
 #endif
     }
@@ -461,5 +513,133 @@ public class SpriteCanvas : SKCanvasView
 
         e.Handled = true;
     }
+
+    private void OnPointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        var point = e.GetCurrentPoint((Microsoft.UI.Xaml.UIElement)sender);
+        var element = (Microsoft.UI.Xaml.UIElement)sender;
+
+        // Middle button: pan
+        if (point.Properties.IsMiddleButtonPressed)
+        {
+            if (ViewModel?.Document.LoadedImage is null) return;
+
+            _isPanning = true;
+            _panStart = new SKPoint((float)point.Position.X, (float)point.Position.Y);
+
+            if (UseScrollViewMode && ParentScrollView is not null)
+            {
+                _panStartOffsetX = (float)ParentScrollView.ScrollX;
+                _panStartOffsetY = (float)ParentScrollView.ScrollY;
+            }
+            else
+            {
+                _panStartOffsetX = ViewModel.PanOffsetX;
+                _panStartOffsetY = ViewModel.PanOffsetY;
+            }
+
+            element.CapturePointer(e.Pointer);
+            e.Handled = true;
+            return;
+        }
+
+        // Left button: select, drag, draw, eyedropper
+        if (point.Properties.IsLeftButtonPressed)
+        {
+            if (ViewModel is null) return;
+
+            var screenPoint = new SKPoint((float)point.Position.X, (float)point.Position.Y);
+            var imagePoint = ScreenToImage(screenPoint);
+
+            HandlePress(imagePoint);
+            element.CapturePointer(e.Pointer);
+            InvalidateSurface();
+            e.Handled = true;
+        }
+    }
+
+    private void OnPointerMoved(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        if (ViewModel is null) return;
+
+        var point = e.GetCurrentPoint((Microsoft.UI.Xaml.UIElement)sender);
+
+        // Handle panning with middle button
+        if (_isPanning)
+        {
+            var deltaX = (float)point.Position.X - _panStart.X;
+            var deltaY = (float)point.Position.Y - _panStart.Y;
+
+            if (UseScrollViewMode && ParentScrollView is not null)
+            {
+                var newScrollX = _panStartOffsetX - deltaX;
+                var newScrollY = _panStartOffsetY - deltaY;
+                ParentScrollView.ScrollToAsync(
+                    Math.Max(0, newScrollX),
+                    Math.Max(0, newScrollY),
+                    false);
+            }
+            else
+            {
+                ViewModel.PanOffsetX = _panStartOffsetX + deltaX;
+                ViewModel.PanOffsetY = _panStartOffsetY + deltaY;
+                ClampPanOffset();
+                PanChanged?.Invoke();
+                InvalidateSurface();
+            }
+
+            e.Handled = true;
+            return;
+        }
+
+        // Handle dragging/drawing/resizing with left button
+        if (point.Properties.IsLeftButtonPressed && (_isDrawing || _isDragging || _isResizing))
+        {
+            var screenPoint = new SKPoint((float)point.Position.X, (float)point.Position.Y);
+            var imagePoint = ScreenToImage(screenPoint);
+            HandleMove(imagePoint);
+            InvalidateSurface();
+            e.Handled = true;
+        }
+    }
+
+    private void OnPointerReleased(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        var element = (Microsoft.UI.Xaml.UIElement)sender;
+
+        if (_isPanning)
+        {
+            _isPanning = false;
+            element.ReleasePointerCapture(e.Pointer);
+            e.Handled = true;
+            return;
+        }
+
+        if (_isDrawing || _isDragging || _isResizing)
+        {
+            var point = e.GetCurrentPoint(element);
+            var screenPoint = new SKPoint((float)point.Position.X, (float)point.Position.Y);
+            var imagePoint = ScreenToImage(screenPoint);
+            HandleRelease(imagePoint);
+            element.ReleasePointerCapture(e.Pointer);
+            InvalidateSurface();
+            e.Handled = true;
+        }
+    }
+
+    private void ClampPanOffset()
+    {
+        if (ViewModel is null) return;
+
+        var scaledWidth = ViewModel.ImageWidth * ViewModel.ZoomLevel;
+        var scaledHeight = ViewModel.ImageHeight * ViewModel.ZoomLevel;
+
+        var minX = (float)Width - scaledWidth;
+        var minY = (float)Height - scaledHeight;
+
+        ViewModel.PanOffsetX = Math.Clamp(ViewModel.PanOffsetX, Math.Min(minX, 0), Math.Max(0, minX));
+        ViewModel.PanOffsetY = Math.Clamp(ViewModel.PanOffsetY, Math.Min(minY, 0), Math.Max(0, minY));
+    }
 #endif
+
 }

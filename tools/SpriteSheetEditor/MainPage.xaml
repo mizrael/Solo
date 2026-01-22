@@ -31,7 +31,15 @@
             <Grid Grid.Column="0" RowDefinitions="Auto,*">
                 <Label x:Name="DocumentLabel" Grid.Row="0" Text="No document loaded"
                        TextColor="#aaa" BackgroundColor="#1e1e1e" Padding="8,4" FontSize="12" />
-                <controls:SpriteCanvas x:Name="Canvas" Grid.Row="1" ViewModel="{Binding}" />
+                <ScrollView x:Name="CanvasScrollView" Grid.Row="1"
+                            Orientation="Both"
+                            HorizontalScrollBarVisibility="Always"
+                            VerticalScrollBarVisibility="Always"
+                            Scrolled="OnCanvasScrollViewScrolled">
+                    <controls:SpriteCanvas x:Name="Canvas" ViewModel="{Binding}"
+                                           PanChanged="OnCanvasPanChanged"
+                                           SizeChanged="OnCanvasSizeChanged" />
+                </ScrollView>
             </Grid>
 
             <!-- Right Panel -->

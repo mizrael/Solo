@@ -108,6 +108,8 @@ Shows zoom level, image dimensions, sprite count
 ### Navigation
 
 - **Mouse wheel**: Zoom in/out (disabled when no document)
+- **Middle mouse button drag**: Pan/scroll the canvas
+- **Scrollbars**: Appear when image extends beyond visible area
 - **Toolbar buttons**: Zoom in (+) / Zoom out (-)
 
 ### Select Tool Interactions

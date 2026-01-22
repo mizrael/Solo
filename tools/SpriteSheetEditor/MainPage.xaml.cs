@@ -25,6 +25,7 @@ public partial class MainPage : ContentPage
         Canvas.ColorPicked += OnCanvasColorPicked;
         Canvas.SpriteDrawn += OnSpriteDrawn;
         Canvas.SpriteModified += OnSpriteModified;
+        Canvas.ParentScrollView = CanvasScrollView;
         NameEntry.Focused += OnNameEntryFocused;
     }
 
@@ -95,6 +96,34 @@ public partial class MainPage : ContentPage
             : "Image: --";
         SpriteCountLabel.Text = $"Sprites: {_viewModel.SpriteCount}";
         FiltersButton.IsEnabled = _viewModel.ImageWidth > 0;
+        UpdateCanvasSize();
+    }
+
+    private void UpdateCanvasSize()
+    {
+        if (_viewModel.ImageWidth <= 0) return;
+
+        var scaledWidth = _viewModel.ImageWidth * _viewModel.ZoomLevel;
+        var scaledHeight = _viewModel.ImageHeight * _viewModel.ZoomLevel;
+
+        // Set canvas to exact scaled size - ScrollView handles scrolling when larger than viewport
+        Canvas.WidthRequest = scaledWidth;
+        Canvas.HeightRequest = scaledHeight;
+    }
+
+    private void OnCanvasSizeChanged(object? sender, EventArgs e)
+    {
+        UpdateCanvasSize();
+    }
+
+    private void OnCanvasPanChanged()
+    {
+        UpdateCanvasSize();
+    }
+
+    private void OnCanvasScrollViewScrolled(object? sender, ScrolledEventArgs e)
+    {
+        Canvas.InvalidateSurface();
     }
 
     private void UpdateDocumentLabel()
