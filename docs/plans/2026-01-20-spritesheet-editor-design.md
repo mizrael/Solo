@@ -24,47 +24,71 @@ tools/
     ├── MainPage.xaml / MainPage.xaml.cs
     ├── Models/
     │   ├── SpriteDefinition.cs      # name, x, y, width, height
-    │   └── SpriteSheetDocument.cs   # spriteSheetName, List<SpriteDefinition>, image reference (runtime only)
+    │   └── SpriteSheetDocument.cs   # spriteSheetName, List<SpriteDefinition>, image reference
     ├── ViewModels/
     │   └── MainViewModel.cs         # MVVM state management
     ├── Controls/
-    │   └── SpriteCanvas.cs          # Custom SkiaSharp canvas control
-    └── Services/
-        └── JsonExporter.cs          # Saves to existing format
+    │   ├── SpriteCanvas.cs          # Custom SkiaSharp canvas control
+    │   ├── ImportImagesDialog.xaml  # Dialog for load/import/rearrange
+    │   └── GridDialog.xaml          # Dialog for grid generation
+    ├── Services/
+    │   ├── JsonExporter.cs          # Saves to existing format
+    │   ├── BinPacker.cs             # Sprite packing algorithms
+    │   └── ImageImporter.cs         # Load/import/rearrange images
+    ├── Filters/
+    │   └── ColorToTransparentFilter.cs
+    └── UndoRedo/
+        ├── IUndoableCommand.cs      # Command interface (extends IDisposable)
+        ├── UndoRedoManager.cs       # Manages undo/redo stacks
+        └── Commands/                # Individual command implementations
 ```
 
 ## UI Layout
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  [Open Image] [Open JSON] [Save JSON]  │  Tools: [Select] [Draw] [Grid...]  │
-├─────────────────────────────────────────┬───────────────────────┤
-│                                         │  Sprite List          │
-│                                         │  ┌─────────────────┐  │
-│                                         │  │ warrior_male    │  │
-│           Canvas                        │  │ cleric_female   │  │
-│      (image + sprite overlays)          │  │ > thief_male    │  │
-│                                         │  │ mage_female     │  │
-│                                         │  └─────────────────┘  │
-│                                         ├───────────────────────┤
-│                                         │  Properties           │
-│                                         │  Name: [thief_male ]  │
-│                                         │  X: [512]  Y: [0]     │
-│                                         │  W: [256]  H: [256]   │
-│                                         │  [Delete Sprite]      │
-├─────────────────────────────────────────┴───────────────────────┤
+│  [File ▼] [Edit ▼] [Sprites ▼] [Filters ▼]  │  Zoom: [+] [-]   │
+├─────────────────────────────────────────────┬───────────────────┤
+│                                             │  Sprite List      │
+│                                             │  ┌─────────────┐  │
+│                                             │  │ warrior     │  │
+│           Canvas                            │  │ cleric      │  │
+│      (image + sprite overlays)              │  │ > thief     │  │
+│                                             │  │ mage        │  │
+│                                             │  └─────────────┘  │
+│                                             ├───────────────────┤
+│                                             │  Properties       │
+│                                             │  Name: [thief   ] │
+│                                             │  X: [512]  Y: [0] │
+│                                             │  W: [256]  H: [256]│
+│                                             │  [Delete Sprite]  │
+├─────────────────────────────────────────────┴───────────────────┤
 │  Zoom: 100%  │  Image: 1024x1024  │  Sprites: 16                │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Toolbar Actions
+## Menu Structure
 
-- **Open Image**: Load PNG/JPG for editing
-- **Open JSON**: Load existing spritesheet definition (prompts for image if not loaded)
-- **Save JSON**: Export to existing format
-- **Select Tool**: Click sprites to select, drag to move, drag handles to resize
-- **Draw Tool**: Click-drag to create new rectangle
-- **Grid Button**: Opens dialog for grid generation
+### File Menu
+- **Load Images...** - Load multiple images and pack into spritesheet
+- **Save Image...** - Export composite image (disabled when no document)
+- **Import Images...** - Append images to existing sheet (disabled when no document)
+- **Open JSON...** - Load existing spritesheet definition
+- **Save JSON...** - Export to JSON format (disabled when no document)
+- **Close Project** - Close current document (disabled when no document)
+
+### Edit Menu
+- **Undo** (Ctrl+Z) - Undo last action
+- **Redo** (Ctrl+Y) - Redo undone action
+- **Fit to window** - Reset zoom to fit image (disabled when no document)
+- **Rearrange layout...** - Reorganize sprites with different layout (disabled when < 2 sprites)
+
+### Sprites Menu
+- **Select** (1) - Click to select, drag to move, handles to resize (checkmark when active)
+- **Draw** (2) - Click-drag to create new rectangle (checkmark when active)
+
+### Filters Menu
+- **Color to Transparent** - Pick a color to make transparent
 
 ### Status Bar
 
@@ -74,7 +98,7 @@ Shows zoom level, image dimensions, sprite count
 
 ### Rendering Layers (bottom to top)
 
-1. Checkerboard background (shows transparency)
+1. Checkerboard background (clipped to image bounds, shows transparency)
 2. Loaded image
 3. Sprite rectangles (semi-transparent fill + border)
 4. Selected sprite highlight (different color, resize handles)
@@ -83,9 +107,8 @@ Shows zoom level, image dimensions, sprite count
 
 ### Navigation
 
-- **Mouse wheel**: Zoom in/out (centered on cursor)
-- **Middle-click drag**: Pan the canvas
-- **Fit button** (or double-click middle button): Reset to fit image in view
+- **Mouse wheel**: Zoom in/out (disabled when no document)
+- **Toolbar buttons**: Zoom in (+) / Zoom out (-)
 
 ### Select Tool Interactions
 
@@ -195,14 +218,39 @@ Matches existing Solo engine format:
 - Numbering: left-to-right, top-to-bottom
 - Warning shown if image dimensions don't divide evenly (remainder pixels uncovered)
 
+## Packing Layouts
+
+When loading or importing multiple images, three layout algorithms are available:
+
+### Grid Layout
+- Places sprites in rows, wrapping when target width exceeded
+- Target width calculated as sqrt(total area)
+- Best for mixed-size sprites
+
+### Single Column Layout
+- Stacks all sprites vertically
+- Width equals widest sprite
+
+### Single Row Layout
+- Places all sprites horizontally
+- Height equals tallest sprite
+
 ## Workflows
 
-### Create New Spritesheet
+### Create New Spritesheet from Multiple Images
 
-1. Open Image - canvas shows image, spriteSheetName defaults to filename without extension
-2. Use Grid to generate initial sprites, or Draw tool to create manually
+1. File → Load Images... - Select multiple image files
+2. Choose layout (Grid, Column, or Row)
+3. Images packed into composite, sprites created from filenames
+4. Rename sprites via properties panel if needed
+5. Save JSON - file dialog, saves to chosen location
+
+### Create New Spritesheet with Grid
+
+1. File → Load Images... - Select single image
+2. Use Grid to generate sprites based on rows/columns
 3. Rename sprites via properties panel
-4. Save JSON - file dialog, saves to chosen location
+4. Save JSON
 
 ### Edit Existing Spritesheet
 
@@ -211,19 +259,51 @@ Matches existing Solo engine format:
 3. Select, move, resize, rename, add, delete sprites
 4. Save JSON - overwrites or save-as
 
+### Import Additional Images
+
+1. Have a document already loaded
+2. File → Import Images... - Select additional image files
+3. Choose layout if changing from default Grid
+4. New images appended to the right of existing content
+5. Canvas expands automatically
+
+### Rearrange Existing Sprites
+
+1. Have a document with 2+ sprites
+2. Edit → Rearrange layout... - Select new layout
+3. Sprites extracted and repacked
+4. Canvas resized to fit new layout
+
+## Undo/Redo System
+
+All document modifications are undoable:
+
+- **IUndoableCommand** interface extends IDisposable for proper bitmap cleanup
+- **UndoRedoManager** disposes commands when removed from stacks
+- Commands store previous state for undo, new state for redo/execute
+
+Commands with bitmap resources (properly disposed):
+- ImportImagesCommand (Load Images)
+- AppendImagesCommand (Import Images)
+- RearrangeLayoutCommand (Rearrange Layout)
+- ApplyFilterCommand (Filters)
+
+Commands without resources:
+- AddSpriteCommand
+- RemoveSpriteCommand
+- ModifySpriteCommand
+- GenerateGridCommand
+
 ## Keyboard Shortcuts
 
 | Shortcut | Action |
 |----------|--------|
-| `Ctrl+O` | Open Image |
-| `Ctrl+Shift+O` | Open JSON |
-| `Ctrl+S` | Save JSON |
+| `Ctrl+Z` | Undo |
+| `Ctrl+Y` | Redo |
 | `Delete` | Remove selected sprite |
 | `Escape` | Cancel drawing / deselect |
 | `1` | Select tool |
 | `2` | Draw tool |
-| `Ctrl+G` | Open grid dialog |
-| `Ctrl+0` | Fit to window |
 
 ## Future Extensibility
 
@@ -232,7 +312,6 @@ The architecture supports these future features without major refactoring:
 - **Merge sprites**: Select multiple, merge into one rectangle
 - **Animation support**: Extend SpriteDefinition with optional animation data
 - **Snap to grid**: Toggle for precise alignment
-- **Undo/redo**: Command pattern in ViewModel
 - **Copy/paste sprites**: Duplicate definitions
 - **Sprite preview**: Show isolated sprite in properties panel
 
