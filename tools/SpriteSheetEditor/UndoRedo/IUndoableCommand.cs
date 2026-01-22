@@ -1,6 +1,6 @@
 namespace SpriteSheetEditor.UndoRedo;
 
-public interface IUndoableCommand
+public interface IUndoableCommand : IDisposable
 {
     string Description { get; }
     void Execute();

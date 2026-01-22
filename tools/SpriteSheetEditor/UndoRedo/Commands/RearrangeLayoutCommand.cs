@@ -73,4 +73,10 @@ public class RearrangeLayoutCommand : IUndoableCommand
             });
         }
     }
+
+    public void Dispose()
+    {
+        _previousImage.Dispose();
+        _newImage.Dispose();
+    }
 }

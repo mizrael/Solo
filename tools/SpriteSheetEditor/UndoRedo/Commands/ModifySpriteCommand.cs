@@ -47,4 +47,8 @@ public class ModifySpriteCommand : IUndoableCommand
     {
         _oldState.ApplyTo(_sprite);
     }
+
+    public void Dispose()
+    {
+    }
 }

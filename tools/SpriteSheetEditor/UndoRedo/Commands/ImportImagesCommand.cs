@@ -77,4 +77,10 @@ public class ImportImagesCommand : IUndoableCommand
             });
         }
     }
+
+    public void Dispose()
+    {
+        _previousImage?.Dispose();
+        _newImage.Dispose();
+    }
 }
