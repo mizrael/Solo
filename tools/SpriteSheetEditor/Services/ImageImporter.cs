@@ -59,14 +59,16 @@ public static class ImageImporter
         IEnumerable<SpriteDefinition> existingSprites,
         PackingLayout layout = PackingLayout.Grid)
     {
-        var packingItems = await LoadImagesFromFilesAsync(filePaths);
+        var existingSpritesList = existingSprites.ToList();
+        var existingNames = new HashSet<string>(existingSpritesList.Select(s => s.Name));
+        var packingItems = await LoadImagesFromFilesAsync(filePaths, existingNames);
         if (packingItems.Count == 0)
         {
             throw new InvalidOperationException("No valid images to import.");
         }
 
-        var offsetX = existingSprites.Any()
-            ? existingSprites.Max(s => s.X + s.Width)
+        var offsetX = existingSpritesList.Count > 0
+            ? existingSpritesList.Max(s => s.X + s.Width)
             : 0;
         int appendWidth;
         int appendHeight;
@@ -167,9 +169,12 @@ public static class ImageImporter
         return new RearrangeResult(newSprites, newImage);
     }
 
-    private static async Task<List<PackingItem>> LoadImagesFromFilesAsync(IEnumerable<string> filePaths)
+    private static async Task<List<PackingItem>> LoadImagesFromFilesAsync(
+        IEnumerable<string> filePaths,
+        HashSet<string>? existingNames = null)
     {
         var items = new List<PackingItem>();
+        var usedNames = existingNames ?? [];
 
         foreach (var filePath in filePaths)
         {
@@ -179,8 +184,9 @@ public static class ImageImporter
                 var bitmap = SKBitmap.Decode(bytes);
                 if (bitmap is not null)
                 {
-                    var name = Path.GetFileNameWithoutExtension(filePath);
-                    items.Add(new PackingItem(name, bitmap.Width, bitmap.Height, bitmap));
+                    var baseName = Path.GetFileNameWithoutExtension(filePath);
+                    var uniqueName = GetUniqueName(baseName, usedNames);
+                    items.Add(new PackingItem(uniqueName, bitmap.Width, bitmap.Height, bitmap));
                 }
             }
             catch
@@ -226,5 +232,23 @@ public static class ImageImporter
         }
 
         return document;
+    }
+
+    private static string GetUniqueName(string baseName, HashSet<string> usedNames)
+    {
+        if (usedNames.Add(baseName))
+        {
+            return baseName;
+        }
+
+        var counter = 1;
+        string candidateName;
+        do
+        {
+            candidateName = $"{baseName}_{counter}";
+            counter++;
+        } while (!usedNames.Add(candidateName));
+
+        return candidateName;
     }
 }

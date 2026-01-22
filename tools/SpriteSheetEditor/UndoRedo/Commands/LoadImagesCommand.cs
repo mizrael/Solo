@@ -3,38 +3,48 @@ using SpriteSheetEditor.Models;
 
 namespace SpriteSheetEditor.UndoRedo.Commands;
 
-public class AppendImagesCommand : IUndoableCommand
+public class LoadImagesCommand : IUndoableCommand
 {
     private readonly SpriteSheetDocument _document;
 
     private readonly SKBitmap? _previousImage;
     private readonly IReadOnlyList<SpriteDefinition> _previousSprites;
+    private readonly string _previousSheetName;
+    private readonly string? _previousImageFilePath;
 
     private readonly SKBitmap _newImage;
-    private readonly IReadOnlyList<SpriteDefinition> _spritesToAdd;
+    private readonly IReadOnlyList<SpriteDefinition> _newSprites;
+    private readonly string _newSheetName;
 
-    public string Description => "Import Images";
+    public string Description => "Load Images";
 
-    public AppendImagesCommand(
+    public LoadImagesCommand(
         SpriteSheetDocument document,
-        SKBitmap newExpandedImage,
-        IReadOnlyList<SpriteDefinition> spritesToAdd)
+        SKBitmap newImage,
+        IReadOnlyList<SpriteDefinition> newSprites,
+        string newSheetName)
     {
         _document = document;
 
         _previousImage = document.LoadedImage?.Copy();
         _previousSprites = document.Sprites.ToList();
+        _previousSheetName = document.SpriteSheetName;
+        _previousImageFilePath = document.ImageFilePath;
 
-        _newImage = newExpandedImage;
-        _spritesToAdd = spritesToAdd.ToList();
+        _newImage = newImage;
+        _newSprites = newSprites.ToList();
+        _newSheetName = newSheetName;
     }
 
     public void Execute()
     {
         _document.LoadedImage?.Dispose();
         _document.LoadedImage = _newImage.Copy();
+        _document.SpriteSheetName = _newSheetName;
+        _document.ImageFilePath = null;
 
-        foreach (var sprite in _spritesToAdd)
+        _document.Sprites.Clear();
+        foreach (var sprite in _newSprites)
         {
             _document.Sprites.Add(new SpriteDefinition
             {
@@ -51,6 +61,8 @@ public class AppendImagesCommand : IUndoableCommand
     {
         _document.LoadedImage?.Dispose();
         _document.LoadedImage = _previousImage?.Copy();
+        _document.SpriteSheetName = _previousSheetName;
+        _document.ImageFilePath = _previousImageFilePath;
 
         _document.Sprites.Clear();
         foreach (var sprite in _previousSprites)

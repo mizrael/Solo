@@ -126,8 +126,8 @@ Functionality to load, import, and rearrange images in the SpriteSheetEditor:
 - Commands disposed when `Clear()` called
 
 **Commands with bitmap disposal:**
-- `ImportImagesCommand` - For Load Images (full document replace)
-- `AppendImagesCommand` - For Import Images (append only)
+- `LoadImagesCommand` - For Load Images (full document replace)
+- `ImportImagesCommand` - For Import Images (append only)
 - `RearrangeLayoutCommand` - For Rearrange Layout
 - `ApplyFilterCommand` - For filter operations
 
@@ -145,4 +145,8 @@ Functionality to load, import, and rearrange images in the SpriteSheetEditor:
 
 ## Sprite Naming
 
-Use `Path.GetFileNameWithoutExtension(filePath)` for each imported file.
+Base name uses `Path.GetFileNameWithoutExtension(filePath)` for each imported file.
+
+Names are guaranteed unique:
+- Within a single load operation (e.g., loading "1.png" twice creates "1", "1_1")
+- When importing into existing document (e.g., importing "warrior.png" when "warrior" exists creates "warrior_1")

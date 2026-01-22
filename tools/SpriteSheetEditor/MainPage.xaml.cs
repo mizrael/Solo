@@ -135,7 +135,7 @@ public partial class MainPage : ContentPage
 
         if (hasUnsavedChanges)
         {
-            var confirm = await DisplayAlert("Load Images",
+            var confirm = await DisplayAlertAsync("Load Images",
                 "Loading images will replace the current document. You may have unsaved changes. Continue?",
                 "Continue", "Cancel");
 
@@ -178,7 +178,7 @@ public partial class MainPage : ContentPage
         {
             var result = await ImageImporter.LoadImagesAsync(filePaths, layout);
 
-            var command = new ImportImagesCommand(
+            var command = new LoadImagesCommand(
                 _viewModel.Document,
                 result.CompositeImage,
                 result.Document.Sprites.ToList(),
@@ -191,12 +191,10 @@ public partial class MainPage : ContentPage
             UpdateDocumentLabel();
             UpdateStatusBar();
             Canvas.FitToWindow();
-
-            result.CompositeImage.Dispose();
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Load Error", $"Failed to load images: {ex.Message}", "OK");
+            await DisplayAlertAsync("Load Error", $"Failed to load images: {ex.Message}", "OK");
         }
     }
 
@@ -204,30 +202,7 @@ public partial class MainPage : ContentPage
     {
         LoadImagesDialog.Hide();
 
-        try
-        {
-            var result = await ImageImporter.LoadImagesAsync(e.FilePaths, e.Layout);
-
-            var command = new ImportImagesCommand(
-                _viewModel.Document,
-                result.CompositeImage,
-                result.Document.Sprites.ToList(),
-                result.Document.SpriteSheetName);
-
-            _viewModel.UndoRedo.Execute(command);
-            _viewModel.SelectedSprite = null;
-            _viewModel.NotifyImageChanged();
-            _viewModel.NotifySpriteCountChanged();
-            UpdateDocumentLabel();
-            UpdateStatusBar();
-            Canvas.FitToWindow();
-
-            result.CompositeImage.Dispose();
-        }
-        catch (Exception ex)
-        {
-            await DisplayAlert("Load Error", $"Failed to load images: {ex.Message}", "OK");
-        }
+        await LoadImagesDirect(e.FilePaths, e.Layout);
     }
 
     private void OnLoadImagesDialogCancel(object? sender, EventArgs e)
@@ -239,7 +214,7 @@ public partial class MainPage : ContentPage
     {
         if (_viewModel.Document.LoadedImage is null)
         {
-            await DisplayAlert("No Image", "Please load an image first.", "OK");
+            await DisplayAlertAsync("No Image", "Please load an image first.", "OK");
             return;
         }
 
@@ -263,7 +238,7 @@ public partial class MainPage : ContentPage
         {
             using var stream = await file.OpenStreamForWriteAsync();
             _viewModel.Document.LoadedImage.Encode(stream, SKEncodedImageFormat.Png, 100);
-            await DisplayAlert("Saved", $"Image saved to {file.Path}", "OK");
+            await DisplayAlertAsync("Saved", $"Image saved to {file.Path}", "OK");
         }
 #endif
     }
@@ -287,7 +262,7 @@ public partial class MainPage : ContentPage
         _viewModel.Document = doc;
         UpdateDocumentLabel();
 
-        var loadImage = await DisplayAlert("Load Image?",
+        var loadImage = await DisplayAlertAsync("Load Image?",
             "Would you like to load an image file for this spritesheet?", "Yes", "No");
 
         if (loadImage)
@@ -315,7 +290,7 @@ public partial class MainPage : ContentPage
         if (file is not null)
         {
             await JsonExporter.SaveAsync(_viewModel.Document, file.Path);
-            await DisplayAlert("Saved", $"Spritesheet saved to {file.Path}", "OK");
+            await DisplayAlertAsync("Saved", $"Spritesheet saved to {file.Path}", "OK");
         }
 #endif
     }
@@ -327,7 +302,7 @@ public partial class MainPage : ContentPage
             return; // Nothing to close
         }
 
-        var confirm = await DisplayAlert("Close Project",
+        var confirm = await DisplayAlertAsync("Close Project",
             "Are you sure you want to close the current project? Any unsaved changes will be lost.",
             "Close", "Cancel");
 
@@ -384,7 +359,7 @@ public partial class MainPage : ContentPage
     {
         if (_viewModel.ImageWidth == 0)
         {
-            await DisplayAlert("No Image", "Please load an image first.", "OK");
+            await DisplayAlertAsync("No Image", "Please load an image first.", "OK");
             return;
         }
 
@@ -587,7 +562,7 @@ public partial class MainPage : ContentPage
     {
         if (_viewModel.ImageWidth == 0)
         {
-            await DisplayAlert("No Image", "Please load an image first.", "OK");
+            await DisplayAlertAsync("No Image", "Please load an image first.", "OK");
             return;
         }
 
@@ -677,7 +652,7 @@ public partial class MainPage : ContentPage
     {
         if (_viewModel.Document.LoadedImage is null)
         {
-            await DisplayAlert("No Image", "Please load images first before importing additional images.", "OK");
+            await DisplayAlertAsync("No Image", "Please load images first before importing additional images.", "OK");
             return;
         }
 
@@ -715,7 +690,7 @@ public partial class MainPage : ContentPage
                 _viewModel.Document.Sprites,
                 e.Layout);
 
-            var command = new AppendImagesCommand(
+            var command = new ImportImagesCommand(
                 _viewModel.Document,
                 result.ExpandedImage,
                 result.NewSprites);
@@ -727,12 +702,10 @@ public partial class MainPage : ContentPage
             UpdateDocumentLabel();
             UpdateStatusBar();
             Canvas.FitToWindow();
-
-            result.ExpandedImage.Dispose();
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Import Error", $"Failed to import images: {ex.Message}", "OK");
+            await DisplayAlertAsync("Import Error", $"Failed to import images: {ex.Message}", "OK");
         }
     }
 
@@ -746,7 +719,7 @@ public partial class MainPage : ContentPage
         RearrangeDialog.ShowForRearrange(_viewModel.Document.Sprites.Count);
     }
 
-    private void OnRearrangeDialogConfirm(object? sender, ImportImagesEventArgs e)
+    private async void OnRearrangeDialogConfirm(object? sender, ImportImagesEventArgs e)
     {
         RearrangeDialog.Hide();
 
@@ -763,12 +736,15 @@ public partial class MainPage : ContentPage
             var command = new RearrangeLayoutCommand(_viewModel.Document, result.Image, result.Sprites);
             _viewModel.UndoRedo.Execute(command);
 
+            _viewModel.SelectedSprite = null;
+            _viewModel.NotifyImageChanged();
             UpdateDocumentLabel();
+            UpdateStatusBar();
             Canvas.InvalidateSurface();
         }
         catch (Exception ex)
         {
-            DisplayAlert("Rearrange Error", $"Failed to rearrange layout: {ex.Message}", "OK");
+            await DisplayAlertAsync("Rearrange Error", $"Failed to rearrange layout: {ex.Message}", "OK");
         }
     }
 

@@ -283,8 +283,8 @@ All document modifications are undoable:
 - Commands store previous state for undo, new state for redo/execute
 
 Commands with bitmap resources (properly disposed):
-- ImportImagesCommand (Load Images)
-- AppendImagesCommand (Import Images)
+- LoadImagesCommand (Load Images)
+- ImportImagesCommand (Import Images)
 - RearrangeLayoutCommand (Rearrange Layout)
 - ApplyFilterCommand (Filters)
 
