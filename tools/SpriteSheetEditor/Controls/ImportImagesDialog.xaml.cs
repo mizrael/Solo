@@ -26,7 +26,6 @@ public partial class ImportImagesDialog : ContentView
         TitleLabel.Text = title ?? DefaultTitle;
         ImportButton.Text = buttonText ?? DefaultButtonText;
         FileCountLabel.Text = $"{filePaths.Count} image{(filePaths.Count == 1 ? "" : "s")} selected";
-        PaddingEntry.Text = "0";
         InfoLabel.Text = string.Empty;
         ImportButton.IsEnabled = filePaths.Count > 0;
 
@@ -56,7 +55,6 @@ public partial class ImportImagesDialog : ContentView
         TitleLabel.Text = "Rearrange Layout";
         ImportButton.Text = "Apply";
         FileCountLabel.Text = $"{spriteCount} sprite{(spriteCount == 1 ? "" : "s")}";
-        PaddingEntry.Text = "0";
         InfoLabel.Text = string.Empty;
         ImportButton.IsEnabled = spriteCount > 1;
 
@@ -100,13 +98,8 @@ public partial class ImportImagesDialog : ContentView
 
     private void OnImportClicked(object? sender, EventArgs e)
     {
-        if (!int.TryParse(PaddingEntry.Text, out var padding) || padding < 0)
-        {
-            padding = 0;
-        }
-
         var layout = GetSelectedLayout();
-        ImportClicked?.Invoke(this, new ImportImagesEventArgs(_filePaths, padding, layout));
+        ImportClicked?.Invoke(this, new ImportImagesEventArgs(_filePaths, layout));
     }
 
     private void OnCancelClicked(object? sender, EventArgs e)
@@ -119,13 +112,11 @@ public partial class ImportImagesDialog : ContentView
 public class ImportImagesEventArgs : EventArgs
 {
     public IReadOnlyList<string> FilePaths { get; }
-    public int Padding { get; }
     public PackingLayout Layout { get; }
 
-    public ImportImagesEventArgs(IReadOnlyList<string> filePaths, int padding, PackingLayout layout)
+    public ImportImagesEventArgs(IReadOnlyList<string> filePaths, PackingLayout layout)
     {
         FilePaths = filePaths;
-        Padding = padding;
         Layout = layout;
     }
 }

@@ -163,7 +163,7 @@ public partial class MainPage : ContentPage
 
         if (filePaths.Count == 1)
         {
-            await LoadImagesDirect(filePaths, padding: 0, PackingLayout.Grid);
+            await LoadImagesDirect(filePaths, PackingLayout.Grid);
         }
         else
         {
@@ -172,11 +172,11 @@ public partial class MainPage : ContentPage
 #endif
     }
 
-    private async Task LoadImagesDirect(IReadOnlyList<string> filePaths, int padding, PackingLayout layout)
+    private async Task LoadImagesDirect(IReadOnlyList<string> filePaths, PackingLayout layout)
     {
         try
         {
-            var result = await ImageImporter.LoadImagesAsync(filePaths, padding, layout);
+            var result = await ImageImporter.LoadImagesAsync(filePaths, layout);
 
             var command = new ImportImagesCommand(
                 _viewModel.Document,
@@ -206,7 +206,7 @@ public partial class MainPage : ContentPage
 
         try
         {
-            var result = await ImageImporter.LoadImagesAsync(e.FilePaths, e.Padding, e.Layout);
+            var result = await ImageImporter.LoadImagesAsync(e.FilePaths, e.Layout);
 
             var command = new ImportImagesCommand(
                 _viewModel.Document,
@@ -713,7 +713,6 @@ public partial class MainPage : ContentPage
                 e.FilePaths,
                 _viewModel.Document.LoadedImage!,
                 _viewModel.Document.Sprites,
-                e.Padding,
                 e.Layout);
 
             var command = new AppendImagesCommand(
@@ -759,7 +758,6 @@ public partial class MainPage : ContentPage
             var result = ImageImporter.RearrangeLayout(
                 _viewModel.Document.LoadedImage,
                 _viewModel.Document.Sprites,
-                e.Padding,
                 e.Layout);
 
             var command = new RearrangeLayoutCommand(_viewModel.Document, result.Image, result.Sprites);

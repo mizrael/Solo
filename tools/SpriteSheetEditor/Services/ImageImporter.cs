@@ -13,7 +13,6 @@ public static class ImageImporter
 {
     public static async Task<ImportResult> LoadImagesAsync(
         IEnumerable<string> filePaths,
-        int padding = 0,
         PackingLayout layout = PackingLayout.Grid)
     {
         var packingItems = await LoadImagesFromFilesAsync(filePaths);
@@ -41,7 +40,7 @@ public static class ImageImporter
         }
         else
         {
-            var packedResult = BinPacker.Pack(packingItems, padding, layout);
+            var packedResult = BinPacker.Pack(packingItems, layout);
             compositeImage = CreateCompositeImage(packedResult);
             document = CreateDocument(packedResult);
         }
@@ -58,7 +57,6 @@ public static class ImageImporter
         IEnumerable<string> filePaths,
         SKBitmap existingImage,
         IEnumerable<SpriteDefinition> existingSprites,
-        int padding = 0,
         PackingLayout layout = PackingLayout.Grid)
     {
         var packingItems = await LoadImagesFromFilesAsync(filePaths);
@@ -83,7 +81,7 @@ public static class ImageImporter
         }
         else
         {
-            var packedResult = BinPacker.Pack(packingItems, padding, layout);
+            var packedResult = BinPacker.Pack(packingItems, layout);
             appendWidth = packedResult.CanvasWidth;
             appendHeight = packedResult.CanvasHeight;
             packedItems = packedResult.Items;
@@ -123,7 +121,6 @@ public static class ImageImporter
     public static RearrangeResult RearrangeLayout(
         SKBitmap sourceImage,
         IEnumerable<SpriteDefinition> sprites,
-        int padding = 0,
         PackingLayout layout = PackingLayout.Grid)
     {
         var spriteList = sprites.ToList();
@@ -146,7 +143,7 @@ public static class ImageImporter
         }
 
         // Pack sprites
-        var packedResult = BinPacker.Pack(packingItems, padding, layout);
+        var packedResult = BinPacker.Pack(packingItems, layout);
 
         // Create new composite image
         var newImage = CreateCompositeImage(packedResult);

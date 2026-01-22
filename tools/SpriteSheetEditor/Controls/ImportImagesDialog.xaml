@@ -12,12 +12,6 @@
 
             <Label x:Name="FileCountLabel" Text="0 images selected" TextColor="#ccc" />
 
-            <VerticalStackLayout>
-                <Label Text="Padding (pixels):" TextColor="#ccc" />
-                <Entry x:Name="PaddingEntry" Text="0" Keyboard="Numeric"
-                       BackgroundColor="#333" TextColor="White" />
-            </VerticalStackLayout>
-
             <!-- Layout selection for Load mode -->
             <VerticalStackLayout x:Name="LayoutPanel" Spacing="8">
                 <Label Text="Layout:" TextColor="#ccc" />

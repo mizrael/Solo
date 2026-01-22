@@ -17,7 +17,7 @@ public record PackedResult(IReadOnlyList<PackedItem> Items, int CanvasWidth, int
 
 public static class BinPacker
 {
-    public static PackedResult Pack(IEnumerable<PackingItem> items, int padding = 0, PackingLayout layout = PackingLayout.Grid)
+    public static PackedResult Pack(IEnumerable<PackingItem> items, PackingLayout layout = PackingLayout.Grid)
     {
         var itemList = items.ToList();
         if (itemList.Count == 0)
@@ -27,15 +27,15 @@ public static class BinPacker
 
         return layout switch
         {
-            PackingLayout.SingleColumn => PackSingleColumn(itemList, padding),
-            PackingLayout.SingleRow => PackSingleRow(itemList, padding),
-            _ => PackGrid(itemList, padding)
+            PackingLayout.SingleColumn => PackSingleColumn(itemList),
+            PackingLayout.SingleRow => PackSingleRow(itemList),
+            _ => PackGrid(itemList)
         };
     }
 
-    private static PackedResult PackGrid(IReadOnlyList<PackingItem> items, int padding)
+    private static PackedResult PackGrid(IReadOnlyList<PackingItem> items)
     {
-        var totalArea = items.Sum(i => (i.Width + padding) * (i.Height + padding));
+        var totalArea = items.Sum(i => i.Width * i.Height);
         var targetWidth = (int)Math.Ceiling(Math.Sqrt(totalArea));
 
         var packedItems = new List<PackedItem>();
@@ -45,10 +45,7 @@ public static class BinPacker
 
         foreach (var item in items)
         {
-            var paddedWidth = item.Width + padding;
-            var paddedHeight = item.Height + padding;
-
-            if (currentX + paddedWidth > targetWidth && currentX > 0)
+            if (currentX + item.Width > targetWidth && currentX > 0)
             {
                 currentY += rowHeight;
                 currentX = 0;
@@ -56,14 +53,14 @@ public static class BinPacker
             }
 
             packedItems.Add(new PackedItem(item.Name, currentX, currentY, item.Width, item.Height, item.Image));
-            rowHeight = Math.Max(rowHeight, paddedHeight);
-            currentX += paddedWidth;
+            rowHeight = Math.Max(rowHeight, item.Height);
+            currentX += item.Width;
         }
 
         return CreateResult(packedItems);
     }
 
-    private static PackedResult PackSingleColumn(IReadOnlyList<PackingItem> items, int padding)
+    private static PackedResult PackSingleColumn(IReadOnlyList<PackingItem> items)
     {
         var packedItems = new List<PackedItem>();
         var currentY = 0;
@@ -71,13 +68,13 @@ public static class BinPacker
         foreach (var item in items)
         {
             packedItems.Add(new PackedItem(item.Name, 0, currentY, item.Width, item.Height, item.Image));
-            currentY += item.Height + padding;
+            currentY += item.Height;
         }
 
         return CreateResult(packedItems);
     }
 
-    private static PackedResult PackSingleRow(IReadOnlyList<PackingItem> items, int padding)
+    private static PackedResult PackSingleRow(IReadOnlyList<PackingItem> items)
     {
         var packedItems = new List<PackedItem>();
         var currentX = 0;
@@ -85,7 +82,7 @@ public static class BinPacker
         foreach (var item in items)
         {
             packedItems.Add(new PackedItem(item.Name, currentX, 0, item.Width, item.Height, item.Image));
-            currentX += item.Width + padding;
+            currentX += item.Width;
         }
 
         return CreateResult(packedItems);
