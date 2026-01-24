@@ -118,8 +118,8 @@ public static class ImageImporter
             throw new InvalidOperationException("No sprites to rearrange.");
         }
 
-        // Extract each sprite's pixels from the source image
         var packingItems = new List<PackingItem>();
+
         try
         {
             foreach (var sprite in spriteList)
@@ -133,13 +133,8 @@ public static class ImageImporter
                 packingItems.Add(new PackingItem(sprite.Name, sprite.Width, sprite.Height, spriteBitmap));
             }
 
-            // Pack sprites
             var packedResult = BinPacker.Pack(packingItems, layout);
-
-            // Create new composite image
             var newImage = CreateCompositeImage(packedResult);
-
-            // Create updated sprite definitions
             var newSprites = packedResult.Items.Select(item => new SpriteDefinition
             {
                 Name = item.Name,
@@ -148,14 +143,14 @@ public static class ImageImporter
                 Width = item.Width,
                 Height = item.Height
             }).ToList();
+
+            return new RearrangeResult(newSprites, newImage);
         }
         finally
         {
             foreach (var item in packingItems)
                 item.Image.Dispose();
         }
-
-        return new RearrangeResult(newSprites, newImage);
     }
 
     private static async Task<List<PackingItem>> LoadImagesFromFilesAsync(
