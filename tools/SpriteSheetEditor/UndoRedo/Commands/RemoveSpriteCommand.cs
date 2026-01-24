@@ -33,4 +33,8 @@ public class RemoveSpriteCommand : IUndoableCommand
             _document.Sprites.Add(_sprite);
         }
     }
+
+    public void Dispose()
+    {
+    }
 }

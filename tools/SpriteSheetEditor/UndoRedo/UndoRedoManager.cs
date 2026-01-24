@@ -17,7 +17,7 @@ public class UndoRedoManager
     {
         command.Execute();
         _undoStack.Push(command);
-        _redoStack.Clear();
+        DisposeAndClear(_redoStack);
         StateChanged?.Invoke(this, EventArgs.Empty);
     }
 
@@ -43,8 +43,17 @@ public class UndoRedoManager
 
     public void Clear()
     {
-        _undoStack.Clear();
-        _redoStack.Clear();
+        DisposeAndClear(_undoStack);
+        DisposeAndClear(_redoStack);
         StateChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private static void DisposeAndClear(Stack<IUndoableCommand> stack)
+    {
+        while (stack.Count > 0)
+        {
+            var command = stack.Pop();
+            command.Dispose();
+        }
     }
 }

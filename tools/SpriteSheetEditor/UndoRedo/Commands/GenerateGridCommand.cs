@@ -34,4 +34,8 @@ public class GenerateGridCommand : IUndoableCommand
             _document.Sprites.Add(sprite);
         }
     }
+
+    public void Dispose()
+    {
+    }
 }

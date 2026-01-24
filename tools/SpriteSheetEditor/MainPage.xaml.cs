@@ -1,4 +1,5 @@
 using SkiaSharp;
+using SpriteSheetEditor.Controls;
 using SpriteSheetEditor.Filters;
 using SpriteSheetEditor.Models;
 using SpriteSheetEditor.Services;
@@ -24,6 +25,7 @@ public partial class MainPage : ContentPage
         Canvas.ColorPicked += OnCanvasColorPicked;
         Canvas.SpriteDrawn += OnSpriteDrawn;
         Canvas.SpriteModified += OnSpriteModified;
+        Canvas.ParentScrollView = CanvasScrollView;
         NameEntry.Focused += OnNameEntryFocused;
     }
 
@@ -94,6 +96,34 @@ public partial class MainPage : ContentPage
             : "Image: --";
         SpriteCountLabel.Text = $"Sprites: {_viewModel.SpriteCount}";
         FiltersButton.IsEnabled = _viewModel.ImageWidth > 0;
+        UpdateCanvasSize();
+    }
+
+    private void UpdateCanvasSize()
+    {
+        if (_viewModel.ImageWidth <= 0) return;
+
+        var scaledWidth = _viewModel.ImageWidth * _viewModel.ZoomLevel;
+        var scaledHeight = _viewModel.ImageHeight * _viewModel.ZoomLevel;
+
+        // Set canvas to exact scaled size - ScrollView handles scrolling when larger than viewport
+        Canvas.WidthRequest = scaledWidth;
+        Canvas.HeightRequest = scaledHeight;
+    }
+
+    private void OnCanvasSizeChanged(object? sender, EventArgs e)
+    {
+        UpdateCanvasSize();
+    }
+
+    private void OnCanvasPanChanged()
+    {
+        UpdateCanvasSize();
+    }
+
+    private void OnCanvasScrollViewScrolled(object? sender, ScrolledEventArgs e)
+    {
+        Canvas.InvalidateSurface();
     }
 
     private void UpdateDocumentLabel()
@@ -123,39 +153,97 @@ public partial class MainPage : ContentPage
 
     private void UpdateToolButtons()
     {
-        SelectToolButton.BackgroundColor = _viewModel.CurrentTool == EditorTool.Select
-            ? Color.FromArgb("#0078d4") : Color.FromArgb("#3e3e42");
-        DrawToolButton.BackgroundColor = _viewModel.CurrentTool == EditorTool.Draw
-            ? Color.FromArgb("#0078d4") : Color.FromArgb("#3e3e42");
+        // Tool selection moved to Sprites menu - no toolbar buttons to update
     }
 
-    private async void OnOpenImageClicked(object? sender, EventArgs e)
+    private async void OnLoadImagesClicked(object? sender, EventArgs e)
     {
-        var result = await FilePicker.PickAsync(new PickOptions
+        var hasUnsavedChanges = _viewModel.UndoRedo.CanUndo ||
+                                _viewModel.Document.LoadedImage is not null ||
+                                _viewModel.Document.Sprites.Count > 0;
+
+        if (hasUnsavedChanges)
         {
-            PickerTitle = "Select Image",
-            FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
-            {
-                { DevicePlatform.WinUI, [".png", ".jpg", ".jpeg", ".bmp"] }
-            })
-        });
+            var confirm = await DisplayAlertAsync("Load Images",
+                "Loading images will replace the current document. You may have unsaved changes. Continue?",
+                "Continue", "Cancel");
 
-        if (result is null) return;
+            if (!confirm) return;
+        }
 
-        using var stream = await result.OpenReadAsync();
-        _viewModel.Document.LoadedImage = SKBitmap.Decode(stream);
-        _viewModel.Document.ImageFilePath = result.FullPath;
-        _viewModel.Document.SpriteSheetName = Path.GetFileNameWithoutExtension(result.FileName);
-        _viewModel.NotifyImageChanged();
-        UpdateDocumentLabel();
-        Canvas.FitToWindow();
+#if WINDOWS
+        var hwnd = ((MauiWinUIWindow)Application.Current!.Windows[0].Handler!.PlatformView!).WindowHandle;
+        var picker = new Windows.Storage.Pickers.FileOpenPicker
+        {
+            SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary,
+            ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail
+        };
+        picker.FileTypeFilter.Add(".png");
+        picker.FileTypeFilter.Add(".jpg");
+        picker.FileTypeFilter.Add(".jpeg");
+        picker.FileTypeFilter.Add(".bmp");
+
+        WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+        var files = await picker.PickMultipleFilesAsync();
+
+        if (files is null || files.Count == 0) return;
+
+        var filePaths = files.Select(f => f.Path).ToList();
+
+        if (filePaths.Count == 1)
+        {
+            await LoadImagesDirect(filePaths, PackingLayout.Grid);
+        }
+        else
+        {
+            LoadImagesDialog.Show(filePaths, "Load Images", "Load", isImportMode: false);
+        }
+#endif
+    }
+
+    private async Task LoadImagesDirect(IReadOnlyList<string> filePaths, PackingLayout layout)
+    {
+        try
+        {
+            var result = await ImageImporter.LoadImagesAsync(filePaths, layout);
+
+            var command = new LoadImagesCommand(
+                _viewModel.Document,
+                result.CompositeImage,
+                result.Document.Sprites.ToList(),
+                result.Document.SpriteSheetName);
+
+            _viewModel.UndoRedo.Execute(command);
+            _viewModel.SelectedSprite = null;
+            _viewModel.NotifyImageChanged();
+            _viewModel.NotifySpriteCountChanged();
+            UpdateDocumentLabel();
+            UpdateStatusBar();
+            Canvas.FitToWindow();
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlertAsync("Load Error", $"Failed to load images: {ex.Message}", "OK");
+        }
+    }
+
+    private async void OnLoadImagesDialogConfirm(object? sender, ImportImagesEventArgs e)
+    {
+        LoadImagesDialog.Hide();
+
+        await LoadImagesDirect(e.FilePaths, e.Layout);
+    }
+
+    private void OnLoadImagesDialogCancel(object? sender, EventArgs e)
+    {
+        LoadImagesDialog.Hide();
     }
 
     private async void OnSaveImageClicked(object? sender, EventArgs e)
     {
         if (_viewModel.Document.LoadedImage is null)
         {
-            await DisplayAlert("No Image", "Please load an image first.", "OK");
+            await DisplayAlertAsync("No Image", "Please load an image first.", "OK");
             return;
         }
 
@@ -179,7 +267,7 @@ public partial class MainPage : ContentPage
         {
             using var stream = await file.OpenStreamForWriteAsync();
             _viewModel.Document.LoadedImage.Encode(stream, SKEncodedImageFormat.Png, 100);
-            await DisplayAlert("Saved", $"Image saved to {file.Path}", "OK");
+            await DisplayAlertAsync("Saved", $"Image saved to {file.Path}", "OK");
         }
 #endif
     }
@@ -203,12 +291,12 @@ public partial class MainPage : ContentPage
         _viewModel.Document = doc;
         UpdateDocumentLabel();
 
-        var loadImage = await DisplayAlert("Load Image?",
+        var loadImage = await DisplayAlertAsync("Load Image?",
             "Would you like to load an image file for this spritesheet?", "Yes", "No");
 
         if (loadImage)
         {
-            OnOpenImageClicked(sender, e);
+            OnLoadImagesClicked(sender, e);
         }
     }
 
@@ -231,7 +319,7 @@ public partial class MainPage : ContentPage
         if (file is not null)
         {
             await JsonExporter.SaveAsync(_viewModel.Document, file.Path);
-            await DisplayAlert("Saved", $"Spritesheet saved to {file.Path}", "OK");
+            await DisplayAlertAsync("Saved", $"Spritesheet saved to {file.Path}", "OK");
         }
 #endif
     }
@@ -243,7 +331,7 @@ public partial class MainPage : ContentPage
             return; // Nothing to close
         }
 
-        var confirm = await DisplayAlert("Close Project",
+        var confirm = await DisplayAlertAsync("Close Project",
             "Are you sure you want to close the current project? Any unsaved changes will be lost.",
             "Close", "Cancel");
 
@@ -300,7 +388,7 @@ public partial class MainPage : ContentPage
     {
         if (_viewModel.ImageWidth == 0)
         {
-            await DisplayAlert("No Image", "Please load an image first.", "OK");
+            await DisplayAlertAsync("No Image", "Please load an image first.", "OK");
             return;
         }
 
@@ -330,11 +418,6 @@ public partial class MainPage : ContentPage
         GridDialog.Hide();
     }
 
-    private void OnFitClicked(object? sender, EventArgs e)
-    {
-        Canvas.FitToWindow();
-    }
-
     private void OnDeleteSpriteClicked(object? sender, EventArgs e)
     {
         if (_viewModel.SelectedSprite is null) return;
@@ -352,13 +435,28 @@ public partial class MainPage : ContentPage
         {
             var flyout = new Microsoft.UI.Xaml.Controls.MenuFlyout();
 
-            var openImage = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem { Text = "Open Image..." };
-            openImage.Click += (s, args) => OnOpenImageClicked(s, EventArgs.Empty);
-            flyout.Items.Add(openImage);
+            var loadImages = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem { Text = "Load Images..." };
+            loadImages.Click += (s, args) => OnLoadImagesClicked(s, EventArgs.Empty);
+            flyout.Items.Add(loadImages);
 
-            var saveImage = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem { Text = "Save Image..." };
+            var hasDocument = _viewModel.Document.LoadedImage is not null;
+            var saveImage = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem
+            {
+                Text = "Save Image...",
+                IsEnabled = hasDocument
+            };
             saveImage.Click += (s, args) => OnSaveImageClicked(s, EventArgs.Empty);
             flyout.Items.Add(saveImage);
+
+            flyout.Items.Add(new Microsoft.UI.Xaml.Controls.MenuFlyoutSeparator());
+
+            var importImages = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem
+            {
+                Text = "Import Images...",
+                IsEnabled = hasDocument
+            };
+            importImages.Click += (s, args) => OnImportImagesClicked(s, EventArgs.Empty);
+            flyout.Items.Add(importImages);
 
             flyout.Items.Add(new Microsoft.UI.Xaml.Controls.MenuFlyoutSeparator());
 
@@ -366,7 +464,11 @@ public partial class MainPage : ContentPage
             openJson.Click += (s, args) => OnOpenJsonClicked(s, EventArgs.Empty);
             flyout.Items.Add(openJson);
 
-            var saveJson = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem { Text = "Save JSON..." };
+            var saveJson = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem
+            {
+                Text = "Save JSON...",
+                IsEnabled = hasDocument
+            };
             saveJson.Click += (s, args) => OnSaveJsonClicked(s, EventArgs.Empty);
             flyout.Items.Add(saveJson);
 
@@ -415,6 +517,57 @@ public partial class MainPage : ContentPage
             redoItem.Click += (s, args) => OnRedoClicked(s, EventArgs.Empty);
             flyout.Items.Add(redoItem);
 
+            flyout.Items.Add(new Microsoft.UI.Xaml.Controls.MenuFlyoutSeparator());
+
+            var fitToWindow = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem
+            {
+                Text = "Fit to window",
+                IsEnabled = _viewModel.Document.LoadedImage is not null
+            };
+            fitToWindow.Click += (s, args) => Canvas.FitToWindow();
+            flyout.Items.Add(fitToWindow);
+
+            flyout.Items.Add(new Microsoft.UI.Xaml.Controls.MenuFlyoutSeparator());
+
+            var rearrangeLayout = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem
+            {
+                Text = "Rearrange layout...",
+                IsEnabled = _viewModel.Document.LoadedImage is not null && _viewModel.Document.Sprites.Count > 1
+            };
+            rearrangeLayout.Click += (s, args) => OnRearrangeLayoutClicked(s, EventArgs.Empty);
+            flyout.Items.Add(rearrangeLayout);
+
+            flyout.ShowAt(nativeButton);
+        }
+#endif
+    }
+
+    private void OnSpritesClicked(object? sender, EventArgs e)
+    {
+#if WINDOWS
+        if (SpritesButton.Handler?.PlatformView is Microsoft.UI.Xaml.Controls.Button nativeButton)
+        {
+            var flyout = new Microsoft.UI.Xaml.Controls.MenuFlyout();
+            var hasDocument = _viewModel.Document.LoadedImage is not null;
+
+            var selectItem = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem
+            {
+                Text = _viewModel.CurrentTool == EditorTool.Select ? "✓ Select" : "   Select",
+                IsEnabled = hasDocument,
+                KeyboardAcceleratorTextOverride = "1"
+            };
+            selectItem.Click += (s, args) => OnSelectToolClicked(s, EventArgs.Empty);
+            flyout.Items.Add(selectItem);
+
+            var drawItem = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem
+            {
+                Text = _viewModel.CurrentTool == EditorTool.Draw ? "✓ Draw" : "   Draw",
+                IsEnabled = hasDocument,
+                KeyboardAcceleratorTextOverride = "2"
+            };
+            drawItem.Click += (s, args) => OnDrawToolClicked(s, EventArgs.Empty);
+            flyout.Items.Add(drawItem);
+
             flyout.ShowAt(nativeButton);
         }
 #endif
@@ -438,7 +591,7 @@ public partial class MainPage : ContentPage
     {
         if (_viewModel.ImageWidth == 0)
         {
-            await DisplayAlert("No Image", "Please load an image first.", "OK");
+            await DisplayAlertAsync("No Image", "Please load an image first.", "OK");
             return;
         }
 
@@ -524,6 +677,99 @@ public partial class MainPage : ContentPage
         }
     }
 
+    private async void OnImportImagesClicked(object? sender, EventArgs e)
+    {
+        if (_viewModel.Document.LoadedImage is null)
+        {
+            await DisplayAlertAsync("No Image", "Please load images first before importing additional images.", "OK");
+            return;
+        }
+
+#if WINDOWS
+        var hwnd = ((MauiWinUIWindow)Application.Current!.Windows[0].Handler!.PlatformView!).WindowHandle;
+        var picker = new Windows.Storage.Pickers.FileOpenPicker
+        {
+            SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary,
+            ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail
+        };
+        picker.FileTypeFilter.Add(".png");
+        picker.FileTypeFilter.Add(".jpg");
+        picker.FileTypeFilter.Add(".jpeg");
+        picker.FileTypeFilter.Add(".bmp");
+
+        WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+        var files = await picker.PickMultipleFilesAsync();
+
+        if (files is null || files.Count == 0) return;
+
+        var filePaths = files.Select(f => f.Path).ToList();
+
+        try
+        {
+            var result = await ImageImporter.AppendImagesAsync(
+                filePaths,
+                _viewModel.Document.LoadedImage!,
+                _viewModel.Document.Sprites);
+
+            var command = new ImportImagesCommand(
+                _viewModel.Document,
+                result.Image,
+                result.AllSprites);
+
+            _viewModel.UndoRedo.Execute(command);
+            _viewModel.SelectedSprite = null;
+            _viewModel.NotifyImageChanged();
+            _viewModel.NotifySpriteCountChanged();
+            UpdateDocumentLabel();
+            UpdateStatusBar();
+            Canvas.FitToWindow();
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlertAsync("Import Error", $"Failed to import images: {ex.Message}", "OK");
+        }
+#endif
+    }
+
+    private void OnRearrangeLayoutClicked(object? sender, EventArgs e)
+    {
+        RearrangeDialog.ShowForRearrange(_viewModel.Document.Sprites.Count);
+    }
+
+    private async void OnRearrangeDialogConfirm(object? sender, ImportImagesEventArgs e)
+    {
+        RearrangeDialog.Hide();
+
+        if (_viewModel.Document.LoadedImage is null || _viewModel.Document.Sprites.Count < 2)
+            return;
+
+        try
+        {
+            var result = ImageImporter.RearrangeLayout(
+                _viewModel.Document.LoadedImage,
+                _viewModel.Document.Sprites,
+                e.Layout);
+
+            var command = new RearrangeLayoutCommand(_viewModel.Document, result.Image, result.Sprites);
+            _viewModel.UndoRedo.Execute(command);
+
+            _viewModel.SelectedSprite = null;
+            _viewModel.NotifyImageChanged();
+            UpdateDocumentLabel();
+            UpdateStatusBar();
+            Canvas.InvalidateSurface();
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlertAsync("Rearrange Error", $"Failed to rearrange layout: {ex.Message}", "OK");
+        }
+    }
+
+    private void OnRearrangeDialogCancel(object? sender, EventArgs e)
+    {
+        RearrangeDialog.Hide();
+    }
+
     protected override void OnHandlerChanged()
     {
         base.OnHandlerChanged();
@@ -561,7 +807,7 @@ public partial class MainPage : ContentPage
                 e.Handled = true;
                 break;
             case Windows.System.VirtualKey.O when ctrl:
-                OnOpenImageClicked(null, EventArgs.Empty);
+                OnLoadImagesClicked(null, EventArgs.Empty);
                 e.Handled = true;
                 break;
             case Windows.System.VirtualKey.S when ctrl:
@@ -570,10 +816,6 @@ public partial class MainPage : ContentPage
                 break;
             case Windows.System.VirtualKey.G when ctrl:
                 OnGridClicked(null, EventArgs.Empty);
-                e.Handled = true;
-                break;
-            case Windows.System.VirtualKey.Number0 when ctrl:
-                Canvas.FitToWindow();
                 e.Handled = true;
                 break;
             case Windows.System.VirtualKey.Number1:
@@ -592,16 +834,6 @@ public partial class MainPage : ContentPage
                 break;
             case Windows.System.VirtualKey.Escape:
                 _viewModel.SelectedSprite = null;
-                e.Handled = true;
-                break;
-            case Windows.System.VirtualKey.Add:
-            case (Windows.System.VirtualKey)187:
-                Canvas.ZoomIn();
-                e.Handled = true;
-                break;
-            case Windows.System.VirtualKey.Subtract:
-            case (Windows.System.VirtualKey)189:
-                Canvas.ZoomOut();
                 e.Handled = true;
                 break;
         }

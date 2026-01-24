@@ -30,4 +30,10 @@ public class ApplyFilterCommand : IUndoableCommand
         _document.LoadedImage?.Dispose();
         _document.LoadedImage = _originalImage.Copy();
     }
+
+    public void Dispose()
+    {
+        _originalImage.Dispose();
+        _filteredImage.Dispose();
+    }
 }
