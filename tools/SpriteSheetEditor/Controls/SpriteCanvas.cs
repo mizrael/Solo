@@ -50,6 +50,8 @@ public class SpriteCanvas : Control, IDisposable
     private float _panStartOffsetX;
     private float _panStartOffsetY;
 
+    private bool _isCtrlPressed;
+
     private WriteableBitmap? _renderTarget;
 
     public bool IsEyedropperMode { get; set; }
@@ -192,7 +194,7 @@ public class SpriteCanvas : Control, IDisposable
 
         foreach (var sprite in ViewModel.Document.Sprites)
         {
-            var isSelected = sprite == ViewModel.SelectedSprite;
+            var isSelected = ViewModel.SelectedSprites.Contains(sprite) || sprite == ViewModel.SelectedSprite;
             strokePaint.Color = isSelected ? SelectedStroke : SpriteStroke;
             fillPaint.Color = isSelected ? SelectedFill : SpriteFill;
 
@@ -200,7 +202,7 @@ public class SpriteCanvas : Control, IDisposable
             canvas.DrawRect(rect, fillPaint);
             canvas.DrawRect(rect, strokePaint);
 
-            if (isSelected)
+            if (sprite == ViewModel.SelectedSprite)
             {
                 DrawResizeHandles(canvas, rect);
             }
@@ -284,6 +286,7 @@ public class SpriteCanvas : Control, IDisposable
 
         var point = e.GetCurrentPoint(this);
         var imagePoint = ScreenToImage(point.Position);
+        _isCtrlPressed = e.KeyModifiers.HasFlag(KeyModifiers.Control);
 
         if (point.Properties.IsMiddleButtonPressed)
         {
@@ -443,15 +446,25 @@ public class SpriteCanvas : Control, IDisposable
             var sprite = ViewModel.FindSpriteAt((int)imagePoint.X, (int)imagePoint.Y);
             if (sprite != null)
             {
-                ViewModel.SelectedSprite = sprite;
-                _isDragging = true;
-                _dragSprite = sprite;
-                _dragOffset = new SKPoint(imagePoint.X - sprite.X, imagePoint.Y - sprite.Y);
-                _dragStartState = SpriteState.From(sprite);
+                if (_isCtrlPressed)
+                {
+                    ViewModel.ToggleSpriteSelection(sprite);
+                }
+                else
+                {
+                    ViewModel.SelectSprite(sprite);
+                    _isDragging = true;
+                    _dragSprite = sprite;
+                    _dragOffset = new SKPoint(imagePoint.X - sprite.X, imagePoint.Y - sprite.Y);
+                    _dragStartState = SpriteState.From(sprite);
+                }
             }
             else
             {
-                ViewModel.SelectedSprite = null;
+                if (!_isCtrlPressed)
+                {
+                    ViewModel.ClearSelection();
+                }
             }
         }
     }

@@ -9,6 +9,7 @@ public partial class SpriteSheetDocument
 {
     public string SpriteSheetName { get; set; } = string.Empty;
     public ObservableCollection<SpriteDefinition> Sprites { get; set; } = [];
+    public ObservableCollection<AnimationDefinition> Animations { get; set; } = [];
 
     [JsonIgnore]
     public SKBitmap? LoadedImage { get; set; }

@@ -1,6 +1,6 @@
 {
   "animationName": "skeleton_walk_front",
-  "spriteSheetName": "characters/skeleton/skeleton_walk_front",
+  "spriteSheetName": "skeleton_walk_front",
   "fps": 10,
   "frames": [
     {

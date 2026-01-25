@@ -1,0 +1,95 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:SpriteSheetEditor.Controls"
+             xmlns:models="clr-namespace:SpriteSheetEditor.Models"
+             x:Class="SpriteSheetEditor.Controls.AnimationPanel"
+             Background="#252526">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto">
+        <!-- Row 0: Animation List Header -->
+        <Grid ColumnDefinitions="*,Auto,Auto" Margin="8,8,8,4">
+            <TextBlock Text="Animations" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" />
+            <Button x:Name="NewAnimationButton" Content="+" Width="24" Height="24"
+                    ToolTip.Tip="New Animation" Grid.Column="1" Margin="0,0,4,0"
+                    Click="OnNewAnimationClicked" />
+            <Button x:Name="DeleteAnimationButton" Content="-" Width="24" Height="24"
+                    ToolTip.Tip="Delete Animation" Grid.Column="2"
+                    Click="OnDeleteAnimationClicked" />
+        </Grid>
+
+        <!-- Row 1: Animation List -->
+        <ListBox x:Name="AnimationList" Grid.Row="1" Height="80" Margin="8,0"
+                 Background="#1e1e1e" Foreground="White"
+                 SelectionChanged="OnAnimationSelectionChanged">
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="{x:Type models:AnimationDefinition}">
+                    <TextBlock Text="{Binding Name}" Foreground="White" Padding="4" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <!-- Row 2: Animation Properties -->
+        <StackPanel x:Name="AnimationPropertiesPanel" Grid.Row="2" Margin="8,8,8,4" IsVisible="False">
+            <Grid ColumnDefinitions="60,*" Margin="0,0,0,4">
+                <TextBlock Text="Name:" Foreground="White" VerticalAlignment="Center" />
+                <TextBox x:Name="AnimationNameEntry" Grid.Column="1" Background="#333" Foreground="White"
+                         TextChanged="OnAnimationNameChanged" />
+            </Grid>
+            <Grid ColumnDefinitions="*,*" Margin="0,0,0,4">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="FPS:" Foreground="White" VerticalAlignment="Center" Width="35" />
+                    <NumericUpDown x:Name="FpsSpinner" Minimum="1" Maximum="60" Value="10"
+                                   Width="70" Background="#333" Foreground="White"
+                                   ValueChanged="OnFpsChanged" />
+                </StackPanel>
+                <CheckBox x:Name="LoopCheckBox" Content="Loop" Grid.Column="1"
+                          Foreground="White" IsChecked="True"
+                          Checked="OnLoopChanged" Unchecked="OnLoopChanged" />
+            </Grid>
+        </StackPanel>
+
+        <!-- Row 3: Frame List Header -->
+        <Grid x:Name="FrameListHeader" ColumnDefinitions="*,Auto" Grid.Row="3" Margin="8,8,8,4" IsVisible="False">
+            <TextBlock Text="Frames:" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" />
+            <Button x:Name="RemoveFrameButton" Content="Remove" Grid.Column="1"
+                    Click="OnRemoveFrameClicked" />
+        </Grid>
+
+        <!-- Row 4: Frame List -->
+        <ListBox x:Name="FrameList" Grid.Row="4" Margin="8,0" MinHeight="60"
+                 Background="#1e1e1e" Foreground="White"
+                 SelectionChanged="OnFrameSelectionChanged"
+                 IsVisible="False">
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="{x:Type models:AnimationFrame}">
+                    <TextBlock Text="{Binding SpriteName}" Foreground="White" Padding="4" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <!-- Row 5: Add Frames + Preview -->
+        <StackPanel x:Name="PreviewPanel" Grid.Row="5" Margin="8" IsVisible="False">
+            <Button x:Name="AddFramesButton" Content="Add Selected Sprites"
+                    HorizontalAlignment="Stretch" Margin="0,0,0,8"
+                    Click="OnAddFramesClicked" />
+
+            <Border Background="#1e1e1e" Height="120" Margin="0,0,0,4">
+                <controls:AnimationPreviewCanvas x:Name="PreviewCanvas" />
+            </Border>
+
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                <Button x:Name="PlayPauseButton" Content="Play" Width="50"
+                        Click="OnPlayPauseClicked" />
+                <Button x:Name="StopButton" Content="Stop" Width="50" Grid.Column="1" Margin="4,0,0,0"
+                        Click="OnStopClicked" />
+                <TextBlock x:Name="FrameCounterLabel" Text="Frame 0/0" Grid.Column="3"
+                           Foreground="White" VerticalAlignment="Center" />
+            </Grid>
+        </StackPanel>
+
+        <!-- Row 6: Export -->
+        <Button x:Name="ExportButton" Content="Export Animation JSON" Grid.Row="6"
+                Margin="8,0,8,8" HorizontalAlignment="Stretch"
+                Click="OnExportClicked"
+                IsVisible="False" />
+    </Grid>
+</UserControl>

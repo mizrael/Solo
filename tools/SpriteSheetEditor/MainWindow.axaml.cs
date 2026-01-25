@@ -13,6 +13,7 @@ using SpriteSheetEditor.UndoRedo.Commands;
 using SpriteSheetEditor.ViewModels;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
+using AnimationState = SpriteSheetEditor.UndoRedo.Commands.AnimationState;
 
 namespace SpriteSheetEditor;
 
@@ -36,6 +37,8 @@ public partial class MainWindow : Window
         Canvas.ViewModel = _viewModel;
 
         SpriteListView.ItemsSource = _viewModel.Document.Sprites;
+
+        AnimationPanel.ViewModel = _viewModel;
 
         KeyDown += OnWindowKeyDown;
         Closed += OnWindowClosed;
@@ -181,6 +184,10 @@ public partial class MainWindow : Window
 
         SelectToolMenuItem.Header = _viewModel.CurrentTool == EditorTool.Select ? "✓ Select" : "Select";
         DrawToolMenuItem.Header = _viewModel.CurrentTool == EditorTool.Draw ? "✓ Draw" : "Draw";
+
+        ExportAnimationMenuItem.IsEnabled = _viewModel.SelectedAnimation is not null;
+
+        AnimationPanel.SourceImage = _viewModel.Document.LoadedImage;
     }
 
     private void UpdateCanvasSize()
@@ -740,6 +747,162 @@ public partial class MainWindow : Window
                 UpdateSpriteSelection();
                 e.Handled = true;
                 break;
+        }
+    }
+
+    private void OnNewAnimationClicked(object? sender, RoutedEventArgs e)
+    {
+        CreateNewAnimation();
+    }
+
+    private async void OnExportAnimationClicked(object? sender, RoutedEventArgs e)
+    {
+        await ExportSelectedAnimation();
+    }
+
+    private void OnAnimationPanelNewAnimationClicked(object? sender, EventArgs e)
+    {
+        CreateNewAnimation();
+    }
+
+    private void OnAnimationPanelDeleteAnimationClicked(object? sender, EventArgs e)
+    {
+        if (_viewModel.SelectedAnimation is null) return;
+
+        var command = new RemoveAnimationCommand(_viewModel.Document, _viewModel.SelectedAnimation);
+        _viewModel.UndoRedo.Execute(command);
+        _viewModel.SelectedAnimation = _viewModel.Document.Animations.Count > 0
+            ? _viewModel.Document.Animations[0]
+            : null;
+        _viewModel.NotifyAnimationCountChanged();
+        UpdateMenuState();
+    }
+
+    private void OnAnimationPanelAddFramesClicked(object? sender, EventArgs e)
+    {
+        if (_viewModel.SelectedAnimation is null) return;
+
+        var spritesToAdd = _viewModel.SelectedSprites.Count > 0
+            ? _viewModel.SelectedSprites.ToList()
+            : (_viewModel.SelectedSprite is not null ? new List<SpriteDefinition> { _viewModel.SelectedSprite } : new List<SpriteDefinition>());
+
+        if (spritesToAdd.Count == 0) return;
+
+        var frames = spritesToAdd.Select(s => new AnimationFrame
+        {
+            Sprite = s,
+            SpriteName = s.Name
+        }).ToList();
+
+        var command = new AddFramesToAnimationCommand(_viewModel.SelectedAnimation, frames);
+        _viewModel.UndoRedo.Execute(command);
+        AnimationPanel.RefreshFrameList();
+    }
+
+    private void OnAnimationPanelRemoveFrameClicked(object? sender, EventArgs e)
+    {
+        if (_viewModel.SelectedAnimation is null || _viewModel.SelectedFrame is null) return;
+
+        var command = new RemoveFrameCommand(_viewModel.SelectedAnimation, _viewModel.SelectedFrame);
+        _viewModel.UndoRedo.Execute(command);
+        _viewModel.SelectedFrame = null;
+        AnimationPanel.RefreshFrameList();
+    }
+
+    private async void OnAnimationPanelExportClicked(object? sender, EventArgs e)
+    {
+        await ExportSelectedAnimation();
+    }
+
+    private void OnAnimationPanelPropertyChanged(object? sender, AnimationPropertyChangedEventArgs e)
+    {
+        var beforeState = AnimationState.From(e.Animation);
+
+        switch (e.PropertyName)
+        {
+            case nameof(AnimationDefinition.Name):
+                e.Animation.Name = (string)e.NewValue!;
+                break;
+            case nameof(AnimationDefinition.Fps):
+                e.Animation.Fps = (int)e.NewValue!;
+                break;
+            case nameof(AnimationDefinition.Loop):
+                e.Animation.Loop = (bool)e.NewValue!;
+                break;
+        }
+
+        var afterState = AnimationState.From(e.Animation);
+
+        switch (e.PropertyName)
+        {
+            case nameof(AnimationDefinition.Name):
+                beforeState = beforeState with { Name = (string)e.OldValue! };
+                break;
+            case nameof(AnimationDefinition.Fps):
+                beforeState = beforeState with { Fps = (int)e.OldValue! };
+                break;
+            case nameof(AnimationDefinition.Loop):
+                beforeState = beforeState with { Loop = (bool)e.OldValue! };
+                break;
+        }
+
+        var command = new ModifyAnimationPropertiesCommand(e.Animation, beforeState, afterState);
+        _viewModel.UndoRedo.Execute(command);
+    }
+
+    private void CreateNewAnimation()
+    {
+        var animation = _viewModel.CreateNewAnimation();
+        var command = new AddAnimationCommand(_viewModel.Document, animation);
+        _viewModel.UndoRedo.Execute(command);
+        _viewModel.SelectedAnimation = animation;
+        _viewModel.NotifyAnimationCountChanged();
+        UpdateMenuState();
+    }
+
+    private async Task ExportSelectedAnimation()
+    {
+        if (_viewModel.SelectedAnimation is null)
+        {
+            await MessageBoxManager.GetMessageBoxStandard(
+                "No Animation Selected",
+                "Please select an animation to export.",
+                ButtonEnum.Ok).ShowWindowDialogAsync(this);
+            return;
+        }
+
+        if (_viewModel.SelectedAnimation.Frames.Count == 0)
+        {
+            await MessageBoxManager.GetMessageBoxStandard(
+                "Empty Animation",
+                "The selected animation has no frames. Add frames before exporting.",
+                ButtonEnum.Ok).ShowWindowDialogAsync(this);
+            return;
+        }
+
+        var fileName = $"{_viewModel.SelectedAnimation.Name}.json";
+
+        var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "Export Animation",
+            SuggestedFileName = fileName,
+            FileTypeChoices = new[]
+            {
+                new FilePickerFileType("JSON") { Patterns = new[] { "*.json" } }
+            }
+        });
+
+        if (file is not null)
+        {
+            await AnimationExporter.ExportAsync(
+                _viewModel.SelectedAnimation,
+                _viewModel.Document.SpriteSheetName,
+                file.Path.LocalPath);
+
+            await MessageBoxManager.GetMessageBoxStandard(
+                "Exported",
+                $"Animation exported to {file.Path.LocalPath}",
+                ButtonEnum.Ok).ShowWindowDialogAsync(this);
         }
     }
 }

@@ -1,6 +1,6 @@
 {
   "animationName": "skeleton_idle_front",
-  "spriteSheetName": "characters/skeleton/skeleton_idle_front",
+  "spriteSheetName": "skeleton_idle_front",
   "fps": 10,
   "frames": [
     {
