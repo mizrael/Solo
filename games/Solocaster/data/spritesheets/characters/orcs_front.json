@@ -1,0 +1,27 @@
+{
+  "spriteSheetName": "spritesheet",
+  "sprites": [
+    {
+      "name": "orc1_front",
+      "x": 0,
+      "y": 0,
+      "width": 707,
+      "height": 1100
+    },
+    {
+      "name": "orc2_front",
+      "x": 707,
+      "y": 0,
+      "width": 854,
+      "height": 1200
+    },
+    {
+      "name": "orc3_front",
+      "x": 0,
+      "y": 1200,
+      "width": 788,
+      "height": 1200
+    }
+  ],
+  "animations": []
+}
