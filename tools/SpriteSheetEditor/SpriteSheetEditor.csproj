@@ -1,25 +1,25 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net10.0-windows10.0.19041.0</TargetFrameworks>
-    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <OutputType>WinExe</OutputType>
     <RootNamespace>SpriteSheetEditor</RootNamespace>
-    <UseMaui>true</UseMaui>
-    <SingleProject>true</SingleProject>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <EnableDefaultCssItems>false</EnableDefaultCssItems>
-    <ApplicationTitle>SpriteSheet Editor</ApplicationTitle>
-    <ApplicationId>com.solo.spritesheeteditor</ApplicationId>
-    <ApplicationVersion>1</ApplicationVersion>
-    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
-    <WindowsPackageType>None</WindowsPackageType>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.1" />
+    <PackageReference Include="Avalonia" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Skia" Version="11.2.3" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-    <PackageReference Include="SkiaSharp.Views.Maui.Controls" Version="2.88.7" />
+    <PackageReference Include="SkiaSharp" Version="2.88.9" />
+    <PackageReference Include="MessageBox.Avalonia" Version="3.1.6" />
   </ItemGroup>
 
 </Project>

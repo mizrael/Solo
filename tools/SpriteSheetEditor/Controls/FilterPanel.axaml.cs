@@ -1,48 +1,49 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Interactivity;
+using Avalonia.Media;
 using SkiaSharp;
 using SpriteSheetEditor.Filters;
 using SpriteSheetEditor.Utils;
 
 namespace SpriteSheetEditor.Controls;
 
-public partial class FilterPanel : ContentView
+public partial class FilterPanel : UserControl
 {
-    public static readonly BindableProperty TargetColorProperty =
-        BindableProperty.Create(nameof(TargetColor), typeof(SKColor), typeof(FilterPanel),
-            SKColors.Magenta, propertyChanged: OnTargetColorChanged);
+    public static readonly StyledProperty<SKColor> TargetColorProperty =
+        AvaloniaProperty.Register<FilterPanel, SKColor>(nameof(TargetColor), SKColors.Magenta);
 
-    public static readonly BindableProperty ToleranceProperty =
-        BindableProperty.Create(nameof(Tolerance), typeof(float), typeof(FilterPanel),
-            0f, propertyChanged: OnToleranceChanged);
+    public static readonly StyledProperty<float> ToleranceProperty =
+        AvaloniaProperty.Register<FilterPanel, float>(nameof(Tolerance), 0f);
 
-    public static readonly BindableProperty IsPickingColorProperty =
-        BindableProperty.Create(nameof(IsPickingColor), typeof(bool), typeof(FilterPanel),
-            false);
+    public static readonly StyledProperty<bool> IsPickingColorProperty =
+        AvaloniaProperty.Register<FilterPanel, bool>(nameof(IsPickingColor), false);
 
-    public static readonly BindableProperty ModeProperty =
-        BindableProperty.Create(nameof(Mode), typeof(BackgroundRemovalMode), typeof(FilterPanel),
-            BackgroundRemovalMode.SoftAlpha, propertyChanged: OnModeChanged);
+    public static readonly StyledProperty<BackgroundRemovalMode> ModeProperty =
+        AvaloniaProperty.Register<FilterPanel, BackgroundRemovalMode>(nameof(Mode), BackgroundRemovalMode.SoftAlpha);
 
     public SKColor TargetColor
     {
-        get => (SKColor)GetValue(TargetColorProperty);
+        get => GetValue(TargetColorProperty);
         set => SetValue(TargetColorProperty, value);
     }
 
     public float Tolerance
     {
-        get => (float)GetValue(ToleranceProperty);
+        get => GetValue(ToleranceProperty);
         set => SetValue(ToleranceProperty, value);
     }
 
     public bool IsPickingColor
     {
-        get => (bool)GetValue(IsPickingColorProperty);
+        get => GetValue(IsPickingColorProperty);
         set => SetValue(IsPickingColorProperty, value);
     }
 
     public BackgroundRemovalMode Mode
     {
-        get => (BackgroundRemovalMode)GetValue(ModeProperty);
+        get => GetValue(ModeProperty);
         set => SetValue(ModeProperty, value);
     }
 
@@ -55,22 +56,36 @@ public partial class FilterPanel : ContentView
 
     public FilterPanel()
     {
+        _isUpdatingFromCode = true;
         InitializeComponent();
-        ModePicker.SelectedIndex = 1; // Default to Soft Alpha
+        _isUpdatingFromCode = false;
         UpdateColorSwatch();
     }
 
-    private static void OnModeChanged(BindableObject bindable, object oldValue, object newValue)
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        if (bindable is FilterPanel panel)
+        base.OnPropertyChanged(change);
+
+        if (change.Property == TargetColorProperty)
         {
-            panel.SettingsChanged?.Invoke(panel, EventArgs.Empty);
+            UpdateColorSwatch();
+            UpdateHexEntry();
+            SettingsChanged?.Invoke(this, EventArgs.Empty);
+        }
+        else if (change.Property == ToleranceProperty)
+        {
+            UpdateToleranceSlider();
+            SettingsChanged?.Invoke(this, EventArgs.Empty);
+        }
+        else if (change.Property == ModeProperty)
+        {
+            SettingsChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 
-    private void OnModeChanged(object? sender, EventArgs e)
+    private void OnModeChanged(object? sender, SelectionChangedEventArgs e)
     {
-        if (_isUpdatingFromCode) return;
+        if (_isUpdatingFromCode || ModePicker is null) return;
 
         Mode = ModePicker.SelectedIndex switch
         {
@@ -81,30 +96,11 @@ public partial class FilterPanel : ContentView
         };
     }
 
-    private static void OnTargetColorChanged(BindableObject bindable, object oldValue, object newValue)
-    {
-        if (bindable is FilterPanel panel)
-        {
-            panel.UpdateColorSwatch();
-            panel.UpdateHexEntry();
-            panel.SettingsChanged?.Invoke(panel, EventArgs.Empty);
-        }
-    }
-
-    private static void OnToleranceChanged(BindableObject bindable, object oldValue, object newValue)
-    {
-        if (bindable is FilterPanel panel)
-        {
-            panel.UpdateToleranceSlider();
-            panel.SettingsChanged?.Invoke(panel, EventArgs.Empty);
-        }
-    }
-
     private void OnHexEntryTextChanged(object? sender, TextChangedEventArgs e)
     {
         if (_isUpdatingFromCode) return;
 
-        var hexText = e.NewTextValue;
+        var hexText = HexEntry.Text;
         if (SKColorUtils.TryParseHex(hexText, out var color))
         {
             _isUpdatingFromCode = true;
@@ -113,7 +109,7 @@ public partial class FilterPanel : ContentView
         }
     }
 
-    private void OnToleranceSliderValueChanged(object? sender, ValueChangedEventArgs e)
+    private void OnToleranceSliderValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
     {
         if (_isUpdatingFromCode) return;
 
@@ -127,26 +123,26 @@ public partial class FilterPanel : ContentView
         SettingsChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    private void OnPickButtonClicked(object? sender, EventArgs e)
+    private void OnPickButtonClicked(object? sender, RoutedEventArgs e)
     {
         IsPickingColor = !IsPickingColor;
-        PickButton.BackgroundColor = IsPickingColor ? Color.FromArgb("#0078d4") : null;
+        PickButton.Background = IsPickingColor ? new SolidColorBrush(Color.Parse("#0078d4")) : null;
         PickColorClicked?.Invoke(this, EventArgs.Empty);
     }
 
-    private void OnApplyButtonClicked(object? sender, EventArgs e)
+    private void OnApplyButtonClicked(object? sender, RoutedEventArgs e)
     {
         ApplyClicked?.Invoke(this, EventArgs.Empty);
     }
 
-    private void OnCancelButtonClicked(object? sender, EventArgs e)
+    private void OnCancelButtonClicked(object? sender, RoutedEventArgs e)
     {
         CancelClicked?.Invoke(this, EventArgs.Empty);
     }
 
     private void UpdateColorSwatch()
     {
-        ColorSwatch.Color = Color.FromRgba(TargetColor.Red, TargetColor.Green, TargetColor.Blue, TargetColor.Alpha);
+        ColorSwatch.Background = new SolidColorBrush(Color.FromRgb(TargetColor.Red, TargetColor.Green, TargetColor.Blue));
     }
 
     private void UpdateHexEntry()
@@ -171,7 +167,7 @@ public partial class FilterPanel : ContentView
     public void SetPickedColor(SKColor color)
     {
         IsPickingColor = false;
-        PickButton.BackgroundColor = null;
+        PickButton.Background = null;
         TargetColor = color;
     }
 }

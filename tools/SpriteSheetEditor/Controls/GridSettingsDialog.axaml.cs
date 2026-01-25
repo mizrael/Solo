@@ -1,21 +1,18 @@
+using Avalonia.Controls;
+using Avalonia.Interactivity;
 using SpriteSheetEditor.Services;
 
 namespace SpriteSheetEditor.Controls;
 
-public partial class GridSettingsDialog : ContentView
+public partial class GridSettingsDialog : Window
 {
     private int _imageWidth;
     private int _imageHeight;
     private int _existingSpriteCount;
 
-    public event EventHandler<GridSettingsEventArgs>? GenerateClicked;
-    public event EventHandler? CancelClicked;
-
     public GridSettingsDialog()
     {
         InitializeComponent();
-        ColumnsEntry.TextChanged += OnSettingsChanged;
-        RowsEntry.TextChanged += OnSettingsChanged;
     }
 
     public void Show(int imageWidth, int imageHeight, int existingSpriteCount)
@@ -23,13 +20,7 @@ public partial class GridSettingsDialog : ContentView
         _imageWidth = imageWidth;
         _imageHeight = imageHeight;
         _existingSpriteCount = existingSpriteCount;
-        IsVisible = true;
         UpdateInfo();
-    }
-
-    public void Hide()
-    {
-        IsVisible = false;
     }
 
     private void OnSettingsChanged(object? sender, TextChangedEventArgs e)
@@ -70,19 +61,18 @@ public partial class GridSettingsDialog : ContentView
         WarningLabel.Text = warnings.Count > 0 ? string.Join(" | ", warnings) : string.Empty;
     }
 
-    private void OnGenerateClicked(object? sender, EventArgs e)
+    private void OnGenerateClicked(object? sender, RoutedEventArgs e)
     {
         if (int.TryParse(ColumnsEntry.Text, out var columns) && columns >= 1 &&
             int.TryParse(RowsEntry.Text, out var rows) && rows >= 1)
         {
-            GenerateClicked?.Invoke(this, new GridSettingsEventArgs(columns, rows));
+            Close(new GridSettingsEventArgs(columns, rows));
         }
     }
 
-    private void OnCancelClicked(object? sender, EventArgs e)
+    private void OnCancelClicked(object? sender, RoutedEventArgs e)
     {
-        Hide();
-        CancelClicked?.Invoke(this, EventArgs.Empty);
+        Close(null);
     }
 }
 
