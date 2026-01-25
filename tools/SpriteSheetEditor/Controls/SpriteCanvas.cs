@@ -3,13 +3,11 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using Avalonia.Platform.Storage;
 using SkiaSharp;
 using SpriteSheetEditor.Models;
 using SpriteSheetEditor.UndoRedo.Commands;
 using SpriteSheetEditor.Utils;
 using SpriteSheetEditor.ViewModels;
-using System.Runtime.InteropServices;
 
 namespace SpriteSheetEditor.Controls;
 
