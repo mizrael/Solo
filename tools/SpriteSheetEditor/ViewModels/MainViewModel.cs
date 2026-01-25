@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using SkiaSharp;
 using SpriteSheetEditor.Models;
@@ -37,11 +38,26 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private SKBitmap? _originalImage;  // Backup of image before filter preview
 
+    [ObservableProperty]
+    private AnimationDefinition? _selectedAnimation;
+
+    [ObservableProperty]
+    private AnimationFrame? _selectedFrame;
+
+    [ObservableProperty]
+    private bool _isAnimationPlaying;
+
+    [ObservableProperty]
+    private int _currentPreviewFrameIndex;
+
+    public ObservableCollection<SpriteDefinition> SelectedSprites { get; } = [];
+
     public UndoRedoManager UndoRedo { get; } = new();
 
     public int ImageWidth => Document.LoadedImage?.Width ?? 0;
     public int ImageHeight => Document.LoadedImage?.Height ?? 0;
     public int SpriteCount => Document.Sprites.Count;
+    public int AnimationCount => Document.Animations.Count;
 
     public void AddSprite(SpriteDefinition sprite)
     {
@@ -115,5 +131,99 @@ public partial class MainViewModel : ObservableObject
             NotifyImageChanged();
         }
         IsFilterActive = false;
+    }
+
+    public AnimationDefinition CreateNewAnimation()
+    {
+        var index = Document.Animations.Count;
+        var animation = new AnimationDefinition
+        {
+            Name = $"animation_{index}",
+            Fps = 10,
+            Loop = true
+        };
+        return animation;
+    }
+
+    public void AddAnimation(AnimationDefinition animation)
+    {
+        Document.Animations.Add(animation);
+        SelectedAnimation = animation;
+        OnPropertyChanged(nameof(AnimationCount));
+    }
+
+    public void RemoveAnimation(AnimationDefinition animation)
+    {
+        Document.Animations.Remove(animation);
+        if (SelectedAnimation == animation)
+        {
+            SelectedAnimation = Document.Animations.Count > 0 ? Document.Animations[0] : null;
+        }
+        OnPropertyChanged(nameof(AnimationCount));
+    }
+
+    public void DeleteSelectedAnimation()
+    {
+        if (SelectedAnimation is null) return;
+        RemoveAnimation(SelectedAnimation);
+    }
+
+    public void AddSelectedSpritesToAnimation()
+    {
+        if (SelectedAnimation is null || SelectedSprites.Count == 0) return;
+
+        foreach (var sprite in SelectedSprites)
+        {
+            var frame = new AnimationFrame
+            {
+                Sprite = sprite,
+                SpriteName = sprite.Name
+            };
+            SelectedAnimation.Frames.Add(frame);
+        }
+    }
+
+    public void RemoveFrameFromAnimation(AnimationFrame frame)
+    {
+        SelectedAnimation?.Frames.Remove(frame);
+        if (SelectedFrame == frame)
+        {
+            SelectedFrame = null;
+        }
+    }
+
+    public void NotifyAnimationCountChanged()
+    {
+        OnPropertyChanged(nameof(AnimationCount));
+    }
+
+    public void ClearSelection()
+    {
+        SelectedSprites.Clear();
+        SelectedSprite = null;
+    }
+
+    public void ToggleSpriteSelection(SpriteDefinition sprite)
+    {
+        if (SelectedSprites.Contains(sprite))
+        {
+            SelectedSprites.Remove(sprite);
+            if (SelectedSprite == sprite)
+            {
+                SelectedSprite = SelectedSprites.Count > 0 ? SelectedSprites[^1] : null;
+            }
+        }
+        else
+        {
+            SelectedSprites.Add(sprite);
+            SelectedSprite = sprite;
+        }
+    }
+
+    public void SelectSprite(SpriteDefinition sprite)
+    {
+        SelectedSprites.Clear();
+        SelectedSprites.Add(sprite);
+        SelectedSprite = sprite;
     }
 }

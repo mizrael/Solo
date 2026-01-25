@@ -1,6 +1,6 @@
 {
   "animationName": "skeleton_attack_front",
-  "spriteSheetName": "characters/skeleton/skeleton_attack_front",
+  "spriteSheetName": "skeleton_attack_front",
   "fps": 10,
   "frames": [
     {

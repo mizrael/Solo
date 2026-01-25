@@ -37,6 +37,11 @@
             <MenuItem x:Name="FiltersMenu" Header="Filters" IsEnabled="False">
                 <MenuItem Header="Color to Transparent" Click="OnColorToTransparentClicked" />
             </MenuItem>
+            <MenuItem Header="_Animations">
+                <MenuItem x:Name="NewAnimationMenuItem" Header="New Animation" Click="OnNewAnimationClicked" InputGesture="Ctrl+Shift+N" />
+                <Separator />
+                <MenuItem x:Name="ExportAnimationMenuItem" Header="Export Animation..." Click="OnExportAnimationClicked" IsEnabled="False" />
+            </MenuItem>
             <MenuItem Header="_View">
                 <MenuItem Header="Grid..." Click="OnGridClicked" InputGesture="Ctrl+G" />
             </MenuItem>
@@ -63,64 +68,80 @@
                 </ScrollViewer>
             </Grid>
 
-            <!-- Right Panel -->
-            <Grid Grid.Column="1" RowDefinitions="*,Auto,*" Background="#252526">
-                <!-- Sprite List -->
-                <Border Grid.Row="0" Margin="8" Padding="8" Background="#1e1e1e" BorderBrush="#3e3e42" BorderThickness="1" CornerRadius="4">
-                    <Grid RowDefinitions="Auto,*">
-                        <TextBlock Text="Sprites" FontWeight="Bold" Foreground="White" />
-                        <ListBox Grid.Row="1" x:Name="SpriteListView"
-                                 Background="Transparent"
-                                 Foreground="White"
-                                 SelectionChanged="OnSpriteSelectionChanged">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate DataType="{x:Type models:SpriteDefinition}">
-                                    <TextBlock Text="{Binding Name}" Foreground="White" Padding="4" />
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
+            <!-- Right Panel with Tabs -->
+            <TabControl Grid.Column="1" Background="#252526">
+                <!-- Sprites Tab -->
+                <TabItem Header="Sprites">
+                    <Grid RowDefinitions="*,Auto,*">
+                        <!-- Sprite List -->
+                        <Border Grid.Row="0" Margin="8" Padding="8" Background="#1e1e1e" BorderBrush="#3e3e42" BorderThickness="1" CornerRadius="4">
+                            <Grid RowDefinitions="Auto,*">
+                                <TextBlock Text="Sprites" FontWeight="Bold" Foreground="White" />
+                                <ListBox Grid.Row="1" x:Name="SpriteListView"
+                                         Background="Transparent"
+                                         Foreground="White"
+                                         SelectionChanged="OnSpriteSelectionChanged">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate DataType="{x:Type models:SpriteDefinition}">
+                                            <TextBlock Text="{Binding Name}" Foreground="White" Padding="4" />
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Grid>
+                        </Border>
+
+                        <Rectangle Grid.Row="1" Height="1" Fill="#3e3e42" />
+
+                        <!-- Properties Panel -->
+                        <Border Grid.Row="2" Margin="8" Padding="8" Background="#1e1e1e" BorderBrush="#3e3e42" BorderThickness="1" CornerRadius="4">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Properties" FontWeight="Bold" Foreground="White" />
+
+                                <TextBlock Text="Name:" Foreground="#ccc" />
+                                <TextBox x:Name="NameEntry" Background="#333" Foreground="White"
+                                         LostFocus="OnNameEntryLostFocus" GotFocus="OnNameEntryGotFocus" />
+                                <TextBlock x:Name="NameErrorLabel" Foreground="#ff6b6b" FontSize="11" IsVisible="False" />
+
+                                <Grid ColumnDefinitions="*,*">
+                                    <StackPanel Grid.Column="0" Margin="0,0,4,0">
+                                        <TextBlock Text="X:" Foreground="#ccc" />
+                                        <TextBox x:Name="XEntry" Background="#333" Foreground="White" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="4,0,0,0">
+                                        <TextBlock Text="Y:" Foreground="#ccc" />
+                                        <TextBox x:Name="YEntry" Background="#333" Foreground="White" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,*">
+                                    <StackPanel Grid.Column="0" Margin="0,0,4,0">
+                                        <TextBlock Text="Width:" Foreground="#ccc" />
+                                        <TextBox x:Name="WidthEntry" Background="#333" Foreground="White" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="4,0,0,0">
+                                        <TextBlock Text="Height:" Foreground="#ccc" />
+                                        <TextBox x:Name="HeightEntry" Background="#333" Foreground="White" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <Button Content="Delete Sprite" Click="OnDeleteSpriteClicked"
+                                        Background="#c42b1c" Foreground="White" HorizontalAlignment="Stretch" />
+                            </StackPanel>
+                        </Border>
                     </Grid>
-                </Border>
+                </TabItem>
 
-                <Rectangle Grid.Row="1" Height="1" Fill="#3e3e42" />
-
-                <!-- Properties Panel -->
-                <Border Grid.Row="2" Margin="8" Padding="8" Background="#1e1e1e" BorderBrush="#3e3e42" BorderThickness="1" CornerRadius="4">
-                    <StackPanel Spacing="8">
-                        <TextBlock Text="Properties" FontWeight="Bold" Foreground="White" />
-
-                        <TextBlock Text="Name:" Foreground="#ccc" />
-                        <TextBox x:Name="NameEntry" Background="#333" Foreground="White"
-                                 LostFocus="OnNameEntryLostFocus" GotFocus="OnNameEntryGotFocus" />
-                        <TextBlock x:Name="NameErrorLabel" Foreground="#ff6b6b" FontSize="11" IsVisible="False" />
-
-                        <Grid ColumnDefinitions="*,*">
-                            <StackPanel Grid.Column="0" Margin="0,0,4,0">
-                                <TextBlock Text="X:" Foreground="#ccc" />
-                                <TextBox x:Name="XEntry" Background="#333" Foreground="White" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" Margin="4,0,0,0">
-                                <TextBlock Text="Y:" Foreground="#ccc" />
-                                <TextBox x:Name="YEntry" Background="#333" Foreground="White" />
-                            </StackPanel>
-                        </Grid>
-
-                        <Grid ColumnDefinitions="*,*">
-                            <StackPanel Grid.Column="0" Margin="0,0,4,0">
-                                <TextBlock Text="Width:" Foreground="#ccc" />
-                                <TextBox x:Name="WidthEntry" Background="#333" Foreground="White" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" Margin="4,0,0,0">
-                                <TextBlock Text="Height:" Foreground="#ccc" />
-                                <TextBox x:Name="HeightEntry" Background="#333" Foreground="White" />
-                            </StackPanel>
-                        </Grid>
-
-                        <Button Content="Delete Sprite" Click="OnDeleteSpriteClicked"
-                                Background="#c42b1c" Foreground="White" HorizontalAlignment="Stretch" />
-                    </StackPanel>
-                </Border>
-            </Grid>
+                <!-- Animations Tab -->
+                <TabItem Header="Animations">
+                    <controls:AnimationPanel x:Name="AnimationPanel"
+                                             NewAnimationClicked="OnAnimationPanelNewAnimationClicked"
+                                             DeleteAnimationClicked="OnAnimationPanelDeleteAnimationClicked"
+                                             AddFramesClicked="OnAnimationPanelAddFramesClicked"
+                                             RemoveFrameClicked="OnAnimationPanelRemoveFrameClicked"
+                                             ExportAnimationClicked="OnAnimationPanelExportClicked"
+                                             AnimationPropertyChanged="OnAnimationPanelPropertyChanged" />
+                </TabItem>
+            </TabControl>
         </Grid>
 
         <!-- Status Bar -->
