@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SpriteSheetEditor.Controls.FilterPanel"
+             Background="#2d2d30"
+             IsVisible="False">
+    <StackPanel Orientation="Horizontal" Spacing="16" Margin="8">
+        <!-- Mode Section -->
+        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <TextBlock Text="Mode:" Foreground="White" VerticalAlignment="Center" />
+            <ComboBox x:Name="ModePicker" Width="120" Background="#333" Foreground="White"
+                      SelectedIndex="1" SelectionChanged="OnModeChanged">
+                <ComboBoxItem Content="Hard" />
+                <ComboBoxItem Content="Soft Alpha" />
+                <ComboBoxItem Content="Chroma Key" />
+            </ComboBox>
+        </StackPanel>
+
+        <Rectangle Width="1" Fill="#555" />
+
+        <!-- Color Section -->
+        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <TextBlock Text="Color:" Foreground="White" VerticalAlignment="Center" />
+            <Border x:Name="ColorSwatch" Width="24" Height="24" Background="#FF00FF" VerticalAlignment="Center" />
+            <TextBox x:Name="HexEntry" Text="#FF00FF" Width="80" Background="#333" Foreground="White"
+                     VerticalAlignment="Center" TextChanged="OnHexEntryTextChanged" />
+            <Button x:Name="PickButton" Content="Pick" Click="OnPickButtonClicked" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <Rectangle Width="1" Fill="#555" />
+
+        <!-- Tolerance Section -->
+        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <TextBlock Text="Tolerance:" Foreground="White" VerticalAlignment="Center" />
+            <Slider x:Name="ToleranceSlider" Minimum="0" Maximum="100" Value="0" Width="120"
+                    VerticalAlignment="Center" ValueChanged="OnToleranceSliderValueChanged" />
+            <TextBlock x:Name="ToleranceValueLabel" Text="0%" Foreground="White" Width="40" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <Rectangle Width="1" Fill="#555" />
+
+        <!-- Action Buttons -->
+        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <Button Content="Apply" Background="#0078d4" Foreground="White" Click="OnApplyButtonClicked" />
+            <Button Content="Cancel" Click="OnCancelButtonClicked" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

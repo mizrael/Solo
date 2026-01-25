@@ -1,0 +1,37 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="SpriteSheetEditor.Controls.GridSettingsDialog"
+        Title="Generate Grid"
+        Width="320" Height="220"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Background="#2d2d30">
+
+    <Border Margin="20" Padding="0">
+        <StackPanel Spacing="16">
+            <TextBlock Text="Generate Grid" FontSize="18" FontWeight="Bold" Foreground="White" />
+
+            <Grid ColumnDefinitions="*,*">
+                <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                    <TextBlock Text="Columns:" Foreground="#ccc" />
+                    <TextBox x:Name="ColumnsEntry" Text="4" Background="#333" Foreground="White"
+                             TextChanged="OnSettingsChanged" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                    <TextBlock Text="Rows:" Foreground="#ccc" />
+                    <TextBox x:Name="RowsEntry" Text="4" Background="#333" Foreground="White"
+                             TextChanged="OnSettingsChanged" />
+                </StackPanel>
+            </Grid>
+
+            <TextBlock x:Name="InfoLabel" Foreground="#aaa" FontSize="12" />
+            <TextBlock x:Name="WarningLabel" Foreground="#f0ad4e" FontSize="12" />
+
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                <Button Content="Cancel" Click="OnCancelClicked" Background="#3e3e42" Foreground="White" />
+                <Button x:Name="GenerateButton" Content="Generate" Click="OnGenerateClicked"
+                        Background="#0078d4" Foreground="White" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>

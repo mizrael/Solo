@@ -1,0 +1,35 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="SpriteSheetEditor.Controls.ImportImagesDialog"
+        Title="Import Images"
+        Width="360" Height="260"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Background="#2d2d30">
+
+    <Border Margin="20" Padding="0">
+        <StackPanel Spacing="16">
+            <TextBlock x:Name="TitleLabel" Text="Import Images" FontSize="18" FontWeight="Bold" Foreground="White" />
+
+            <TextBlock x:Name="FileCountLabel" Text="0 images selected" Foreground="#ccc" />
+
+            <!-- Layout selection -->
+            <StackPanel x:Name="LayoutPanel" Spacing="8">
+                <TextBlock Text="Layout:" Foreground="#ccc" />
+                <StackPanel Orientation="Horizontal" Spacing="16">
+                    <RadioButton x:Name="GridRadio" Content="Grid" IsChecked="True" Foreground="White" GroupName="Layout" />
+                    <RadioButton x:Name="ColumnRadio" Content="Column" Foreground="White" GroupName="Layout" />
+                    <RadioButton x:Name="RowRadio" Content="Row" Foreground="White" GroupName="Layout" />
+                </StackPanel>
+            </StackPanel>
+
+            <TextBlock x:Name="InfoLabel" Foreground="#aaa" FontSize="12" />
+
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                <Button Content="Cancel" Click="OnCancelClicked" Background="#3e3e42" Foreground="White" />
+                <Button x:Name="ImportButton" Content="Import" Click="OnImportClicked"
+                        Background="#0078d4" Foreground="White" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>
