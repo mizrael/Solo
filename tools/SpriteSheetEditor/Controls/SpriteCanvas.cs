@@ -11,7 +11,7 @@ using SpriteSheetEditor.ViewModels;
 
 namespace SpriteSheetEditor.Controls;
 
-public class SpriteCanvas : Control
+public class SpriteCanvas : Control, IDisposable
 {
     private const int CheckerSize = 16;
     private static readonly SKColor CheckerLight = new(200, 200, 200);
@@ -628,5 +628,11 @@ public class SpriteCanvas : Control
 
         ViewModel.PanOffsetX = Math.Clamp(ViewModel.PanOffsetX, Math.Min(minX, 0), Math.Max(0, minX));
         ViewModel.PanOffsetY = Math.Clamp(ViewModel.PanOffsetY, Math.Min(minY, 0), Math.Max(0, minY));
+    }
+
+    public void Dispose()
+    {
+        _renderTarget?.Dispose();
+        _renderTarget = null;
     }
 }
