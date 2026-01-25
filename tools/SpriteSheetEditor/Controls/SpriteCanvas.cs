@@ -71,6 +71,17 @@ public class SpriteCanvas : Control
         ClipToBounds = true;
     }
 
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+
+        if (ViewModel is MainViewModel vm)
+            vm.PropertyChanged -= OnViewModelPropertyChanged;
+
+        _renderTarget?.Dispose();
+        _renderTarget = null;
+    }
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);

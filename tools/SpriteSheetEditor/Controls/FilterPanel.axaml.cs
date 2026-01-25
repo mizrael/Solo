@@ -111,7 +111,7 @@ public partial class FilterPanel : UserControl
 
     private void OnToleranceSliderValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
     {
-        if (_isUpdatingFromCode) return;
+        if (_isUpdatingFromCode || ToleranceValueLabel is null) return;
 
         var percentage = (int)e.NewValue;
         ToleranceValueLabel.Text = $"{percentage}%";

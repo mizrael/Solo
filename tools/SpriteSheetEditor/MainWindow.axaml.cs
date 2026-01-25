@@ -38,6 +38,12 @@ public partial class MainWindow : Window
         SpriteListView.ItemsSource = _viewModel.Document.Sprites;
 
         KeyDown += OnWindowKeyDown;
+        Closed += OnWindowClosed;
+    }
+
+    private void OnWindowClosed(object? sender, EventArgs e)
+    {
+        _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
     }
 
     private void OnNameEntryGotFocus(object? sender, GotFocusEventArgs e)
@@ -331,21 +337,31 @@ public partial class MainWindow : Window
 
         if (files.Count == 0) return;
 
-        var doc = await JsonExporter.LoadAsync(files[0].Path.LocalPath);
-        doc.LoadedImage = _viewModel.Document.LoadedImage;
-        doc.ImageFilePath = _viewModel.Document.ImageFilePath;
-        _viewModel.Document = doc;
-        SpriteListView.ItemsSource = _viewModel.Document.Sprites;
-        UpdateDocumentLabel();
-
-        var result = await MessageBoxManager.GetMessageBoxStandard(
-            "Load Image?",
-            "Would you like to load an image file for this spritesheet?",
-            ButtonEnum.YesNo).ShowWindowDialogAsync(this);
-
-        if (result == ButtonResult.Yes)
+        try
         {
-            OnLoadImagesClicked(sender, e);
+            var doc = await JsonExporter.LoadAsync(files[0].Path.LocalPath);
+            doc.LoadedImage = _viewModel.Document.LoadedImage;
+            doc.ImageFilePath = _viewModel.Document.ImageFilePath;
+            _viewModel.Document = doc;
+            SpriteListView.ItemsSource = _viewModel.Document.Sprites;
+            UpdateDocumentLabel();
+
+            var result = await MessageBoxManager.GetMessageBoxStandard(
+                "Load Image?",
+                "Would you like to load an image file for this spritesheet?",
+                ButtonEnum.YesNo).ShowWindowDialogAsync(this);
+
+            if (result == ButtonResult.Yes)
+            {
+                OnLoadImagesClicked(sender, e);
+            }
+        }
+        catch (Exception ex)
+        {
+            await MessageBoxManager.GetMessageBoxStandard(
+                "Load Error",
+                $"Failed to load JSON: {ex.Message}",
+                ButtonEnum.Ok).ShowWindowDialogAsync(this);
         }
     }
 
