@@ -23,7 +23,6 @@ public class PlayerBrain : Component
 
     private PlayerState _state = PlayerState.Exploring;
     private PlayerState _previousStateBeforeRun = PlayerState.Exploring;
-    private InputBindings? _inputBindings;
 
     private const float RunningSpeedMultiplier = 1.8f;
     private const float ExhaustedSpeedMultiplier = 0.6f;
@@ -38,7 +37,6 @@ public class PlayerBrain : Component
     public Vector2 Plane => _plane;
 
     public PlayerState State => _state;
-    public InputBindings? InputBindings => _inputBindings;
 
     public GameObject? DebugUIEntity { get; set; }
 
@@ -55,14 +53,14 @@ public class PlayerBrain : Component
         _inventory = this.Owner.Components.Get<InventoryComponent>();
         _stats = this.Owner.Components.Get<StatsComponent>();
 
-        _inputBindings = new InputBindings();
+        InputBindings.Initialize();
 
         base.InitCore();
     }
 
     protected override void UpdateCore(GameTime gameTime)
     {
-        _inputBindings?.Update();
+        InputBindings.Update();
 
         float ms = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
         float moveSpeed = ms * .005f;
@@ -71,27 +69,27 @@ public class PlayerBrain : Component
         var mouseState = Mouse.GetState();
 
         // Toggle character panel
-        if (_inputBindings?.IsActionPressed(InputActions.ToggleCharacterPanel) == true)
+        if (InputBindings.IsActionPressed(InputActions.ToggleCharacterPanel))
         {
             CharacterPanel?.Toggle();
         }
 
         // Toggle minimap
-        if (_inputBindings?.IsActionPressed(InputActions.ToggleMinimap) == true)
+        if (InputBindings.IsActionPressed(InputActions.ToggleMinimap))
         {
             if (MiniMapEntity != null)
                 MiniMapEntity.Enabled = !MiniMapEntity.Enabled;
         }
 
         // Toggle debug UI
-        if (_inputBindings?.IsActionPressed(InputActions.ToggleDebug) == true)
+        if (InputBindings.IsActionPressed(InputActions.ToggleDebug))
         {
             if (DebugUIEntity != null)
                 DebugUIEntity.Enabled = !DebugUIEntity.Enabled;
         }
 
         // Toggle metrics panel
-        if (_inputBindings?.IsActionPressed(InputActions.ToggleMetrics) == true)
+        if (InputBindings.IsActionPressed(InputActions.ToggleMetrics))
         {
             MetricsPanel?.Toggle();
         }
@@ -104,13 +102,13 @@ public class PlayerBrain : Component
         }
 
         // Open doors / interact
-        if (_inputBindings?.IsActionPressed(InputActions.Interact) == true)
+        if (InputBindings.IsActionPressed(InputActions.Interact))
         {
             TryOpenDoor();
         }
 
         // Toggle combat mode
-        if (_inputBindings?.IsActionPressed(InputActions.ToggleCombat) == true &&
+        if (InputBindings.IsActionPressed(InputActions.ToggleCombat) &&
             _state != PlayerState.Running && _state != PlayerState.Exhausted)
         {
             _state = _state == PlayerState.Combat ? PlayerState.Exploring : PlayerState.Combat;
@@ -119,9 +117,9 @@ public class PlayerBrain : Component
         _previousMouseState = mouseState;
 
         float moveAmount = 0;
-        bool wantsToRun = _inputBindings?.IsActionDown(InputActions.Run) == true;
-        bool movingForward = _inputBindings?.IsActionDown(InputActions.MoveForward) == true;
-        bool movingBackward = _inputBindings?.IsActionDown(InputActions.MoveBackward) == true;
+        bool wantsToRun = InputBindings.IsActionDown(InputActions.Run);
+        bool movingForward = InputBindings.IsActionDown(InputActions.MoveForward);
+        bool movingBackward = InputBindings.IsActionDown(InputActions.MoveBackward);
 
         if (movingForward)
             moveAmount = moveSpeed;
@@ -183,7 +181,7 @@ public class PlayerBrain : Component
                 _stats?.Metrics.RecordWalking(actualDistance);
         }
 
-        if (_inputBindings?.IsActionDown(InputActions.RotateLeft) == true)
+        if (InputBindings.IsActionDown(InputActions.RotateLeft))
         {
             Vector2 oldDirection = _transform.Local.Direction;
             var cos = MathF.Cos(-rotSpeed);
@@ -197,7 +195,7 @@ public class PlayerBrain : Component
             _plane.X = _plane.X * cos - _plane.Y * sin;
             _plane.Y = oldPlane.X * sin + _plane.Y * cos;
         }
-        else if (_inputBindings?.IsActionDown(InputActions.RotateRight) == true)
+        else if (InputBindings.IsActionDown(InputActions.RotateRight))
         {
             Vector2 oldDirection = _transform.Local.Direction;
             var cos = MathF.Cos(rotSpeed);
