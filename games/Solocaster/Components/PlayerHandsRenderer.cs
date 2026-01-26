@@ -11,6 +11,18 @@ namespace Solocaster.Components;
 
 public class PlayerHandsRenderer : Component, IRenderable
 {
+    private const string TextureKeyEmpty = "empty";
+    private const string TexturePathPrefix = "player/hand_";
+
+    private static readonly Dictionary<string, string[]> HandVariations = new()
+    {
+        { "empty", Array.Empty<string>() },
+        { "longsword", ["sword", "blade" ] },
+        { "axe", [ "axe" ] },
+        { "morningstar", [ "morningstar", "mace" ] },
+        { "shield", [ "shield", "buckler" ] }
+    };
+
     private readonly Game _game;
     private readonly InventoryComponent _inventory;
     private readonly PlayerBrain _playerBrain;
@@ -18,6 +30,8 @@ public class PlayerHandsRenderer : Component, IRenderable
     private Dictionary<string, Texture2D> _handTextures = new();
     private Texture2D? _rightHandTexture;
     private Texture2D? _leftHandTexture;
+    private string _rightHandKey = TextureKeyEmpty;
+    private string _leftHandKey = TextureKeyEmpty;
 
     private float _bobPhase;
     private float _rightBobOffset;
@@ -88,6 +102,11 @@ public class PlayerHandsRenderer : Component, IRenderable
     /// </summary>
     public float HorizontalSwayFrequency { get; set; } = 0.6f;
 
+    /// <summary>
+    /// Additional vertical offset when holding a weapon or shield (pushes hand lower on screen).
+    /// </summary>
+    public float ArmedVerticalOffset { get; set; } = 220f;
+
     public PlayerHandsRenderer(GameObject owner, Game game, InventoryComponent inventory, PlayerBrain playerBrain) : base(owner)
     {
         _game = game;
@@ -105,11 +124,10 @@ public class PlayerHandsRenderer : Component, IRenderable
 
     private void LoadTextures()
     {
-        _handTextures["empty"] = _game.Content.Load<Texture2D>("player/hand_empty");
-        _handTextures["longsword"] = _game.Content.Load<Texture2D>("player/hand_longsword");
-        _handTextures["axe"] = _game.Content.Load<Texture2D>("player/hand_axe");
-        _handTextures["morningstar"] = _game.Content.Load<Texture2D>("player/hand_morningstar");
-        _handTextures["shield"] = _game.Content.Load<Texture2D>("player/hand_shield");
+        foreach (var variation in HandVariations.Keys)
+        {
+            _handTextures[variation] = _game.Content.Load<Texture2D>(TexturePathPrefix + variation);
+        }
     }
 
     private void OnEquipmentChanged(ItemInstance item, EquipSlot slot)
@@ -125,38 +143,31 @@ public class PlayerHandsRenderer : Component, IRenderable
         var rightItem = _inventory.GetEquippedItem(EquipSlot.RightHand);
         var leftItem = _inventory.GetEquippedItem(EquipSlot.LeftHand);
 
-        var rightKey = MapItemToTextureKey(rightItem);
-        var leftKey = MapItemToTextureKey(leftItem);
+        _rightHandKey = MapItemToTextureKey(rightItem);
+        _leftHandKey = MapItemToTextureKey(leftItem);
 
-        _rightHandTexture = _handTextures.GetValueOrDefault(rightKey) ?? _handTextures["empty"];
-        _leftHandTexture = _handTextures.GetValueOrDefault(leftKey) ?? _handTextures["empty"];
+        _rightHandTexture = _handTextures.GetValueOrDefault(_rightHandKey) ?? _handTextures[TextureKeyEmpty];
+        _leftHandTexture = _handTextures.GetValueOrDefault(_leftHandKey) ?? _handTextures[TextureKeyEmpty];
     }
 
     private static string MapItemToTextureKey(ItemInstance? item)
     {
         if (item == null)
-            return "empty";
+            return TextureKeyEmpty;
 
         var id = item.TemplateId.ToLowerInvariant();
         var name = item.Template.Name.ToLowerInvariant();
 
-        // Check in priority order (more specific first)
-        if (id.Contains("shield") || name.Contains("shield") ||
-            id.Contains("buckler") || name.Contains("buckler"))
-            return "shield";
+        foreach (var (textureKey, keywords) in HandVariations)
+        {
+            foreach (var keyword in keywords)
+            {
+                if (id.Contains(keyword) || name.Contains(keyword))
+                    return textureKey;
+            }
+        }
 
-        if (id.Contains("morningstar") || name.Contains("morningstar") ||
-            id.Contains("mace") || name.Contains("mace"))
-            return "morningstar";
-
-        if (id.Contains("axe") || name.Contains("axe"))
-            return "axe";
-
-        if (id.Contains("sword") || name.Contains("sword") ||
-            id.Contains("blade") || name.Contains("blade"))
-            return "longsword";
-
-        return "empty";
+        return TextureKeyEmpty;
     }
 
     protected override void UpdateCore(GameTime gameTime)
@@ -211,8 +222,11 @@ public class PlayerHandsRenderer : Component, IRenderable
             int scaledWidth = (int)(_rightHandTexture.Width * Scale);
             int scaledHeight = (int)(_rightHandTexture.Height * Scale);
 
+            bool rightArmed = _rightHandKey != TextureKeyEmpty;
+            int rightArmedOffset = rightArmed ? (int)(ArmedVerticalOffset * Scale) : 0;
+
             int x = viewport.Width - scaledWidth - (int)(HandHorizontalOffset * Scale) + (int)_rightHorizontalOffset;
-            int y = viewport.Height - scaledHeight + (int)_rightBobOffset + scaledHeight / 8;
+            int y = viewport.Height - scaledHeight + (int)_rightBobOffset + scaledHeight / 8 + rightArmedOffset;
 
             var destRect = new Rectangle(x, y, scaledWidth, scaledHeight);
 
@@ -230,8 +244,11 @@ public class PlayerHandsRenderer : Component, IRenderable
             int scaledWidth = (int)(_leftHandTexture.Width * leftScale);
             int scaledHeight = (int)(_leftHandTexture.Height * leftScale);
 
+            bool leftArmed = _leftHandKey != TextureKeyEmpty;
+            int leftArmedOffset = leftArmed ? (int)(ArmedVerticalOffset * Scale) : 0;
+
             int x = (int)(HandHorizontalOffset * Scale) + (int)_leftHorizontalOffset;
-            int y = viewport.Height - scaledHeight + (int)_leftBobOffset + scaledHeight / 8 + (int)(LeftHandVerticalOffset * Scale);
+            int y = viewport.Height - scaledHeight + (int)_leftBobOffset + scaledHeight / 8 + (int)(LeftHandVerticalOffset * Scale) + leftArmedOffset;
 
             var destRect = new Rectangle(x, y, scaledWidth, scaledHeight);
 
