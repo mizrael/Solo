@@ -36,7 +36,7 @@ public class PlayerStatusPanel : PanelWidget
         ContentPadding = 0; // PlayerStatusPanel handles its own padding
 
         int totalWidth = Padding * 3 + AvatarSize + BarWidth;
-        int totalHeight = Padding * 2 + AvatarSize;
+        int totalHeight = Padding * 2 + Math.Max(AvatarSize, BarHeight * 3 + BarSpacing * 2);
         Size = new Vector2(totalWidth, totalHeight);
 
         LoadAvatar();
@@ -95,8 +95,9 @@ public class PlayerStatusPanel : PanelWidget
 
         // Calculate bar positions
         int barX = (int)screenPos.X + Padding * 2 + AvatarSize;
-        int healthBarY = (int)screenPos.Y + Padding + (AvatarSize - BarHeight * 2 - BarSpacing) / 2;
+        int healthBarY = (int)screenPos.Y + Padding + (AvatarSize - BarHeight * 3 - BarSpacing * 2) / 2;
         int manaBarY = healthBarY + BarHeight + BarSpacing;
+        int staminaBarY = manaBarY + BarHeight + BarSpacing;
 
         // Health bar
         float healthRatio = _stats.CurrentHealth / _stats.GetTotalStat(StatType.MaxHealth);
@@ -105,6 +106,25 @@ public class PlayerStatusPanel : PanelWidget
         // Mana bar
         float manaRatio = _stats.CurrentMana / _stats.GetTotalStat(StatType.MaxMana);
         DrawBar(spriteBatch, barX, manaBarY, manaRatio, UITheme.StatusBar.ManaFill, UITheme.StatusBar.ManaBackground);
+
+        // Stamina bar
+        float staminaRatio = _stats.CurrentStamina / _stats.MaxStamina;
+        Color staminaFill = _stats.IsExhausted
+            ? PulseColor(UITheme.StatusBar.StaminaFill, 0.5f)
+            : UITheme.StatusBar.StaminaFill;
+        DrawBar(spriteBatch, barX, staminaBarY, staminaRatio, staminaFill, UITheme.StatusBar.StaminaBackground);
+    }
+
+    private static Color PulseColor(Color baseColor, float intensity)
+    {
+        float pulse = (float)(Math.Sin(DateTime.Now.Ticks / 1000000.0 * 10) * 0.5 + 0.5);
+        float factor = 1f - (pulse * intensity);
+        return new Color(
+            (int)(baseColor.R * factor),
+            (int)(baseColor.G * factor),
+            (int)(baseColor.B * factor),
+            baseColor.A
+        );
     }
 
     private void DrawBar(SpriteBatch spriteBatch, int x, int y, float ratio, Color fillColor, Color bgColor)

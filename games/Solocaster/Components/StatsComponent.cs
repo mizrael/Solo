@@ -14,12 +14,22 @@ public class StatsComponent : Component
     private const float BaseStatGain = 1f; // Amount gained when progress reaches 100%
     private const float BaseProgressPerAction = 5f; // Base % progress per action
 
+    private const float StaminaDrainRate = 15f;
+    private const float StaminaRegenDelay = 0.5f;
+    private const float CombatActionRegenPause = 1.5f;
+    private const float ExhaustedDuration = 2f;
+
     private readonly Dictionary<StatType, float> _baseStats = new();
     private readonly Dictionary<StatType, float> _equipmentBonuses = new();
     private readonly Dictionary<StatType, float> _statProgress = new(); // 0-100%
 
     private float _currentHealth;
     private float _currentMana;
+    private float _currentStamina;
+    private bool _isExhausted;
+    private float _exhaustedTimer;
+    private float _lastRunTime;
+    private float _lastCombatActionTime;
 
     public string Name { get; set; } = "Adventurer";
     public RaceTemplate? Race { get; private set; }
@@ -47,6 +57,20 @@ public class StatsComponent : Component
             OnStatsChanged?.Invoke();
         }
     }
+
+    public float CurrentStamina
+    {
+        get => _currentStamina;
+        set
+        {
+            _currentStamina = Math.Clamp(value, 0, MaxStamina);
+            OnStatsChanged?.Invoke();
+        }
+    }
+
+    public float MaxStamina => 50 + GetTotalStat(StatType.Vitality) * 5;
+    public float StaminaRegenRate => 5 + GetTotalStat(StatType.Agility) * 0.5f;
+    public bool IsExhausted => _isExhausted;
 
     public StatsComponent(GameObject owner) : base(owner)
     {
@@ -198,6 +222,7 @@ public class StatsComponent : Component
         // Initialize current values to max
         _currentHealth = GetTotalStat(StatType.MaxHealth);
         _currentMana = GetTotalStat(StatType.MaxMana);
+        _currentStamina = MaxStamina;
     }
 
     public float GetBaseStat(StatType stat)
@@ -300,6 +325,55 @@ public class StatsComponent : Component
                 return false;
         }
         return true;
+    }
+
+    public void DrainStamina(float deltaTime)
+    {
+        CurrentStamina -= StaminaDrainRate * deltaTime;
+        _lastRunTime = 0f; // Reset timer while running
+
+        if (CurrentStamina <= 0)
+        {
+            CurrentStamina = 0;
+            _isExhausted = true;
+            _exhaustedTimer = ExhaustedDuration;
+        }
+    }
+
+    public void UpdateStamina(float deltaTime, bool isRunning)
+    {
+        // Update exhausted state
+        if (_isExhausted)
+        {
+            _exhaustedTimer -= deltaTime;
+            if (_exhaustedTimer <= 0)
+            {
+                _isExhausted = false;
+            }
+            return; // No regen while exhausted
+        }
+
+        // Track time since last run
+        if (!isRunning)
+            _lastRunTime += deltaTime;
+
+        // Track time since combat action
+        _lastCombatActionTime += deltaTime;
+
+        // Regenerate if conditions met
+        bool canRegen = !isRunning
+            && _lastRunTime >= StaminaRegenDelay
+            && _lastCombatActionTime >= CombatActionRegenPause;
+
+        if (canRegen && CurrentStamina < MaxStamina)
+        {
+            CurrentStamina += StaminaRegenRate * deltaTime;
+        }
+    }
+
+    public void OnCombatAction()
+    {
+        _lastCombatActionTime = 0f;
     }
 
     public event Action? OnStatsChanged;

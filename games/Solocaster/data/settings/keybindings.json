@@ -1,0 +1,13 @@
+{
+  "moveForward": "W",
+  "moveBackward": "S",
+  "rotateLeft": "A",
+  "rotateRight": "D",
+  "run": "LeftShift",
+  "toggleCombat": "R",
+  "interact": "E",
+  "toggleCharacterPanel": "Tab",
+  "toggleMinimap": "M",
+  "toggleMetrics": "C",
+  "toggleDebug": "L"
+}

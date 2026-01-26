@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Input;
 using Solo;
 using Solo.Components;
 using Solocaster.Entities;
+using Solocaster.Input;
 using Solocaster.Inventory;
 using Solocaster.UI;
 using System;
@@ -18,8 +19,14 @@ public class PlayerBrain : Component
     private StatsComponent? _stats;
 
     private readonly Map _map;
-    private KeyboardState _previousKeyboardState;
     private MouseState _previousMouseState;
+
+    private PlayerState _state = PlayerState.Exploring;
+    private PlayerState _previousStateBeforeRun = PlayerState.Exploring;
+    private InputBindings? _inputBindings;
+
+    private const float RunningSpeedMultiplier = 1.8f;
+    private const float ExhaustedSpeedMultiplier = 0.6f;
 
     public CharacterPanel? CharacterPanel { get; set; }
     public MetricsPanel? MetricsPanel { get; set; }
@@ -29,6 +36,9 @@ public class PlayerBrain : Component
 
     //TODO: not sure I like this here. should be in the camera
     public Vector2 Plane => _plane;
+
+    public PlayerState State => _state;
+    public InputBindings? InputBindings => _inputBindings;
 
     public GameObject? DebugUIEntity { get; set; }
 
@@ -45,40 +55,43 @@ public class PlayerBrain : Component
         _inventory = this.Owner.Components.Get<InventoryComponent>();
         _stats = this.Owner.Components.Get<StatsComponent>();
 
+        _inputBindings = new InputBindings();
+
         base.InitCore();
     }
 
     protected override void UpdateCore(GameTime gameTime)
     {
+        _inputBindings?.Update();
+
         float ms = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
         float moveSpeed = ms * .005f;
         float rotSpeed = ms * .005f;
 
-        var keyboardState = Keyboard.GetState();
         var mouseState = Mouse.GetState();
 
-        // Toggle character panel with Tab
-        if (keyboardState.IsKeyDown(Keys.Tab) && !_previousKeyboardState.IsKeyDown(Keys.Tab))
+        // Toggle character panel
+        if (_inputBindings?.IsActionPressed(InputActions.ToggleCharacterPanel) == true)
         {
             CharacterPanel?.Toggle();
         }
 
-        // Toggle minimap with M
-        if (keyboardState.IsKeyDown(Keys.M) && !_previousKeyboardState.IsKeyDown(Keys.M))
+        // Toggle minimap
+        if (_inputBindings?.IsActionPressed(InputActions.ToggleMinimap) == true)
         {
             if (MiniMapEntity != null)
                 MiniMapEntity.Enabled = !MiniMapEntity.Enabled;
         }
 
-        // Toggle minimap with M
-        if (keyboardState.IsKeyDown(Keys.L) && !_previousKeyboardState.IsKeyDown(Keys.L))
+        // Toggle debug UI
+        if (_inputBindings?.IsActionPressed(InputActions.ToggleDebug) == true)
         {
             if (DebugUIEntity != null)
                 DebugUIEntity.Enabled = !DebugUIEntity.Enabled;
         }
 
-        // Toggle metrics panel with C
-        if (keyboardState.IsKeyDown(Keys.C) && !_previousKeyboardState.IsKeyDown(Keys.C))
+        // Toggle metrics panel
+        if (_inputBindings?.IsActionPressed(InputActions.ToggleMetrics) == true)
         {
             MetricsPanel?.Toggle();
         }
@@ -90,20 +103,66 @@ public class PlayerBrain : Component
             TryPickupClickedItem();
         }
 
-        // Open doors with E key
-        if (keyboardState.IsKeyDown(Keys.E) && !_previousKeyboardState.IsKeyDown(Keys.E))
+        // Open doors / interact
+        if (_inputBindings?.IsActionPressed(InputActions.Interact) == true)
         {
             TryOpenDoor();
         }
 
-        _previousKeyboardState = keyboardState;
+        // Toggle combat mode
+        if (_inputBindings?.IsActionPressed(InputActions.ToggleCombat) == true &&
+            _state != PlayerState.Running && _state != PlayerState.Exhausted)
+        {
+            _state = _state == PlayerState.Combat ? PlayerState.Exploring : PlayerState.Combat;
+        }
+
         _previousMouseState = mouseState;
 
         float moveAmount = 0;
-        if (keyboardState.IsKeyDown(Keys.W))
+        bool wantsToRun = _inputBindings?.IsActionDown(InputActions.Run) == true;
+        bool movingForward = _inputBindings?.IsActionDown(InputActions.MoveForward) == true;
+        bool movingBackward = _inputBindings?.IsActionDown(InputActions.MoveBackward) == true;
+
+        if (movingForward)
             moveAmount = moveSpeed;
-        else if (keyboardState.IsKeyDown(Keys.S))
+        else if (movingBackward)
             moveAmount = -moveSpeed;
+
+        // Handle running state
+        if (_state == PlayerState.Exhausted)
+        {
+            moveAmount *= ExhaustedSpeedMultiplier;
+            _stats?.UpdateStamina((float)gameTime.ElapsedGameTime.TotalSeconds, false);
+
+            if (!_stats?.IsExhausted ?? true)
+            {
+                _state = _previousStateBeforeRun;
+            }
+        }
+        else if (wantsToRun && movingForward && _stats?.CurrentStamina > 0 && _state != PlayerState.Exhausted)
+        {
+            if (_state != PlayerState.Running)
+            {
+                _previousStateBeforeRun = _state;
+                _state = PlayerState.Running;
+            }
+
+            moveAmount *= RunningSpeedMultiplier;
+            _stats?.DrainStamina((float)gameTime.ElapsedGameTime.TotalSeconds);
+
+            if (_stats?.IsExhausted ?? false)
+            {
+                _state = PlayerState.Exhausted;
+            }
+        }
+        else
+        {
+            if (_state == PlayerState.Running)
+            {
+                _state = _previousStateBeforeRun;
+            }
+            _stats?.UpdateStamina((float)gameTime.ElapsedGameTime.TotalSeconds, false);
+        }
 
         CurrentMoveSpeed = MathF.Abs(moveAmount);
 
@@ -124,7 +183,7 @@ public class PlayerBrain : Component
                 _stats?.Metrics.RecordWalking(actualDistance);
         }
 
-        if (keyboardState.IsKeyDown(Keys.A))
+        if (_inputBindings?.IsActionDown(InputActions.RotateLeft) == true)
         {
             Vector2 oldDirection = _transform.Local.Direction;
             var cos = MathF.Cos(-rotSpeed);
@@ -138,7 +197,7 @@ public class PlayerBrain : Component
             _plane.X = _plane.X * cos - _plane.Y * sin;
             _plane.Y = oldPlane.X * sin + _plane.Y * cos;
         }
-        else if (keyboardState.IsKeyDown(Keys.D))
+        else if (_inputBindings?.IsActionDown(InputActions.RotateRight) == true)
         {
             Vector2 oldDirection = _transform.Local.Direction;
             var cos = MathF.Cos(rotSpeed);
