@@ -103,7 +103,7 @@
     ]
   },
   "monsters": {
-    "density": 1,
+    "density": 0.2,
     "encounters": [
       {
         "weight": 100,

@@ -1,7 +1,8 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Solo.Components;
 using Solo;
+using Solo.Assets;
+using Solo.Components;
 using Solocaster.Components;
 using Solocaster.Entities;
 using System;
@@ -59,8 +60,15 @@ public unsafe class Raycaster : IDisposable
     private readonly int _frameHeight;
 
     private readonly float[] _zBuffer;
-    private readonly Dictionary<Texture2D, (Color[] data, GCHandle handle)> _spriteTextureCache;
+    private readonly Dictionary<Sprite, CachedRotatedSprite> _spriteTextureCache;
     private readonly SpatialGrid _spatialGrid;
+
+    private struct CachedRotatedSprite
+    {
+        public GCHandle Handle;
+        public int RotatedWidth;  // Original height becomes width after 90° rotation
+        public int RotatedHeight; // Original width becomes height after 90° rotation
+    }
 
     // Pre-allocated projection buffer to avoid per-frame allocations
     private SpriteProjection[] _projections = new SpriteProjection[512];
@@ -82,7 +90,7 @@ public unsafe class Raycaster : IDisposable
 
         FrameBuffer = new Color[screenWidth * screenHeight];
         _zBuffer = new float[screenHeight];
-        _spriteTextureCache = new Dictionary<Texture2D, (Color[], GCHandle)>();
+        _spriteTextureCache = new Dictionary<Sprite, CachedRotatedSprite>();
 
         // Assume all sprites are the same size (first sprite's bounds)
         var wallSprites = level.WallSprites;
@@ -710,17 +718,31 @@ public unsafe class Raycaster : IDisposable
         return ((uint)a << 24) | ((uint)r << 16) | ((uint)g << 8) | b;
     }
 
-    private uint* GetOrCacheSpriteTexture(Texture2D texture)
+    private CachedRotatedSprite GetOrCacheRotatedSprite(Sprite sprite)
     {
-        if (!_spriteTextureCache.TryGetValue(texture, out var cached))
+        if (!_spriteTextureCache.TryGetValue(sprite, out var cached))
         {
-            var data = new Color[texture.Width * texture.Height];
-            texture.GetData(data);
-            var handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-            cached = (data, handle);
-            _spriteTextureCache[texture] = cached;
+            var bounds = sprite.Bounds;
+            var texture = sprite.Texture;
+
+            // Extract sprite region from texture
+            var spriteData = new Color[bounds.Width * bounds.Height];
+            texture.GetData(0, bounds, spriteData, 0, spriteData.Length);
+
+            // Rotate 90° counter-clockwise for linear column access
+            // After rotation: width becomes height, height becomes width
+            var rotatedData = spriteData.Rotate90(bounds.Width, bounds.Height);
+
+            var handle = GCHandle.Alloc(rotatedData, GCHandleType.Pinned);
+            cached = new CachedRotatedSprite
+            {
+                Handle = handle,
+                RotatedWidth = bounds.Height,  // Original height
+                RotatedHeight = bounds.Width   // Original width
+            };
+            _spriteTextureCache[sprite] = cached;
         }
-        return (uint*)cached.handle.AddrOfPinnedObject();
+        return cached;
     }
 
     private struct SpriteProjection
@@ -736,10 +758,11 @@ public unsafe class Raycaster : IDisposable
         public int DrawEndY;
         public int DrawStartX;
         public int DrawEndX;
-        public uint* TexturePtr;
-        public int TexWidth;
-        public int TexHeight;
-        public Rectangle SpriteBounds;
+        public uint* RotatedTexturePtr;
+        public int RotatedTexWidth;   // Original sprite height (after 90° rotation)
+        public int RotatedTexHeight;  // Original sprite width (after 90° rotation)
+        public int OriginalSpriteWidth;
+        public int OriginalSpriteHeight;
         public BillboardAnchor Anchor;
     }
 
@@ -818,12 +841,12 @@ public unsafe class Raycaster : IDisposable
             if (drawStartX >= drawEndX)
                 continue;
 
-            var texture = frameProvider.Sprite?.Texture;
-            if (texture is null)
+            var sprite = frameProvider.Sprite;
+            if (sprite is null)
                 continue;
 
-            var bounds = frameProvider.Bounds;
-            var texturePtr = GetOrCacheSpriteTexture(texture);
+            var bounds = sprite.Bounds;
+            var cachedSprite = GetOrCacheRotatedSprite(sprite);
 
             // Grow array if needed
             if (_projectionCount >= _projections.Length)
@@ -842,10 +865,11 @@ public unsafe class Raycaster : IDisposable
                 DrawEndY = drawEndY,
                 DrawStartX = drawStartX,
                 DrawEndX = drawEndX,
-                TexturePtr = texturePtr,
-                TexWidth = texture.Width,
-                TexHeight = texture.Height,
-                SpriteBounds = bounds,
+                RotatedTexturePtr = (uint*)cachedSprite.Handle.AddrOfPinnedObject(),
+                RotatedTexWidth = cachedSprite.RotatedWidth,
+                RotatedTexHeight = cachedSprite.RotatedHeight,
+                OriginalSpriteWidth = bounds.Width,
+                OriginalSpriteHeight = bounds.Height,
                 Anchor = billboard.Anchor
             };
         }
@@ -919,20 +943,20 @@ public unsafe class Raycaster : IDisposable
             uint shadingFixed = (uint)(proj.ShadingFactor * 256);
 
             // Pre-compute texture stepping values (16.16 fixed-point)
-            int texStepY = (proj.SpriteBounds.Height << 16) / Math.Max(1, proj.SpriteSizeX);
-            int texStepX = (proj.SpriteBounds.Width << 16) / Math.Max(1, proj.SpriteSizeY);
+            // texStepY maps screen X to original sprite height (which is now rotatedWidth)
+            // texStepX maps screen Y to original sprite width
+            int texStepY = (proj.OriginalSpriteHeight << 16) / Math.Max(1, proj.SpriteSizeX);
+            int texStepX = (proj.OriginalSpriteWidth << 16) / Math.Max(1, proj.SpriteSizeY);
 
             // Cache frequently accessed values to avoid repeated struct field access
             int projScreenY = proj.ScreenY;
             int projSpriteSizeY = proj.SpriteSizeY;
             int projDrawStartX = proj.DrawStartX;
             int projDrawEndX = proj.DrawEndX;
-            int projSpriteBoundsX = proj.SpriteBounds.X;
-            int projSpriteBoundsY = proj.SpriteBounds.Y;
-            int projSpriteBoundsWidth = proj.SpriteBounds.Width;
-            int projSpriteBoundsHeight = proj.SpriteBounds.Height;
-            int projTexWidth = proj.TexWidth;
-            uint* projTexturePtr = proj.TexturePtr;
+            int originalSpriteWidth = proj.OriginalSpriteWidth;
+            int originalSpriteHeight = proj.OriginalSpriteHeight;
+            int rotatedTexWidth = proj.RotatedTexWidth;   // = originalSpriteHeight
+            uint* rotatedTexturePtr = proj.RotatedTexturePtr;
             float projDistance = proj.Distance;
 
             for (int y = visibleStartY; y < visibleEndY; y++)
@@ -943,12 +967,17 @@ public unsafe class Raycaster : IDisposable
 
                 uint* rowPtr = pixels + y * _frameWidth;
 
-                // Calculate texX using fixed-point
+                // Calculate localTexX (in original sprite coords) using fixed-point
                 int localTexXFixed = (y - projScreenY + projSpriteSizeY / 2) * texStepX;
                 int localTexX = localTexXFixed >> 16;
-                if (localTexX < 0 || localTexX >= projSpriteBoundsWidth)
+                if (localTexX < 0 || localTexX >= originalSpriteWidth)
                     continue;
-                int texX = projSpriteBoundsX + localTexX;
+
+                // For rotated texture (CCW 90°): original (x,y) → rotated (y, width-1-x)
+                // So original localTexX maps to rotatedY = originalSpriteWidth - 1 - localTexX
+                // Base offset for this column in rotated texture (constant for inner loop)
+                int rotatedY = originalSpriteWidth - 1 - localTexX;
+                int baseOffset = rotatedY * rotatedTexWidth;
 
                 int x = projDrawStartX;
                 int endX = projDrawEndX;
@@ -963,19 +992,21 @@ public unsafe class Raycaster : IDisposable
                     Vector256<int> vAlphaMask = Vector256.Create(unchecked((int)0xFF000000));
                     Vector256<int> vZero = Vector256<int>.Zero;
                     Vector256<int> v255 = Vector256.Create(255);
+                    Vector256<int> vBaseOffset = Vector256.Create(baseOffset);
 
                     for (; x <= endX - 8; x += 8)
                     {
+                        // Compute 8 consecutive texture offsets (linear access pattern)
                         for (int i = 0; i < 8; i++)
                         {
-                            int localTexY = texYFixed >> 16;
-                            texYCoords[i] = projSpriteBoundsY + Math.Clamp(localTexY, 0, projSpriteBoundsHeight - 1);
-                            texOffsets[i] = texYCoords[i] * projTexWidth + texX;
+                            // localTexY in original coords = rotatedX in rotated coords
+                            int localTexY = Math.Clamp(texYFixed >> 16, 0, originalSpriteHeight - 1);
+                            texOffsets[i] = baseOffset + localTexY;  // Linear: baseOffset + rotatedX
                             texYFixed += texStepY;
                         }
 
                         Vector256<int> vOffsets = Avx.LoadVector256(texOffsets);
-                        Vector256<int> vColors = Avx2.GatherVector256((int*)projTexturePtr, vOffsets, 4);
+                        Vector256<int> vColors = Avx2.GatherVector256((int*)rotatedTexturePtr, vOffsets, 4);
 
                         Vector256<int> vAlpha = Avx2.And(vColors, vAlphaMask);
                         if (Avx2.MoveMask(Avx2.CompareEqual(vAlpha, vZero).AsByte()) == -1)
@@ -1004,22 +1035,23 @@ public unsafe class Raycaster : IDisposable
                     }
                 }
 
-                // Scalar fallback with loop unrolling (4 pixels)
+                // Scalar fallback with loop unrolling (4 pixels) - linear access
                 for (; x <= endX - 4; x += 4)
                 {
-                    int ty0 = projSpriteBoundsY + Math.Clamp(texYFixed >> 16, 0, projSpriteBoundsHeight - 1);
+                    int ty0 = Math.Clamp(texYFixed >> 16, 0, originalSpriteHeight - 1);
                     texYFixed += texStepY;
-                    int ty1 = projSpriteBoundsY + Math.Clamp(texYFixed >> 16, 0, projSpriteBoundsHeight - 1);
+                    int ty1 = Math.Clamp(texYFixed >> 16, 0, originalSpriteHeight - 1);
                     texYFixed += texStepY;
-                    int ty2 = projSpriteBoundsY + Math.Clamp(texYFixed >> 16, 0, projSpriteBoundsHeight - 1);
+                    int ty2 = Math.Clamp(texYFixed >> 16, 0, originalSpriteHeight - 1);
                     texYFixed += texStepY;
-                    int ty3 = projSpriteBoundsY + Math.Clamp(texYFixed >> 16, 0, projSpriteBoundsHeight - 1);
+                    int ty3 = Math.Clamp(texYFixed >> 16, 0, originalSpriteHeight - 1);
                     texYFixed += texStepY;
 
-                    uint c0 = projTexturePtr[ty0 * projTexWidth + texX];
-                    uint c1 = projTexturePtr[ty1 * projTexWidth + texX];
-                    uint c2 = projTexturePtr[ty2 * projTexWidth + texX];
-                    uint c3 = projTexturePtr[ty3 * projTexWidth + texX];
+                    // Linear access: baseOffset + localTexY (consecutive in memory for consecutive localTexY)
+                    uint c0 = rotatedTexturePtr[baseOffset + ty0];
+                    uint c1 = rotatedTexturePtr[baseOffset + ty1];
+                    uint c2 = rotatedTexturePtr[baseOffset + ty2];
+                    uint c3 = rotatedTexturePtr[baseOffset + ty3];
 
                     if ((c0 & 0xFF000000) != 0) rowPtr[x] = isHovered ? ApplyHighlight(c0, shadingFixed) : ApplyShadingFixed(c0, shadingFixed);
                     if ((c1 & 0xFF000000) != 0) rowPtr[x + 1] = isHovered ? ApplyHighlight(c1, shadingFixed) : ApplyShadingFixed(c1, shadingFixed);
@@ -1027,14 +1059,13 @@ public unsafe class Raycaster : IDisposable
                     if ((c3 & 0xFF000000) != 0) rowPtr[x + 3] = isHovered ? ApplyHighlight(c3, shadingFixed) : ApplyShadingFixed(c3, shadingFixed);
                 }
 
-                // Handle remaining pixels
+                // Handle remaining pixels - linear access
                 for (; x < endX; x++)
                 {
                     int localTexY = texYFixed >> 16;
-                    if (localTexY >= 0 && localTexY < projSpriteBoundsHeight)
+                    if (localTexY >= 0 && localTexY < originalSpriteHeight)
                     {
-                        int texY = projSpriteBoundsY + localTexY;
-                        uint color = projTexturePtr[texY * projTexWidth + texX];
+                        uint color = rotatedTexturePtr[baseOffset + localTexY];
                         if ((color & 0xFF000000) != 0)
                         {
                             rowPtr[x] = isHovered ? ApplyHighlight(color, shadingFixed) : ApplyShadingFixed(color, shadingFixed);
@@ -1099,10 +1130,10 @@ public unsafe class Raycaster : IDisposable
         if (_ceilingShadingHandle.IsAllocated)
             _ceilingShadingHandle.Free();
 
-        foreach (var (_, handle) in _spriteTextureCache.Values)
+        foreach (var cached in _spriteTextureCache.Values)
         {
-            if (handle.IsAllocated)
-                handle.Free();
+            if (cached.Handle.IsAllocated)
+                cached.Handle.Free();
         }
     }
 }
