@@ -20,7 +20,11 @@ public class ButtonWidget : PanelWidget
     public string Text { get; set; } = string.Empty;
     public SpriteFont? Font { get; set; }
     public Color TextColor { get; set; } = UITheme.Text.Primary;
-    public Color HoverColor { get; set; } = UITheme.Selection.HoverBackground;
+    public Color HoverTextColor { get; set; } = UITheme.Text.Title;
+    public Color HoverBackgroundColor { get; set; } = new Color(80, 75, 65, 240);
+    public Color HoverBorderColor { get; set; } = UITheme.Selection.SelectionBorder;
+
+    public bool IsHovered => _isHovered;
 
     protected override void UpdateCore(GameTime gameTime, MouseState mouseState, MouseState previousMouseState)
     {
@@ -32,20 +36,27 @@ public class ButtonWidget : PanelWidget
 
     protected override void RenderCore(SpriteBatch spriteBatch)
     {
-        var originalColor = BackgroundColor;
+        var originalBackgroundColor = BackgroundColor;
+        var originalBorderColor = BorderColor;
+
         if (_isHovered)
-            BackgroundColor = HoverColor;
+        {
+            BackgroundColor = HoverBackgroundColor;
+            BorderColor = HoverBorderColor;
+        }
 
         base.RenderCore(spriteBatch);
 
-        BackgroundColor = originalColor;
+        BackgroundColor = originalBackgroundColor;
+        BorderColor = originalBorderColor;
 
         // Draw text centered
         if (Font != null && !string.IsNullOrEmpty(Text))
         {
             var textSize = Font.MeasureString(Text);
             var textPos = ScreenPosition + (Size - textSize) / 2;
-            spriteBatch.DrawString(Font, Text, textPos, TextColor);
+            var currentTextColor = _isHovered ? HoverTextColor : TextColor;
+            spriteBatch.DrawString(Font, Text, textPos, currentTextColor);
         }
     }
 
