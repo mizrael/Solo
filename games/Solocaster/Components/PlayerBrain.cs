@@ -32,6 +32,8 @@ public class PlayerBrain : Component
 
     public GameObject? DebugUIEntity { get; set; }
 
+    public float CurrentMoveSpeed { get; private set; }
+
     public PlayerBrain(GameObject owner, Map map) : base(owner)
     {
         _map = map;
@@ -49,7 +51,7 @@ public class PlayerBrain : Component
     protected override void UpdateCore(GameTime gameTime)
     {
         float ms = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-        float moveSpeed = ms * .015f;
+        float moveSpeed = ms * .005f;
         float rotSpeed = ms * .005f;
 
         var keyboardState = Keyboard.GetState();
@@ -102,6 +104,8 @@ public class PlayerBrain : Component
             moveAmount = moveSpeed;
         else if (keyboardState.IsKeyDown(Keys.S))
             moveAmount = -moveSpeed;
+
+        CurrentMoveSpeed = MathF.Abs(moveAmount);
 
         if (moveAmount != 0)
         {

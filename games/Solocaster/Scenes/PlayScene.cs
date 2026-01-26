@@ -117,5 +117,11 @@ public class PlayScene : Scene
         );
         uiService.AddWidget(metricsPanel);
         playerBrain.MetricsPanel = metricsPanel;
+
+        var playerHandsEntity = new GameObject();
+        var playerHandsRenderer = new PlayerHandsRenderer(playerHandsEntity, Game, inventoryComponent, playerBrain);
+        playerHandsEntity.Components.Add(playerHandsRenderer);
+        playerHandsRenderer.LayerIndex = 5;
+        Root.AddChild(playerHandsEntity);
     }
 }
