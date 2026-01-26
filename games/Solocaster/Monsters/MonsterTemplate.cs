@@ -10,7 +10,7 @@ public class MonsterTemplate
     public required string Name { get; init; }
     public Dictionary<StatType, float> Stats { get; init; } = new();
     public MonsterBehavior Behavior { get; init; } = new();
-    public Dictionary<string, string> Animations { get; init; } = new();
+    public string SpritesheetBasePath { get; init; } = string.Empty;
     public float Scale { get; init; } = 1.0f;
     public BillboardAnchor Anchor { get; init; } = BillboardAnchor.Bottom;
 }

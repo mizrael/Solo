@@ -13,7 +13,9 @@ public class StaticFrameProvider : IFrameProvider
         _sprite = sprite;
     }
 
-    public Rectangle GetCurrentBounds() => _sprite.Bounds;
+    public Sprite? Sprite => _sprite;
+
+    public Rectangle Bounds => _sprite.Bounds;
 
     public Texture2D GetTexture() => _sprite.Texture;
 }

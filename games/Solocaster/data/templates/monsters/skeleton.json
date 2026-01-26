@@ -13,11 +13,7 @@
     "attackRange": 1.2,
     "moveSpeed": 2.0
   },
-  "animations": {
-    "idle": "data/animations/skeleton/skeleton_idle",
-    "walk": "data/animations/skeleton/skeleton_walk",
-    "attack": "data/animations/skeleton/skeleton_attack"
-  },
+  "spritesheetBasePath": "monsters/skeletons",
   "scale": 0.8,
   "anchor": "Bottom"
 }

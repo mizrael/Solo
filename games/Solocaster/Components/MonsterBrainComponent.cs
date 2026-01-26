@@ -10,10 +10,9 @@ public class MonsterBrainComponent : Component
 {
     private TransformComponent _transform;
     private BillboardComponent _billboard;
-    private AnimatedSpriteProvider _animationController;
+    private IDirectionalFrameProvider _spriteProvider;
     private GameObject _player;
 
-    private string _currentState = "idle";
     private float _facingAngle;
 
     public MonsterTemplate Template { get; set; }
@@ -22,9 +21,9 @@ public class MonsterBrainComponent : Component
     {
     }
 
-    public void Initialize(AnimatedSpriteProvider animationController, GameObject player)
+    public void Initialize(IDirectionalFrameProvider spriteProvider, GameObject player)
     {
-        _animationController = animationController;
+        _spriteProvider = spriteProvider;
         _player = player;
     }
 
@@ -36,11 +35,10 @@ public class MonsterBrainComponent : Component
 
     protected override void UpdateCore(GameTime gameTime)
     {
-        if (_animationController == null || _player == null)
+        if (_spriteProvider == null || _player == null)
             return;
 
         UpdateDirectionToPlayer();
-        _animationController.Update(gameTime);
     }
 
     private void UpdateDirectionToPlayer()
@@ -68,14 +66,6 @@ public class MonsterBrainComponent : Component
             _ => Direction.Back
         };
 
-        _animationController.SetDirection(direction);
+        _spriteProvider.SetDirection(direction);
     }
-
-    public void SetState(string state)
-    {
-        _currentState = state;
-        _animationController?.SetState(state);
-    }
-
-    public string CurrentState => _currentState;
 }

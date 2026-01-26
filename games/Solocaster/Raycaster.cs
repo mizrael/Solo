@@ -811,11 +811,11 @@ public unsafe class Raycaster : IDisposable
             drawStartX = Math.Max(0, drawStartX);
             drawEndX = Math.Min(_frameWidth - 1, drawEndX);
 
-            var texture = frameProvider.GetTexture();
+            var texture = frameProvider.Sprite?.Texture;
             if (texture is null)
                 continue;
 
-            var bounds = frameProvider.GetCurrentBounds();
+            var bounds = frameProvider.Bounds;
             var texturePtr = GetOrCacheSpriteTexture(texture);
 
             projections.Add(new SpriteProjection
