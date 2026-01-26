@@ -16,11 +16,14 @@ public class PlayerHandsRenderer : Component, IRenderable
     private readonly PlayerBrain _playerBrain;
 
     private Dictionary<string, Texture2D> _handTextures = new();
-    private Texture2D? _currentTexture;
-    private string _currentWeaponKey = "empty";
+    private Texture2D? _rightHandTexture;
+    private Texture2D? _leftHandTexture;
 
     private float _bobPhase;
-    private float _bobOffset;
+    private float _rightBobOffset;
+    private float _leftBobOffset;
+    private float _rightHorizontalOffset;
+    private float _leftHorizontalOffset;
 
     public int LayerIndex { get; set; } = 10;
     public bool Hidden { get; set; }
@@ -55,6 +58,36 @@ public class PlayerHandsRenderer : Component, IRenderable
     /// </summary>
     public float IdleBobAmplitude { get; set; } = 4f;
 
+    /// <summary>
+    /// Horizontal offset from screen edge for each hand.
+    /// </summary>
+    public float HandHorizontalOffset { get; set; } = 300;
+
+    /// <summary>
+    /// Phase offset between left and right hand bobbing (0 = in sync, PI = alternating).
+    /// </summary>
+    public float HandPhaseOffset { get; set; } = MathF.PI * 0.7f;
+
+    /// <summary>
+    /// Scale multiplier for the left hand to make it appear closer to the viewer.
+    /// </summary>
+    public float LeftHandScaleMultiplier { get; set; } = 1.12f;
+
+    /// <summary>
+    /// Vertical offset for the left hand (positive = lower on screen, appearing closer).
+    /// </summary>
+    public float LeftHandVerticalOffset { get; set; } = 20f;
+
+    /// <summary>
+    /// Horizontal sway amplitude for subtle hand movement.
+    /// </summary>
+    public float HorizontalSwayAmplitude { get; set; } = 4f;
+
+    /// <summary>
+    /// Frequency multiplier for horizontal sway (different from vertical bob for natural feel).
+    /// </summary>
+    public float HorizontalSwayFrequency { get; set; } = 0.6f;
+
     public PlayerHandsRenderer(GameObject owner, Game game, InventoryComponent inventory, PlayerBrain playerBrain) : base(owner)
     {
         _game = game;
@@ -67,33 +100,35 @@ public class PlayerHandsRenderer : Component, IRenderable
         LoadTextures();
         _inventory.OnItemEquipped += OnEquipmentChanged;
         _inventory.OnItemUnequipped += OnEquipmentChanged;
-        UpdateCurrentTexture();
+        UpdateHandTextures();
     }
 
     private void LoadTextures()
     {
-        _handTextures["empty"] = _game.Content.Load<Texture2D>("player/hands_empty");
-        _handTextures["longsword"] = _game.Content.Load<Texture2D>("player/hands_longsword");
-        _handTextures["axe"] = _game.Content.Load<Texture2D>("player/hands_axe");
-        _handTextures["morningstar"] = _game.Content.Load<Texture2D>("player/hands_morningstar");
+        _handTextures["empty"] = _game.Content.Load<Texture2D>("player/hand_empty");
+        _handTextures["longsword"] = _game.Content.Load<Texture2D>("player/hand_longsword");
+        _handTextures["axe"] = _game.Content.Load<Texture2D>("player/hand_axe");
+        _handTextures["morningstar"] = _game.Content.Load<Texture2D>("player/hand_morningstar");
     }
 
     private void OnEquipmentChanged(ItemInstance item, EquipSlot slot)
     {
         if (slot == EquipSlot.RightHand || slot == EquipSlot.LeftHand)
         {
-            UpdateCurrentTexture();
+            UpdateHandTextures();
         }
     }
 
-    private void UpdateCurrentTexture()
+    private void UpdateHandTextures()
     {
-        var weapon = _inventory.GetEquippedItem(EquipSlot.RightHand)
-                  ?? _inventory.GetEquippedItem(EquipSlot.LeftHand);
+        var rightWeapon = _inventory.GetEquippedItem(EquipSlot.RightHand);
+        var leftWeapon = _inventory.GetEquippedItem(EquipSlot.LeftHand);
 
-        _currentWeaponKey = MapWeaponToTextureKey(weapon);
-        _currentTexture = _handTextures.GetValueOrDefault(_currentWeaponKey)
-                       ?? _handTextures["empty"];
+        var rightKey = MapWeaponToTextureKey(rightWeapon);
+        var leftKey = MapWeaponToTextureKey(leftWeapon);
+
+        _rightHandTexture = _handTextures.GetValueOrDefault(rightKey) ?? _handTextures["empty"];
+        _leftHandTexture = _handTextures.GetValueOrDefault(leftKey) ?? _handTextures["empty"];
     }
 
     private static string MapWeaponToTextureKey(ItemInstance? weapon)
@@ -136,31 +171,76 @@ public class PlayerHandsRenderer : Component, IRenderable
             ? BobAmplitude
             : IdleBobAmplitude;
 
-        // Use abs(sin) for stepping feel when moving, regular sin for gentle idle sway
-        _bobOffset = moveSpeed > 0.001f
-            ? MathF.Abs(MathF.Sin(_bobPhase * MathF.PI)) * amplitude * Scale
-            : MathF.Sin(_bobPhase * MathF.PI * 2) * amplitude * Scale;
+        // Calculate bob offsets for each hand with phase offset for alternating motion
+        if (moveSpeed > 0.001f)
+        {
+            // Stepping feel when moving - hands alternate with slight desync
+            _rightBobOffset = MathF.Abs(MathF.Sin(_bobPhase * MathF.PI)) * amplitude * Scale;
+            _leftBobOffset = MathF.Abs(MathF.Sin((_bobPhase * MathF.PI) + HandPhaseOffset)) * amplitude * Scale * 1.15f;
+        }
+        else
+        {
+            // Gentle idle sway - slightly different timing for each hand
+            float rightSway = MathF.Sin(_bobPhase * MathF.PI * 2) * amplitude * Scale;
+            float leftSway = MathF.Sin((_bobPhase * MathF.PI * 2) + 0.4f) * amplitude * Scale * 1.2f;
+            _rightBobOffset = rightSway;
+            _leftBobOffset = leftSway;
+        }
+
+        // Horizontal sway with different phase for each hand (creates natural jitter)
+        float swayPhase = _bobPhase * HorizontalSwayFrequency;
+        _rightHorizontalOffset = MathF.Sin(swayPhase * MathF.PI * 2) * HorizontalSwayAmplitude * Scale;
+        _leftHorizontalOffset = MathF.Sin((swayPhase * MathF.PI * 2) + MathF.PI * 0.4f) * HorizontalSwayAmplitude * Scale * 1.3f;
     }
 
     public void Render(SpriteBatch spriteBatch)
     {
-        if (_currentTexture == null || Hidden)
+        if (Hidden)
             return;
 
         var viewport = _game.GraphicsDevice.Viewport;
 
-        int scaledWidth = (int)(_currentTexture.Width * Scale);
-        int scaledHeight = (int)(_currentTexture.Height * Scale);
+        // Render right hand (on the right side of screen)
+        if (_rightHandTexture != null)
+        {
+            int scaledWidth = (int)(_rightHandTexture.Width * Scale);
+            int scaledHeight = (int)(_rightHandTexture.Height * Scale);
 
-        var x = (viewport.Width - scaledWidth) / 2;
-        var y = viewport.Height - scaledHeight + (int)_bobOffset + scaledHeight / 8;
+            int x = viewport.Width - scaledWidth - (int)(HandHorizontalOffset * Scale) + (int)_rightHorizontalOffset;
+            int y = viewport.Height - scaledHeight + (int)_rightBobOffset + scaledHeight / 8;
 
-        var destRect = new Rectangle(x, y, scaledWidth, scaledHeight);
+            var destRect = new Rectangle(x, y, scaledWidth, scaledHeight);
 
-        spriteBatch.Draw(
-            _currentTexture,
-            destRect,
-            Color.White
-        );
+            spriteBatch.Draw(
+                _rightHandTexture,
+                destRect,
+                Color.White
+            );
+        }
+
+        // Render left hand (mirrored, on the left side of screen, slightly closer/larger)
+        if (_leftHandTexture != null)
+        {
+            float leftScale = Scale * LeftHandScaleMultiplier;
+            int scaledWidth = (int)(_leftHandTexture.Width * leftScale);
+            int scaledHeight = (int)(_leftHandTexture.Height * leftScale);
+
+            int x = (int)(HandHorizontalOffset * Scale) + (int)_leftHorizontalOffset;
+            int y = viewport.Height - scaledHeight + (int)_leftBobOffset + scaledHeight / 8 + (int)(LeftHandVerticalOffset * Scale);
+
+            var destRect = new Rectangle(x, y, scaledWidth, scaledHeight);
+
+            // Draw mirrored using SpriteEffects.FlipHorizontally
+            spriteBatch.Draw(
+                _leftHandTexture,
+                destRect,
+                null,
+                Color.White,
+                0f,
+                Vector2.Zero,
+                SpriteEffects.FlipHorizontally,
+                0f
+            );
+        }
     }
 }

@@ -128,7 +128,7 @@
 /processorParam:TextureFormat=Color
 /build:misc_items2.png
 
-#begin player/hands_axe.png
+#begin player/hand_axe.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -138,9 +138,9 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:player/hands_axe.png
+/build:player/hand_axe.png
 
-#begin player/hands_empty.png
+#begin player/hand_empty.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -150,9 +150,9 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:player/hands_empty.png
+/build:player/hand_empty.png
 
-#begin player/hands_longsword.png
+#begin player/hand_longsword.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -162,9 +162,9 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:player/hands_longsword.png
+/build:player/hand_longsword.png
 
-#begin player/hands_morningstar.png
+#begin player/hand_morningstar.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -174,7 +174,7 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:player/hands_morningstar.png
+/build:player/hand_morningstar.png
 
 #begin wolfenstein.png
 /importer:TextureImporter
