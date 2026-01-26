@@ -109,6 +109,7 @@ public class PlayerHandsRenderer : Component, IRenderable
         _handTextures["longsword"] = _game.Content.Load<Texture2D>("player/hand_longsword");
         _handTextures["axe"] = _game.Content.Load<Texture2D>("player/hand_axe");
         _handTextures["morningstar"] = _game.Content.Load<Texture2D>("player/hand_morningstar");
+        _handTextures["shield"] = _game.Content.Load<Texture2D>("player/hand_shield");
     }
 
     private void OnEquipmentChanged(ItemInstance item, EquipSlot slot)
@@ -121,25 +122,29 @@ public class PlayerHandsRenderer : Component, IRenderable
 
     private void UpdateHandTextures()
     {
-        var rightWeapon = _inventory.GetEquippedItem(EquipSlot.RightHand);
-        var leftWeapon = _inventory.GetEquippedItem(EquipSlot.LeftHand);
+        var rightItem = _inventory.GetEquippedItem(EquipSlot.RightHand);
+        var leftItem = _inventory.GetEquippedItem(EquipSlot.LeftHand);
 
-        var rightKey = MapWeaponToTextureKey(rightWeapon);
-        var leftKey = MapWeaponToTextureKey(leftWeapon);
+        var rightKey = MapItemToTextureKey(rightItem);
+        var leftKey = MapItemToTextureKey(leftItem);
 
         _rightHandTexture = _handTextures.GetValueOrDefault(rightKey) ?? _handTextures["empty"];
         _leftHandTexture = _handTextures.GetValueOrDefault(leftKey) ?? _handTextures["empty"];
     }
 
-    private static string MapWeaponToTextureKey(ItemInstance? weapon)
+    private static string MapItemToTextureKey(ItemInstance? item)
     {
-        if (weapon == null)
+        if (item == null)
             return "empty";
 
-        var id = weapon.TemplateId.ToLowerInvariant();
-        var name = weapon.Template.Name.ToLowerInvariant();
+        var id = item.TemplateId.ToLowerInvariant();
+        var name = item.Template.Name.ToLowerInvariant();
 
         // Check in priority order (more specific first)
+        if (id.Contains("shield") || name.Contains("shield") ||
+            id.Contains("buckler") || name.Contains("buckler"))
+            return "shield";
+
         if (id.Contains("morningstar") || name.Contains("morningstar") ||
             id.Contains("mace") || name.Contains("mace"))
             return "morningstar";
