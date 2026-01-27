@@ -1,46 +1,42 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Solo;
+using Solo.AI;
 using Solo.Components;
+using Solocaster.AI.Player;
 using Solocaster.Entities;
 using Solocaster.Input;
-using Solocaster.Inventory;
-using Solocaster.UI;
 using System;
 
 namespace Solocaster.Components;
 
 public class PlayerBrain : Component
 {
-    private Vector2 _plane = new(0, .45f);
-
-    private TransformComponent _transform;
-    private InventoryComponent? _inventory;
-    private StatsComponent? _stats;
-
     private readonly Map _map;
+
+    private TransformComponent _transform = null!;
+    private InventoryComponent _inventory = null!;
+    private StatsComponent _stats = null!;
+
+    private StateMachine _stateMachine = null!;
+    private PlayerStateContext _context = null!;
+
+    private PlayerExploringState _exploringState = null!;
+    private PlayerCombatState _combatState = null!;
+    private PlayerRunningState _runningState = null!;
+    private PlayerExhaustedState _exhaustedState = null!;
+
     private MouseState _previousMouseState;
 
-    private PlayerState _state = PlayerState.Exploring;
-    private PlayerState _previousStateBeforeRun = PlayerState.Exploring;
-
-    private const float RunningSpeedMultiplier = 1.8f;
-    private const float ExhaustedSpeedMultiplier = 0.6f;
-
-    public CharacterPanel? CharacterPanel { get; set; }
-    public MetricsPanel? MetricsPanel { get; set; }
-    public SpatialGrid? SpatialGrid { get; set; }
     public Raycaster? Raycaster { get; set; }
-    public GameObject? MiniMapEntity { get; set; }
 
-    //TODO: not sure I like this here. should be in the camera
-    public Vector2 Plane => _plane;
+    public Vector2 Plane { get; private set; } = new Vector2(0, 0.45f);
 
-    public PlayerState State => _state;
+    public PlayerState State => GetCurrentPlayerState();
+    public float CurrentMoveSpeed => _context?.CurrentMoveSpeed ?? 0f;
 
-    public GameObject? DebugUIEntity { get; set; }
-
-    public float CurrentMoveSpeed { get; private set; }
+    public float LeftHandRaiseAmount => _context?.LeftHandRaiseAmount ?? 0f;
+    public float RightHandRaiseAmount => _context?.RightHandRaiseAmount ?? 0f;
 
     public PlayerBrain(GameObject owner, Map map) : base(owner)
     {
@@ -49,13 +45,76 @@ public class PlayerBrain : Component
 
     protected override void InitCore()
     {
-        _transform = this.Owner.Components.Get<TransformComponent>();
-        _inventory = this.Owner.Components.Get<InventoryComponent>();
-        _stats = this.Owner.Components.Get<StatsComponent>();
+        _transform = Owner.Components.Get<TransformComponent>();
+        _inventory = Owner.Components.Get<InventoryComponent>();
+        _stats = Owner.Components.Get<StatsComponent>();
 
         InputBindings.Initialize();
 
+        _context = new PlayerStateContext
+        {
+            Inventory = _inventory,
+            Stats = _stats,
+        };
+
+        _exploringState = new PlayerExploringState(Owner, _context);
+        _combatState = new PlayerCombatState(Owner, _context);
+        _runningState = new PlayerRunningState(Owner, _context);
+        _exhaustedState = new PlayerExhaustedState(Owner, _context);
+
+        _stateMachine = new StateMachine(_exploringState);
+        SetupTransitions();
+
         base.InitCore();
+    }
+
+    private void SetupTransitions()
+    {
+        // Exploring -> Combat (R key)
+        _stateMachine.AddTransition(_exploringState, _combatState,
+            _ => InputBindings.IsActionPressed(InputActions.ToggleCombat));
+
+        // Combat -> Exploring (R key)
+        _stateMachine.AddTransition(_combatState, _exploringState,
+            _ => InputBindings.IsActionPressed(InputActions.ToggleCombat));
+
+        // Exploring -> Running (Shift + Forward + has stamina)
+        _stateMachine.AddTransition(_exploringState, _runningState,
+            _ => InputBindings.IsActionDown(InputActions.Run) &&
+                 InputBindings.IsActionDown(InputActions.MoveForward) &&
+                 _stats.CurrentStamina > 0,
+            _ => _context.PreviousStateBeforeRun = PlayerState.Exploring);
+
+        // Combat -> Running (Shift + Forward + has stamina)
+        _stateMachine.AddTransition(_combatState, _runningState,
+            _ => InputBindings.IsActionDown(InputActions.Run) &&
+                 InputBindings.IsActionDown(InputActions.MoveForward) &&
+                 _stats.CurrentStamina > 0,
+            _ => _context.PreviousStateBeforeRun = PlayerState.Combat);
+
+        // Running -> Exhausted (stamina depleted)
+        _stateMachine.AddTransition(_runningState, _exhaustedState,
+            _ => _stats.IsExhausted);
+
+        // Running -> Exploring (stopped running, was exploring)
+        _stateMachine.AddTransition(_runningState, _exploringState,
+            _ => (!InputBindings.IsActionDown(InputActions.Run) ||
+                  !InputBindings.IsActionDown(InputActions.MoveForward)) &&
+                 _context.PreviousStateBeforeRun == PlayerState.Exploring);
+
+        // Running -> Combat (stopped running, was in combat)
+        _stateMachine.AddTransition(_runningState, _combatState,
+            _ => (!InputBindings.IsActionDown(InputActions.Run) ||
+                  !InputBindings.IsActionDown(InputActions.MoveForward)) &&
+                 _context.PreviousStateBeforeRun == PlayerState.Combat);
+
+        // Exhausted -> Exploring (recovered, was exploring)
+        _stateMachine.AddTransition(_exhaustedState, _exploringState,
+            _ => !_stats.IsExhausted && _context.PreviousStateBeforeRun == PlayerState.Exploring);
+
+        // Exhausted -> Combat (recovered, was in combat)
+        _stateMachine.AddTransition(_exhaustedState, _combatState,
+            _ => !_stats.IsExhausted && _context.PreviousStateBeforeRun == PlayerState.Combat);
     }
 
     protected override void UpdateCore(GameTime gameTime)
@@ -63,157 +122,40 @@ public class PlayerBrain : Component
         InputBindings.Update();
 
         float ms = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-        float moveSpeed = ms * .005f;
-        float rotSpeed = ms * .005f;
+        float baseSpeed = ms * 0.005f;
+        float rotSpeed = ms * 0.005f;
 
         var mouseState = Mouse.GetState();
 
-        // Toggle character panel
-        if (InputBindings.IsActionPressed(InputActions.ToggleCharacterPanel))
-        {
-            CharacterPanel?.Toggle();
-        }
+        // Handle interactions (available in all states)
+        HandlePickup(mouseState);
+        HandleInteract();
 
-        // Toggle minimap
-        if (InputBindings.IsActionPressed(InputActions.ToggleMinimap))
-        {
-            if (MiniMapEntity != null)
-                MiniMapEntity.Enabled = !MiniMapEntity.Enabled;
-        }
+        // Update state machine
+        _stateMachine.Update(gameTime);
 
-        // Toggle debug UI
-        if (InputBindings.IsActionPressed(InputActions.ToggleDebug))
-        {
-            if (DebugUIEntity != null)
-                DebugUIEntity.Enabled = !DebugUIEntity.Enabled;
-        }
+        // Handle movement (after state machine sets speed multiplier)
+        float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+        HandleMovement(baseSpeed, deltaTime);
+        HandleRotation(rotSpeed);
 
-        // Toggle metrics panel
-        if (InputBindings.IsActionPressed(InputActions.ToggleMetrics))
-        {
-            MetricsPanel?.Toggle();
-        }
+        // Update previous mouse state AFTER state machine so combat can detect clicks
+        _previousMouseState = mouseState;
+        _context.PreviousMouseState = mouseState;
+    }
 
-        // Pick up items with left mouse click on hovered item
+    private void HandlePickup(MouseState mouseState)
+    {
         if (mouseState.LeftButton == ButtonState.Pressed &&
             _previousMouseState.LeftButton == ButtonState.Released)
         {
             TryPickupClickedItem();
         }
-
-        // Open doors / interact
-        if (InputBindings.IsActionPressed(InputActions.Interact))
-        {
-            TryOpenDoor();
-        }
-
-        // Toggle combat mode
-        if (InputBindings.IsActionPressed(InputActions.ToggleCombat) &&
-            _state != PlayerState.Running && _state != PlayerState.Exhausted)
-        {
-            _state = _state == PlayerState.Combat ? PlayerState.Exploring : PlayerState.Combat;
-        }
-
-        _previousMouseState = mouseState;
-
-        float moveAmount = 0;
-        bool wantsToRun = InputBindings.IsActionDown(InputActions.Run);
-        bool movingForward = InputBindings.IsActionDown(InputActions.MoveForward);
-        bool movingBackward = InputBindings.IsActionDown(InputActions.MoveBackward);
-
-        if (movingForward)
-            moveAmount = moveSpeed;
-        else if (movingBackward)
-            moveAmount = -moveSpeed;
-
-        // Handle running state
-        if (_state == PlayerState.Exhausted)
-        {
-            moveAmount *= ExhaustedSpeedMultiplier;
-            _stats?.UpdateStamina((float)gameTime.ElapsedGameTime.TotalSeconds, false);
-
-            if (!_stats?.IsExhausted ?? true)
-            {
-                _state = _previousStateBeforeRun;
-            }
-        }
-        else if (wantsToRun && movingForward && _stats?.CurrentStamina > 0 && _state != PlayerState.Exhausted)
-        {
-            if (_state != PlayerState.Running)
-            {
-                _previousStateBeforeRun = _state;
-                _state = PlayerState.Running;
-            }
-
-            moveAmount *= RunningSpeedMultiplier;
-            _stats?.DrainStamina((float)gameTime.ElapsedGameTime.TotalSeconds);
-
-            if (_stats?.IsExhausted ?? false)
-            {
-                _state = PlayerState.Exhausted;
-            }
-        }
-        else
-        {
-            if (_state == PlayerState.Running)
-            {
-                _state = _previousStateBeforeRun;
-            }
-            _stats?.UpdateStamina((float)gameTime.ElapsedGameTime.TotalSeconds, false);
-        }
-
-        CurrentMoveSpeed = MathF.Abs(moveAmount);
-
-        if (moveAmount != 0)
-        {
-            var previousPos = _transform.Local.Position;
-            var moveStep = _transform.World.Direction * moveAmount;
-
-            if (!_map.IsBlocked((int)(_transform.World.Position.X + moveStep.X), (int)_transform.World.Position.Y))
-                _transform.Local.Position.X += moveStep.X;
-
-            if (!_map.IsBlocked((int)_transform.World.Position.X, (int)(_transform.World.Position.Y + moveStep.Y)))
-                _transform.Local.Position.Y += moveStep.Y;
-
-            // Track actual distance walked
-            var actualDistance = Vector2.Distance(previousPos, _transform.Local.Position);
-            if (actualDistance > 0)
-                _stats?.Metrics.RecordWalking(actualDistance);
-        }
-
-        if (InputBindings.IsActionDown(InputActions.RotateLeft))
-        {
-            Vector2 oldDirection = _transform.Local.Direction;
-            var cos = MathF.Cos(-rotSpeed);
-            var sin = MathF.Sin(-rotSpeed);
-
-            _transform.Local.Direction = new(
-                oldDirection.X * cos - oldDirection.Y * sin,
-                oldDirection.X * sin + oldDirection.Y * cos);
-
-            Vector2 oldPlane = _plane;
-            _plane.X = _plane.X * cos - _plane.Y * sin;
-            _plane.Y = oldPlane.X * sin + _plane.Y * cos;
-        }
-        else if (InputBindings.IsActionDown(InputActions.RotateRight))
-        {
-            Vector2 oldDirection = _transform.Local.Direction;
-            var cos = MathF.Cos(rotSpeed);
-            var sin = MathF.Sin(rotSpeed);
-
-            _transform.Local.Direction = new(
-                oldDirection.X * cos - oldDirection.Y * sin,
-                oldDirection.X * sin + oldDirection.Y * cos);
-
-            Vector2 oldPlane = _plane;
-            _plane.X = _plane.X * cos - _plane.Y * sin;
-            _plane.Y = oldPlane.X * sin + _plane.Y * cos;
-        }
     }
 
     private bool TryPickupClickedItem()
     {
-        if (_inventory == null || Raycaster == null)
+        if (Raycaster == null)
             return false;
 
         var hoveredEntity = Raycaster.HoveredEntity;
@@ -223,7 +165,6 @@ public class PlayerBrain : Component
         if (!hoveredEntity.Components.TryGet<PickupableComponent>(out var pickupable))
             return false;
 
-        // Check if player is in range to pick up
         var playerPos = _transform.World.Position;
         if (!pickupable.IsInRange(playerPos))
             return false;
@@ -240,9 +181,15 @@ public class PlayerBrain : Component
         return false;
     }
 
+    private void HandleInteract()
+    {
+        if (InputBindings.IsActionPressed(InputActions.Interact))
+            TryOpenDoor();
+    }
+
     private bool TryOpenDoor()
     {
-        float checkDistance = 1.5f;
+        const float checkDistance = 1.5f;
 
         for (float dist = 0.1f; dist <= checkDistance; dist += 0.1f)
         {
@@ -258,5 +205,80 @@ public class PlayerBrain : Component
         }
 
         return false;
+    }
+
+    private void HandleMovement(float baseSpeed, float deltaTime)
+    {
+        float moveSpeed = baseSpeed * _context.SpeedMultiplier;
+        float moveAmount = 0f;
+
+        if (InputBindings.IsActionDown(InputActions.MoveForward))
+            moveAmount = moveSpeed;
+        else if (State != PlayerState.Running && InputBindings.IsActionDown(InputActions.MoveBackward))
+            moveAmount = -moveSpeed;
+
+        _context.CurrentMoveSpeed = MathF.Abs(moveAmount);
+
+        if (moveAmount == 0)
+            return;
+
+        var previousPos = _transform.Local.Position;
+        var moveStep = _transform.World.Direction * moveAmount;
+
+        if (!_map.IsBlocked((int)(_transform.World.Position.X + moveStep.X), (int)_transform.World.Position.Y))
+            _transform.Local.Position.X += moveStep.X;
+
+        if (!_map.IsBlocked((int)_transform.World.Position.X, (int)(_transform.World.Position.Y + moveStep.Y)))
+            _transform.Local.Position.Y += moveStep.Y;
+
+        var actualDistance = Vector2.Distance(previousPos, _transform.Local.Position);
+        if (actualDistance > 0)
+        {
+            if (State == PlayerState.Running)
+                _stats.Metrics.RecordRunning(actualDistance, deltaTime);
+            else
+                _stats.Metrics.RecordWalking(actualDistance, deltaTime);
+        }
+    }
+
+    private void HandleRotation(float rotSpeed)
+    {
+        if (InputBindings.IsActionDown(InputActions.RotateLeft))
+            RotatePlayer(-rotSpeed);
+        else if (InputBindings.IsActionDown(InputActions.RotateRight))
+            RotatePlayer(rotSpeed);
+    }
+
+    private void RotatePlayer(float angle)
+    {
+        var oldDirection = _transform.Local.Direction;
+        var cos = MathF.Cos(angle);
+        var sin = MathF.Sin(angle);
+
+        _transform.Local.Direction = new Vector2(
+            oldDirection.X * cos - oldDirection.Y * sin,
+            oldDirection.X * sin + oldDirection.Y * cos
+        );
+
+        var oldPlane = Plane;
+        Plane = new Vector2(
+            oldPlane.X * cos - oldPlane.Y * sin,
+            oldPlane.X * sin + oldPlane.Y * cos
+        );
+    }
+
+    private PlayerState GetCurrentPlayerState()
+    {
+        if (_stateMachine?.CurrentState == null)
+            return PlayerState.Exploring;
+
+        return _stateMachine.CurrentState switch
+        {
+            PlayerExploringState => PlayerState.Exploring,
+            PlayerCombatState => PlayerState.Combat,
+            PlayerRunningState => PlayerState.Running,
+            PlayerExhaustedState => PlayerState.Exhausted,
+            _ => PlayerState.Exploring
+        };
     }
 }

@@ -12,7 +12,8 @@
       "weight": 3.0,
       "stackable": false,
       "statModifiers": { "Damage": 8 },
-      "requirements": { "Strength": 5 }
+      "requirements": { "Strength": 5 },
+      "attackSpeed": 1.0
     },
     {
       "id": "steel_sword",
@@ -26,7 +27,8 @@
       "weight": 3.5,
       "stackable": false,
       "statModifiers": { "Damage": 12 },
-      "requirements": { "Strength": 8 }
+      "requirements": { "Strength": 8 },
+      "attackSpeed": 1.0
     },
     {
       "id": "battle_axe",
@@ -40,7 +42,8 @@
       "weight": 5.0,
       "stackable": false,
       "statModifiers": { "Damage": 15 },
-      "requirements": { "Strength": 12 }
+      "requirements": { "Strength": 12 },
+      "attackSpeed": 0.8
     },
     {
       "id": "morningstar",
@@ -54,7 +57,8 @@
       "weight": 4.0,
       "stackable": false,
       "statModifiers": { "Damage": 10, "CriticalChance": 5 },
-      "requirements": { "Strength": 7 }
+      "requirements": { "Strength": 7 },
+      "attackSpeed": 0.7
     },
     {
       "id": "scepter",
@@ -68,7 +72,8 @@
       "weight": 2.0,
       "stackable": false,
       "statModifiers": { "SpellPower": 8, "Damage": 3 },
-      "requirements": { "Intelligence": 8 }
+      "requirements": { "Intelligence": 8 },
+      "attackSpeed": 1.2
     }
   ]
 }

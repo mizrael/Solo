@@ -54,7 +54,9 @@ public class PlayScene : Scene
 
         var playerBrain = new PlayerBrain(player, level.Map);
         player.Components.Add(playerBrain);
-        playerBrain.SpatialGrid = spatialGrid;
+
+        var playerUIController = new PlayerUIController(player);
+        player.Components.Add(playerUIController);
 
         this.Root.AddChild(player);
 
@@ -78,7 +80,7 @@ public class PlayScene : Scene
         miniMapRenderer.LayerIndex = 1;
         miniMapEntity.Enabled = false;
         Root.AddChild(miniMapEntity);
-        playerBrain.MiniMapEntity = miniMapEntity;
+        playerUIController.MiniMapEntity = miniMapEntity;
 
         var font = Game.Content.Load<SpriteFont>("Font");
         uiService.SetTooltipFont(font);
@@ -89,7 +91,7 @@ public class PlayScene : Scene
         debugUI.LayerIndex = 2;
         debugUIEntity.Enabled = false;
         Root.AddChild(debugUIEntity);
-        playerBrain.DebugUIEntity = debugUIEntity;
+        playerUIController.DebugUIEntity = debugUIEntity;
 
         var characterPanel = new CharacterPanel(inventoryComponent, statsComponent, uiService.DragDropManager, font, Game);
         characterPanel.CenterOnScreen(
@@ -97,7 +99,7 @@ public class PlayScene : Scene
             renderService.Graphics.GraphicsDevice.Viewport.Height
         );
         uiService.AddWidget(characterPanel);
-        playerBrain.CharacterPanel = characterPanel;
+        playerUIController.CharacterPanel = characterPanel;
 
         var beltPanel = new BeltPanel(inventoryComponent, uiService.DragDropManager, font, Game);
         beltPanel.PositionAtBottom(
@@ -116,7 +118,7 @@ public class PlayScene : Scene
             renderService.Graphics.GraphicsDevice.Viewport.Height
         );
         uiService.AddWidget(metricsPanel);
-        playerBrain.MetricsPanel = metricsPanel;
+        playerUIController.MetricsPanel = metricsPanel;
 
         var playerHandsEntity = new GameObject();
         var playerHandsRenderer = new PlayerHandsRenderer(playerHandsEntity, Game, inventoryComponent, playerBrain);

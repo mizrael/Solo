@@ -17,6 +17,7 @@ public class ItemTemplate
     public int MaxStackSize { get; init; } = 1;
     public Dictionary<StatType, float> StatModifiers { get; init; } = new();
     public Dictionary<StatType, float> Requirements { get; init; } = new();
+    public float AttackSpeed { get; init; } = 1.0f;
 
     public bool IsEquippable => EquipSlot != EquipSlot.None;
 }

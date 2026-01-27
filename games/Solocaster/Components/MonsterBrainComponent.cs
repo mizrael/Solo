@@ -9,11 +9,10 @@ namespace Solocaster.Components;
 public class MonsterBrainComponent : Component
 {
     private TransformComponent _transform;
-    private BillboardComponent _billboard;
     private IDirectionalFrameProvider _spriteProvider;
     private GameObject _player;
 
-    private float _facingAngle;
+    private const float FacingAngle = 0f;
 
     public MonsterTemplate Template { get; set; }
 
@@ -30,7 +29,6 @@ public class MonsterBrainComponent : Component
     protected override void InitCore()
     {
         _transform = Owner.Components.Get<TransformComponent>();
-        _billboard = Owner.Components.Get<BillboardComponent>();
     }
 
     protected override void UpdateCore(GameTime gameTime)
@@ -50,7 +48,7 @@ public class MonsterBrainComponent : Component
         var toPlayer = playerTransform.World.Position - _transform.World.Position;
         var angleToPlayer = MathF.Atan2(toPlayer.Y, toPlayer.X);
 
-        var relativeAngle = angleToPlayer - _facingAngle;
+        var relativeAngle = angleToPlayer - FacingAngle;
 
         // Normalize to -PI to PI
         while (relativeAngle > MathF.PI) relativeAngle -= MathF.PI * 2;

@@ -25,6 +25,8 @@ public class PlayerHandsRenderer : Component, IRenderable
     private const float BobSpeedNormal = 1.5f;
     private const float BobSpeedRunning = 3f;
     private const float LeftHandBobMultiplier = 1.15f;
+    private const float RaiseHeight = 200f;
+    private const float SwingWidth = 380f;
 
     private static readonly Dictionary<string, string[]> HandVariations = new()
     {
@@ -122,7 +124,7 @@ public class PlayerHandsRenderer : Component, IRenderable
     {
         float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-        float targetVisibility = ShouldShowHands ? 0.4f : 1f;
+        float targetVisibility = ShouldShowHands ? 0f : 1f;
         _visibilityOffset = MathHelper.Lerp(_visibilityOffset, targetVisibility, TransitionSpeed * deltaTime);
 
         float bobSpeed = _playerBrain.State == PlayerState.Running ? BobSpeedRunning : BobSpeedNormal;
@@ -138,28 +140,32 @@ public class PlayerHandsRenderer : Component, IRenderable
         int hideOffset = (int)(_visibilityOffset * viewport.Height * HideOffsetMultiplier);
         float bob = MathF.Sin(_bobPhase * MathF.PI * 2) * BobAmplitude;
 
-        // Right hand
+        // Right hand - swings right to left
         if (_rightHandTexture != null)
         {
             int w = (int)(_rightHandTexture.Width * Scale);
             int h = (int)(_rightHandTexture.Height * Scale);
-            int armedOffset = _rightHandKey != TextureKeyEmpty ? (int)(ArmedVerticalOffset * Scale) : 0;
+            int armedOffset = (int)(ArmedVerticalOffset * Scale);
+            int raiseOffset = (int)(-_playerBrain.RightHandRaiseAmount * RaiseHeight * Scale);
+            int swingOffset = (int)(-_playerBrain.RightHandRaiseAmount * SwingWidth * Scale);
 
-            int x = viewport.Width - w - (int)(HorizontalOffset * Scale);
-            int y = viewport.Height - h + (int)bob + armedOffset + hideOffset;
+            int x = viewport.Width - w - (int)(HorizontalOffset * Scale) + swingOffset;
+            int y = viewport.Height - h + (int)bob + armedOffset + hideOffset + raiseOffset;
 
             spriteBatch.Draw(_rightHandTexture, new Rectangle(x, y, w, h), Color.White);
         }
 
-        // Left hand (mirrored, slightly larger/lower)
+        // Left hand (mirrored, slightly larger/lower) - swings left to right
         if (_leftHandTexture != null)
         {
             int w = (int)(_leftHandTexture.Width * LeftHandScale);
             int h = (int)(_leftHandTexture.Height * LeftHandScale);
-            int armedOffset = _leftHandKey != TextureKeyEmpty ? (int)(ArmedVerticalOffset * Scale) : 0;
+            int armedOffset = (int)(ArmedVerticalOffset * Scale);
+            int raiseOffset = (int)(-_playerBrain.LeftHandRaiseAmount * RaiseHeight * Scale);
+            int swingOffset = (int)(_playerBrain.LeftHandRaiseAmount * SwingWidth * Scale);
 
-            int x = (int)(HorizontalOffset * Scale);
-            int y = viewport.Height - h + (int)(-bob * LeftHandBobMultiplier) + (int)(LeftHandVerticalOffset * Scale) + armedOffset + hideOffset;
+            int x = (int)(HorizontalOffset * Scale) + swingOffset;
+            int y = viewport.Height - h + (int)(-bob * LeftHandBobMultiplier) + (int)(LeftHandVerticalOffset * Scale) + armedOffset + hideOffset + raiseOffset;
 
             spriteBatch.Draw(_leftHandTexture, new Rectangle(x, y, w, h), null, Color.White, 0f, Vector2.Zero, SpriteEffects.FlipHorizontally, 0f);
         }
