@@ -39,13 +39,16 @@ public record PlayerCombatState : Solo.AI.State
 
     protected override void OnEnter()
     {
+        _ctx.ShowsHands = true;
+        _ctx.SpeedMultiplier = 1.0f;
+        _ctx.BobSpeed = 1.5f;
+
         _leftHandState = HandActionState.Idle;
         _rightHandState = HandActionState.Idle;
         _leftHandTimer = 0f;
         _rightHandTimer = 0f;
         _leftCooldown = 0f;
         _rightCooldown = 0f;
-        _ctx.SpeedMultiplier = 1.0f;
     }
 
     protected override void OnExecute(GameTime gameTime)

@@ -32,8 +32,8 @@ public class PlayerBrain : Component
 
     public Vector2 Plane { get; private set; } = new Vector2(0, 0.45f);
 
-    public PlayerState State => GetCurrentPlayerState();
-    public float CurrentMoveSpeed => _context?.CurrentMoveSpeed ?? 0f;
+    public bool ShowsHands => _context?.ShowsHands ?? false;
+    public float BobSpeed => _context?.BobSpeed ?? 1.5f;
 
     public float LeftHandRaiseAmount => _context?.LeftHandRaiseAmount ?? 0f;
     public float RightHandRaiseAmount => _context?.RightHandRaiseAmount ?? 0f;
@@ -83,38 +83,42 @@ public class PlayerBrain : Component
             _ => InputBindings.IsActionDown(InputActions.Run) &&
                  InputBindings.IsActionDown(InputActions.MoveForward) &&
                  _stats.CurrentStamina > 0,
-            _ => _context.PreviousStateBeforeRun = PlayerState.Exploring);
+            _ => _context.StateBeforeRun = _exploringState);
 
         // Combat -> Running (Shift + Forward + has stamina)
         _stateMachine.AddTransition(_combatState, _runningState,
             _ => InputBindings.IsActionDown(InputActions.Run) &&
                  InputBindings.IsActionDown(InputActions.MoveForward) &&
                  _stats.CurrentStamina > 0,
-            _ => _context.PreviousStateBeforeRun = PlayerState.Combat);
+            _ => _context.StateBeforeRun = _combatState);
 
         // Running -> Exhausted (stamina depleted)
         _stateMachine.AddTransition(_runningState, _exhaustedState,
             _ => _stats.IsExhausted);
 
+        // Running -> Exploring (pressed backward - always to exploring)
+        _stateMachine.AddTransition(_runningState, _exploringState,
+            _ => InputBindings.IsActionDown(InputActions.MoveBackward));
+
         // Running -> Exploring (stopped running, was exploring)
         _stateMachine.AddTransition(_runningState, _exploringState,
             _ => (!InputBindings.IsActionDown(InputActions.Run) ||
                   !InputBindings.IsActionDown(InputActions.MoveForward)) &&
-                 _context.PreviousStateBeforeRun == PlayerState.Exploring);
+                 _context.StateBeforeRun == _exploringState);
 
         // Running -> Combat (stopped running, was in combat)
         _stateMachine.AddTransition(_runningState, _combatState,
             _ => (!InputBindings.IsActionDown(InputActions.Run) ||
                   !InputBindings.IsActionDown(InputActions.MoveForward)) &&
-                 _context.PreviousStateBeforeRun == PlayerState.Combat);
+                 _context.StateBeforeRun == _combatState);
 
         // Exhausted -> Exploring (recovered, was exploring)
         _stateMachine.AddTransition(_exhaustedState, _exploringState,
-            _ => !_stats.IsExhausted && _context.PreviousStateBeforeRun == PlayerState.Exploring);
+            _ => !_stats.IsExhausted && _context.StateBeforeRun == _exploringState);
 
         // Exhausted -> Combat (recovered, was in combat)
         _stateMachine.AddTransition(_exhaustedState, _combatState,
-            _ => !_stats.IsExhausted && _context.PreviousStateBeforeRun == PlayerState.Combat);
+            _ => !_stats.IsExhausted && _context.StateBeforeRun == _combatState);
     }
 
     protected override void UpdateCore(GameTime gameTime)
@@ -214,7 +218,7 @@ public class PlayerBrain : Component
 
         if (InputBindings.IsActionDown(InputActions.MoveForward))
             moveAmount = moveSpeed;
-        else if (State != PlayerState.Running && InputBindings.IsActionDown(InputActions.MoveBackward))
+        else if (InputBindings.IsActionDown(InputActions.MoveBackward))
             moveAmount = -moveSpeed;
 
         _context.CurrentMoveSpeed = MathF.Abs(moveAmount);
@@ -234,7 +238,7 @@ public class PlayerBrain : Component
         var actualDistance = Vector2.Distance(previousPos, _transform.Local.Position);
         if (actualDistance > 0)
         {
-            if (State == PlayerState.Running)
+            if (_stateMachine.CurrentState is PlayerRunningState)
                 _stats.Metrics.RecordRunning(actualDistance, deltaTime);
             else
                 _stats.Metrics.RecordWalking(actualDistance, deltaTime);
@@ -265,20 +269,5 @@ public class PlayerBrain : Component
             oldPlane.X * cos - oldPlane.Y * sin,
             oldPlane.X * sin + oldPlane.Y * cos
         );
-    }
-
-    private PlayerState GetCurrentPlayerState()
-    {
-        if (_stateMachine?.CurrentState == null)
-            return PlayerState.Exploring;
-
-        return _stateMachine.CurrentState switch
-        {
-            PlayerExploringState => PlayerState.Exploring,
-            PlayerCombatState => PlayerState.Combat,
-            PlayerRunningState => PlayerState.Running,
-            PlayerExhaustedState => PlayerState.Exhausted,
-            _ => PlayerState.Exploring
-        };
     }
 }

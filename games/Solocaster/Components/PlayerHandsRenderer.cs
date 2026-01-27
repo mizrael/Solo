@@ -22,8 +22,6 @@ public class PlayerHandsRenderer : Component, IRenderable
     private const float HideOffsetMultiplier = 0.7f;
     private const float VisibilityThreshold = 0.99f;
     private const float BobAmplitude = 6f;
-    private const float BobSpeedNormal = 1.5f;
-    private const float BobSpeedRunning = 3f;
     private const float LeftHandBobMultiplier = 1.15f;
     private const float RaiseHeight = 200f;
     private const float SwingWidth = 380f;
@@ -52,10 +50,6 @@ public class PlayerHandsRenderer : Component, IRenderable
 
     public int LayerIndex { get; set; } = 10;
     public bool Hidden { get; set; }
-
-    private bool ShouldShowHands =>
-        _playerBrain.State == PlayerState.Combat ||
-        _playerBrain.State == PlayerState.Running;
 
     public PlayerHandsRenderer(GameObject owner, Game game, InventoryComponent inventory, PlayerBrain playerBrain) : base(owner)
     {
@@ -124,11 +118,10 @@ public class PlayerHandsRenderer : Component, IRenderable
     {
         float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-        float targetVisibility = ShouldShowHands ? 0f : 1f;
+        float targetVisibility = _playerBrain.ShowsHands ? 0f : 1f;
         _visibilityOffset = MathHelper.Lerp(_visibilityOffset, targetVisibility, TransitionSpeed * deltaTime);
 
-        float bobSpeed = _playerBrain.State == PlayerState.Running ? BobSpeedRunning : BobSpeedNormal;
-        _bobPhase += deltaTime * bobSpeed;
+        _bobPhase += deltaTime * _playerBrain.BobSpeed;
     }
 
     public void Render(SpriteBatch spriteBatch)

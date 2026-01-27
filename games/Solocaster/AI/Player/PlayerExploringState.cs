@@ -14,9 +14,11 @@ public record PlayerExploringState : Solo.AI.State
 
     protected override void OnEnter()
     {
+        _ctx.ShowsHands = false;
+        _ctx.SpeedMultiplier = 1.0f;
+        _ctx.BobSpeed = 1.5f;
         _ctx.LeftHandRaiseAmount = 0f;
         _ctx.RightHandRaiseAmount = 0f;
-        _ctx.SpeedMultiplier = 1.0f;
     }
 
     protected override void OnExecute(GameTime gameTime)

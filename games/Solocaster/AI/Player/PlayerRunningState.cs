@@ -5,8 +5,6 @@ namespace Solocaster.AI.Player;
 
 public record PlayerRunningState : Solo.AI.State
 {
-    private const float RunningSpeedMultiplier = 1.8f;
-
     private readonly PlayerStateContext _ctx;
 
     public PlayerRunningState(GameObject owner, PlayerStateContext context) : base(owner)
@@ -16,9 +14,11 @@ public record PlayerRunningState : Solo.AI.State
 
     protected override void OnEnter()
     {
+        _ctx.ShowsHands = true;
+        _ctx.SpeedMultiplier = 1.8f;
+        _ctx.BobSpeed = 3.0f;
         _ctx.LeftHandRaiseAmount = 0f;
         _ctx.RightHandRaiseAmount = 0f;
-        _ctx.SpeedMultiplier = RunningSpeedMultiplier;
     }
 
     protected override void OnExecute(GameTime gameTime)
