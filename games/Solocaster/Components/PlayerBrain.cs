@@ -3,9 +3,11 @@ using Microsoft.Xna.Framework.Input;
 using Solo;
 using Solo.AI;
 using Solo.Components;
+using Solo.Services;
 using Solocaster.AI.Player;
 using Solocaster.Entities;
 using Solocaster.Input;
+using Solocaster.UI;
 using System;
 
 namespace Solocaster.Components;
@@ -123,7 +125,11 @@ public class PlayerBrain : Component
 
     protected override void UpdateCore(GameTime gameTime)
     {
+        // Must update input state every frame for IsActionPressed to work correctly
         InputBindings.Update();
+
+        if (GamePauseManager.Instance.IsPaused)
+            return;
 
         float ms = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
         float baseSpeed = ms * 0.005f;

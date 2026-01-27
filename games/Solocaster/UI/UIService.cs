@@ -1,15 +1,16 @@
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Solo.Services;
 using Solocaster.UI.Widgets;
+using System.Collections.Generic;
 
 namespace Solocaster.UI;
 
 public class UIService : IGameService
 {
     private const int DragItemSize = 48;
+    private const float OverlayOpacity = 0.6f;
 
     private readonly List<Widget> _rootWidgets = new();
     private readonly GraphicsDeviceManager _graphics;
@@ -17,6 +18,7 @@ public class UIService : IGameService
     private MouseState _previousMouseState;
     private TooltipWidget? _tooltip;
     private SpriteFont? _tooltipFont;
+    private Texture2D? _pixelTexture;
 
     public readonly DragDropManager DragDropManager = new();
 
@@ -30,6 +32,9 @@ public class UIService : IGameService
         _spriteBatch = new SpriteBatch(_graphics.GraphicsDevice);
         _previousMouseState = Mouse.GetState();
         _tooltip = new TooltipWidget();
+
+        _pixelTexture = new Texture2D(_graphics.GraphicsDevice, 1, 1);
+        _pixelTexture.SetData(new[] { Color.White });
     }
 
     public void SetTooltipFont(SpriteFont font)
@@ -157,6 +162,16 @@ public class UIService : IGameService
             return;
 
         _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+
+        // Render dark overlay when paused
+        if (GamePauseManager.Instance?.IsPaused == true && _pixelTexture != null)
+        {
+            var viewport = _graphics.GraphicsDevice.Viewport;
+            _spriteBatch.Draw(
+                _pixelTexture,
+                new Rectangle(0, 0, viewport.Width, viewport.Height),
+                Color.Black * OverlayOpacity);
+        }
 
         foreach (var widget in _rootWidgets)
         {

@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Solo.Services;
 using Solocaster.Components;
 using Solocaster.UI.Widgets;
 
@@ -43,6 +44,11 @@ public class CharacterPanel : Widget
     public void Toggle()
     {
         Visible = !Visible;
+
+        if (Visible)
+            GamePauseManager.Instance.RequestPause(this);
+        else
+            GamePauseManager.Instance?.ReleasePause(this);
     }
 
     public void CenterOnScreen(int screenWidth, int screenHeight)

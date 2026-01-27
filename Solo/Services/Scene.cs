@@ -13,8 +13,7 @@ public abstract class Scene
 
     public void Step(GameTime gameTime)
     {
-        if (null != Root)
-            Root.Update(gameTime);
+        Root?.Update(gameTime);
         this.Update(gameTime);
     }
 
