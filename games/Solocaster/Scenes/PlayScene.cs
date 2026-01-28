@@ -23,6 +23,7 @@ public class PlayScene : Scene
     private InputService _inputService;
     private UIService _uiService;
     private RenderTarget2D _sceneCapture;
+    private RenderTarget2D _postProcess;
     private RenderPipeline _capturePipeline;
     private RenderPipeline _inGamePipeline;
 
@@ -135,9 +136,17 @@ public class PlayScene : Scene
         playerHandsRenderer.LayerIndex = 5;
         ObjectsGraph.Root.AddChild(playerHandsEntity);
 
-        // Create scene capture texture for post-processing and overlay backgrounds
+        // Create render targets for post-processing
         var viewport = Game.GraphicsDevice.Viewport;
         _sceneCapture = new RenderTarget2D(Game.GraphicsDevice, viewport.Width, viewport.Height);
+        _postProcess = new RenderTarget2D(Game.GraphicsDevice, viewport.Width, viewport.Height);
+
+        // Load tilt-shift effect (diorama/miniature look)
+        var tiltShiftEffect = Game.Content.Load<Effect>("Effects/TiltShift");
+        tiltShiftEffect.Parameters["TexelSize"]?.SetValue(new Vector2(1f / viewport.Width, 1f / viewport.Height));
+        tiltShiftEffect.Parameters["FocusCenter"]?.SetValue(0.5f);
+        tiltShiftEffect.Parameters["FocusBand"]?.SetValue(0.25f);
+        tiltShiftEffect.Parameters["BlurAmount"]?.SetValue(4f);
 
         // Load CRT effect
         var crtEffect = Game.Content.Load<Effect>("Effects/CRT");
@@ -147,9 +156,11 @@ public class PlayScene : Scene
         crtEffect.Parameters["Vignette"]?.SetValue(0.4f);
         crtEffect.Parameters["Brightness"]?.SetValue(1.15f);
 
-        // Pipeline: render game layers with CRT, then UI on top without effect
+        // Pipeline: render game layers → tilt-shift → CRT → UI on top
         _inGamePipeline = new RenderPipeline()
             .Add(new RenderLayersStep { Output = _sceneCapture, LayerEnd = RenderLayers.UI })
+            //.Add(new ApplyEffectStep { Effect = tiltShiftEffect, Output = null })
+            .Add(new ApplyEffectStep { Effect = tiltShiftEffect, Output = _postProcess })
             .Add(new ApplyEffectStep { Effect = crtEffect, Output = null })
             .Add(new RenderLayersStep { Output = null, ClearTarget = false });
 
