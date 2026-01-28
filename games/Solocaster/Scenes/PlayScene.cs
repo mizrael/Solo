@@ -54,16 +54,12 @@ public class PlayScene : Scene
             SamplerState = SamplerState.PointClamp
         });
 
-        var spatialGrid = new SpatialGrid(bucketSize: 1f);
-
         UITheme.Load("./data/ui/theme.json");
         ItemTemplateLoader.LoadAllFromFolder("./data/templates/items/");
         CharacterTemplateLoader.LoadAll("./data/templates/character/");
         MonsterTemplateLoader.LoadAllFromFolder("./data/templates/monsters/");
 
-        var frameBufferWidth = this.Game.GraphicsDevice.Viewport.Height / FrameBufferScale;
-        var frameBufferHeight = this.Game.GraphicsDevice.Viewport.Width / FrameBufferScale;
-
+        var spatialGrid = new SpatialGrid(bucketSize: 1f);
         var levelPath = "./data/levels/level1.json";
         var level = LevelLoader.LoadFromJson(levelPath, Game, ObjectsGraph.Root, spatialGrid);
 
@@ -89,6 +85,8 @@ public class PlayScene : Scene
         var monsters = LevelLoader.SpawnMonsters(levelPath, level, Game, ObjectsGraph.Root, spatialGrid, player);
         level.Monsters = monsters;
 
+        var frameBufferWidth = this.Game.GraphicsDevice.Viewport.Height / FrameBufferScale;
+        var frameBufferHeight = this.Game.GraphicsDevice.Viewport.Width / FrameBufferScale;
         var raycaster = new Raycaster(level, spatialGrid, frameBufferWidth, frameBufferHeight);
         playerBrain.Raycaster = raycaster;
 
@@ -136,6 +134,17 @@ public class PlayScene : Scene
         playerHandsRenderer.LayerIndex = 5;
         ObjectsGraph.Root.AddChild(playerHandsEntity);
 
+        CreateRenderPipelines();
+
+        // Register overlay scenes with player data and scene capture
+        SceneManager.Instance.AddScene(SceneNames.CharacterPanel,
+            new CharacterPanelScene(Game, inventoryComponent, statsComponent, _sceneCapture));
+        SceneManager.Instance.AddScene(SceneNames.MetricsPanel,
+            new MetricsPanelScene(Game, statsComponent, _sceneCapture));
+    }
+
+    private void CreateRenderPipelines()
+    {
         // Create render targets for post-processing
         var viewport = Game.GraphicsDevice.Viewport;
         _sceneCapture = new RenderTarget2D(Game.GraphicsDevice, viewport.Width, viewport.Height);
@@ -156,23 +165,14 @@ public class PlayScene : Scene
         crtEffect.Parameters["Vignette"]?.SetValue(0.4f);
         crtEffect.Parameters["Brightness"]?.SetValue(1.15f);
 
-        // Pipeline: render game layers → tilt-shift → CRT → UI on top
         _inGamePipeline = new RenderPipeline()
             .Add(new RenderLayersStep { Output = _sceneCapture, LayerEnd = RenderLayers.UI })
             .Add(new ApplyEffectStep { Effect = tiltShiftEffect, Output = _postProcess })
             .Add(new ApplyEffectStep { Effect = crtEffect, Output = null })
             .Add(new RenderLayersStep { Output = null, ClearTarget = false });
-
         RenderService.SetPipeline(_inGamePipeline);
 
-        // Capture pipeline for overlay backgrounds (game layers only, no CRT)
         _capturePipeline = new RenderPipeline()
             .Add(new RenderLayersStep { Output = _sceneCapture, LayerEnd = RenderLayers.UI });
-
-        // Register overlay scenes with player data and scene capture
-        SceneManager.Instance.AddScene(SceneNames.CharacterPanel,
-            new CharacterPanelScene(Game, inventoryComponent, statsComponent, _sceneCapture));
-        SceneManager.Instance.AddScene(SceneNames.MetricsPanel,
-            new MetricsPanelScene(Game, statsComponent, _sceneCapture));
     }
 }
