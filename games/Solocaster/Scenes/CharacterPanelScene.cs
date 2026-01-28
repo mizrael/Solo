@@ -33,7 +33,7 @@ public class CharacterPanelScene : Scene
         _uiService = new UIService();
         Services.Add(_uiService);
 
-        _renderService.SetLayerConfig(RenderLayers.UI, new RenderLayerConfig
+        RenderService.SetLayerConfig(RenderLayers.UI, new RenderLayerConfig
         {
             SamplerState = SamplerState.PointClamp
         });
@@ -58,7 +58,7 @@ public class CharacterPanelScene : Scene
         _pipeline = new RenderPipeline()
             .Add(new ApplyEffectStep { Effect = blurEffect, Output = null, Input = _sceneCapture })
             .Add(new RenderLayersStep { Output = null, ClearTarget = false });
-        _renderService.SetPipeline(_pipeline);
+        RenderService.SetPipeline(_pipeline);
     }
 
     protected override void UpdateCore(GameTime gameTime)

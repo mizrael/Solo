@@ -5,18 +5,23 @@ namespace Solo.Services;
 public abstract class Scene
 {
     public Game Game { get; }
-    public GameServicesCollection Services { get; } = new();
+    
+    public readonly GameServicesCollection Services = new();
 
-    protected SceneObjectsGraph _objectsGraph;
-    public SceneObjectsGraph ObjectsGraph => _objectsGraph;
+    public readonly SceneObjectsGraph ObjectsGraph = new();
 
-    protected RenderService _renderService;
+    public readonly RenderService RenderService;
 
     private bool _initialized = false;
 
     protected Scene(Game game)
     {
         Game = game ?? throw new ArgumentNullException(nameof(game));
+
+        Services.Add(ObjectsGraph);
+
+        RenderService = new RenderService(this.Game.GraphicsDevice);
+        Services.Add(RenderService);
     }
 
     public void Enter()
@@ -29,12 +34,6 @@ public abstract class Scene
     {
         if(_initialized)
             return; 
-        
-        _objectsGraph = new SceneObjectsGraph();
-        Services.Add(_objectsGraph);
-
-        _renderService = new RenderService(this.Game.GraphicsDevice);
-        Services.Add(_renderService);
 
         InitializeCore();
 
@@ -50,7 +49,7 @@ public abstract class Scene
 
     public void Render()
     {
-        _renderService.Render();
+        RenderService.Render();
         RenderCore();
     }
 

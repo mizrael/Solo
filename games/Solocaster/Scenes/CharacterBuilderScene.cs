@@ -25,7 +25,7 @@ public class CharacterBuilderScene : Scene
         _uiService = new UIService();
         Services.Add(_uiService);
 
-        _renderService.SetLayerConfig(RenderLayers.UI, new RenderLayerConfig
+        RenderService.SetLayerConfig(RenderLayers.UI, new RenderLayerConfig
         {
             SamplerState = SamplerState.PointClamp
         });

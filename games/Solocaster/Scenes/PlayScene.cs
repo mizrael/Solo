@@ -23,9 +23,21 @@ public class PlayScene : Scene
     private InputService _inputService;
     private UIService _uiService;
     private RenderTarget2D _sceneCapture;
+    private RenderPipeline _capturePipeline;
 
     public PlayScene(Game game) : base(game)
     {
+        SceneManager.Instance.OnSceneChanged += OnSceneChanged;
+    }
+
+    private void OnSceneChanged(Scene currentScene)
+    {
+        if (currentScene == this)
+            return;
+
+        RenderService.SetPipeline(_capturePipeline);
+        RenderService.Render();
+        RenderService.SetPipeline(null);
     }
 
     protected override void InitializeCore()
@@ -35,7 +47,7 @@ public class PlayScene : Scene
 
         _uiService = new UIService();
         Services.Add(_uiService);
-        _renderService.SetLayerConfig(RenderLayers.UI, new RenderLayerConfig
+        RenderService.SetLayerConfig(RenderLayers.UI, new RenderLayerConfig
         {
             SamplerState = SamplerState.PointClamp
         });
@@ -122,16 +134,13 @@ public class PlayScene : Scene
         playerHandsRenderer.LayerIndex = 5;
         ObjectsGraph.Root.AddChild(playerHandsEntity);
 
-        // Create scene capture texture for overlay backgrounds
+        // Create scene capture texture for overlay backgrounds (captured on demand)
         var viewport = Game.GraphicsDevice.Viewport;
         _sceneCapture = new RenderTarget2D(Game.GraphicsDevice, viewport.Width, viewport.Height);
 
-        // Pipeline: render all layers to capture texture, then copy to screen
-        var pipeline = new RenderPipeline()
-            .Add(new RenderLayersStep { Output = _sceneCapture })
-            .Add(new ApplyEffectStep { Output = null });
-
-        _renderService.SetPipeline(pipeline);
+        // Capture pipeline for one-time use when overlay opens
+        _capturePipeline = new RenderPipeline()
+            .Add(new RenderLayersStep { Output = _sceneCapture });
 
         // Register overlay scenes with player data and scene capture
         SceneManager.Instance.AddScene(SceneNames.CharacterPanel,
