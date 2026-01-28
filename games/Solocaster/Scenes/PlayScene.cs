@@ -24,6 +24,7 @@ public class PlayScene : Scene
     private UIService _uiService;
     private RenderTarget2D _sceneCapture;
     private RenderPipeline _capturePipeline;
+    private RenderPipeline _inGamePipeline;
 
     public PlayScene(Game game) : base(game)
     {
@@ -37,7 +38,7 @@ public class PlayScene : Scene
 
         RenderService.SetPipeline(_capturePipeline);
         RenderService.Render();
-        RenderService.SetPipeline(null);
+        RenderService.SetPipeline(_inGamePipeline);
     }
 
     protected override void InitializeCore()
@@ -134,13 +135,29 @@ public class PlayScene : Scene
         playerHandsRenderer.LayerIndex = 5;
         ObjectsGraph.Root.AddChild(playerHandsEntity);
 
-        // Create scene capture texture for overlay backgrounds (captured on demand)
+        // Create scene capture texture for post-processing and overlay backgrounds
         var viewport = Game.GraphicsDevice.Viewport;
         _sceneCapture = new RenderTarget2D(Game.GraphicsDevice, viewport.Width, viewport.Height);
 
-        // Capture pipeline for one-time use when overlay opens
+        // Load CRT effect
+        var crtEffect = Game.Content.Load<Effect>("Effects/CRT");
+        crtEffect.Parameters["ScreenSize"]?.SetValue(new Vector2(viewport.Width, viewport.Height));
+        crtEffect.Parameters["Curvature"]?.SetValue(0.05f);
+        crtEffect.Parameters["ChromaticAberration"]?.SetValue(0.025f);
+        crtEffect.Parameters["Vignette"]?.SetValue(0.4f);
+        crtEffect.Parameters["Brightness"]?.SetValue(1.15f);
+
+        // Pipeline: render game layers with CRT, then UI on top without effect
+        _inGamePipeline = new RenderPipeline()
+            .Add(new RenderLayersStep { Output = _sceneCapture, LayerEnd = RenderLayers.UI })
+            .Add(new ApplyEffectStep { Effect = crtEffect, Output = null })
+            .Add(new RenderLayersStep { Output = null, ClearTarget = false });
+
+        RenderService.SetPipeline(_inGamePipeline);
+
+        // Capture pipeline for overlay backgrounds (game layers only, no CRT)
         _capturePipeline = new RenderPipeline()
-            .Add(new RenderLayersStep { Output = _sceneCapture });
+            .Add(new RenderLayersStep { Output = _sceneCapture, LayerEnd = RenderLayers.UI });
 
         // Register overlay scenes with player data and scene capture
         SceneManager.Instance.AddScene(SceneNames.CharacterPanel,

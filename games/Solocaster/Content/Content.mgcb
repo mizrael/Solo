@@ -103,6 +103,12 @@
 /processorParam:DebugMode=Auto
 /build:Effects/Blur.fx
 
+#begin Effects/CRT.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:Effects/CRT.fx
+
 #begin Font.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
