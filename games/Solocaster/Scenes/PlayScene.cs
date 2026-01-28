@@ -159,7 +159,6 @@ public class PlayScene : Scene
         // Pipeline: render game layers → tilt-shift → CRT → UI on top
         _inGamePipeline = new RenderPipeline()
             .Add(new RenderLayersStep { Output = _sceneCapture, LayerEnd = RenderLayers.UI })
-            //.Add(new ApplyEffectStep { Effect = tiltShiftEffect, Output = null })
             .Add(new ApplyEffectStep { Effect = tiltShiftEffect, Output = _postProcess })
             .Add(new ApplyEffectStep { Effect = crtEffect, Output = null })
             .Add(new RenderLayersStep { Output = null, ClearTarget = false });
