@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Solo;
 using Solo.Assets;
 using Solo.Components;
+using Solo.Utils;
 using Solocaster.Components;
 using Solocaster.Entities;
 using System;

@@ -1,5 +1,4 @@
-﻿
-namespace Solo;
+﻿namespace Solo.Utils;
 
 public static class RandomExtensions
 {

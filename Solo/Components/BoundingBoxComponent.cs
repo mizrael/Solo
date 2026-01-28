@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Solo.Services;
+using Solo.Utils;
 
 namespace Solo.Components;
 
@@ -28,7 +29,7 @@ public class BoundingBoxComponent : Component
         _transform = Owner.Components.Get<TransformComponent>();
     }
 
-    public Microsoft.Xna.Framework.Rectangle Bounds => _bounds;
+    public Rectangle Bounds => _bounds;
 
     public void SetSize(Point size)
     {
@@ -52,7 +53,7 @@ public class BoundingBoxComponent : Component
     public void Render(SpriteBatch spriteBatch)
     {
         if (_pixelTexture is null)
-            _pixelTexture = Texture2DUtils.Generate(GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice, 1, 1, Color.White);
+            _pixelTexture = GraphicsDeviceExtensions.Generate(GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice, 1, 1, Color.White);
 
         spriteBatch.Draw(_pixelTexture, new Rectangle(_bounds.X, _bounds.Y, _bounds.Width, 1), Color.Yellow);
         spriteBatch.Draw(_pixelTexture, new Rectangle(_bounds.X, _bounds.Y, 1, _bounds.Height), Color.Yellow);

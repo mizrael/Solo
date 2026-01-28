@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace Solo;
+namespace Solo.Utils;
 
 public static class ColorExtensions
 {

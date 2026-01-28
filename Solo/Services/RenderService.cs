@@ -1,73 +1,70 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Solo.Services.Rendering;
 
 namespace Solo.Services;
 
 public sealed class RenderService : IGameService
 {
-    private readonly GraphicsDevice _graphicsDevice;
-
-    private readonly SpriteBatch _spriteBatch;
-    private SortedList<int, IList<IRenderable>> _layers = new();
-    private Dictionary<int, RenderLayerConfig> _layerConfigs = new();
+    private readonly RenderPipeline _defaultPipeline;
+    private RenderPipeline _pipeline;
+    private RenderContext _context;
 
     public RenderService(GraphicsDevice graphicsDevice)
     {
-        _graphicsDevice = graphicsDevice ?? throw new ArgumentNullException(nameof(graphicsDevice));
-        _spriteBatch = new SpriteBatch(graphicsDevice);
+        ArgumentNullException.ThrowIfNull(graphicsDevice);
+
+        _context = new RenderContext
+        {
+            Graphics = graphicsDevice,
+            SpriteBatch = new SpriteBatch(graphicsDevice),
+            Layers = new SortedList<int, IList<IRenderable>>(),
+            LayerConfigs = new Dictionary<int, RenderLayerConfig>(),
+            CurrentLayerIndex = 0
+        };
+
+        _defaultPipeline = new RenderPipeline().Add(new RenderLayersStep());
+        _pipeline = _defaultPipeline;
     }
 
     public void SetLayerConfig(int index, RenderLayerConfig? layerConfig)
     {
         if (layerConfig is null)
         {
-            if (_layerConfigs.ContainsKey(index))
-                _layerConfigs.Remove(index);
+            _context.LayerConfigs.Remove(index);
             return;
         }
 
-        _layerConfigs[index] = layerConfig!.Value;
+        _context.LayerConfigs[index] = layerConfig.Value;
+    }
+
+    public void SetPipeline(RenderPipeline? pipeline)
+    {
+        _pipeline = pipeline ?? _defaultPipeline;
     }
 
     public void Render()
     {
-        _graphicsDevice.Clear(Color.Black);
-
-        for (int i = 0; i != _layers.Count; i++)
-        {
-            var layerIndex = _layers.Keys[i];
-            var layer = _layers[layerIndex];
-
-            if (!_layerConfigs.TryGetValue(layerIndex, out var layerConfig))
-                _spriteBatch.Begin();
-            else
-                _spriteBatch.Begin(samplerState: layerConfig.SamplerState);
-
-            foreach (var renderable in layer)
-                renderable.Render(_spriteBatch);
-
-            _spriteBatch.End();
-        }
+        _context.CurrentLayerIndex = 0;
+        _pipeline.Execute(ref _context);
     }
 
     public void Update(GameTime gameTime)
     {
-        foreach (var layerIndex in _layers.Keys)
-        {
-            var layer = _layers[layerIndex];
-            layer.Clear();
-        }
+        var layers = _context.Layers;
+
+        foreach (var layerIndex in layers.Keys)
+            layers[layerIndex].Clear();
 
         var currentScene = SceneManager.Instance.Current;
         if (currentScene is null)
             return;
 
-        RebuildSceneServicesLayers(currentScene);
-
-        RebuildGameObjectsLayers(currentScene.ObjectsGraph.Root, _layers);
+        RebuildSceneServicesLayers(currentScene, layers);
+        RebuildGameObjectsLayers(currentScene.ObjectsGraph.Root, layers);
     }
 
-    private void RebuildSceneServicesLayers(Scene currentScene)
+    private static void RebuildSceneServicesLayers(Scene currentScene, SortedList<int, IList<IRenderable>> layers)
     {
         foreach (var service in currentScene.Services)
         {
@@ -76,9 +73,9 @@ public sealed class RenderService : IGameService
                 if (renderableService.Hidden)
                     continue;
 
-                if (!_layers.ContainsKey(renderableService.LayerIndex))
-                    _layers.Add(renderableService.LayerIndex, new List<IRenderable>());
-                _layers[renderableService.LayerIndex].Add(renderableService);
+                if (!layers.ContainsKey(renderableService.LayerIndex))
+                    layers.Add(renderableService.LayerIndex, new List<IRenderable>());
+                layers[renderableService.LayerIndex].Add(renderableService);
             }
         }
     }

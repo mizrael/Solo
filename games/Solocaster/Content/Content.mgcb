@@ -97,6 +97,12 @@
 /processorParam:TextureFormat=Color
 /build:dungeon1.png
 
+#begin Effects/Blur.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:Effects/Blur.fx
+
 #begin Font.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor

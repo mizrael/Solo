@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Solo;
 using Solo.Components;
 using Solo.Services;
+using Solo.Services.Rendering;
 using Solocaster.Character;
 using Solocaster.Components;
 using Solocaster.Inventory;
@@ -21,6 +22,8 @@ public class PlayScene : Scene
 
     private InputService _inputService;
     private UIService _uiService;
+    private RenderTarget2D _gameplayTarget;
+    private Effect _blurEffect;
 
     public PlayScene(Game game) : base(game)
     {
@@ -125,5 +128,20 @@ public class PlayScene : Scene
             new CharacterPanelScene(Game, inventoryComponent, statsComponent));
         SceneManager.Instance.AddScene(SceneNames.MetricsPanel,
             new MetricsPanelScene(Game, statsComponent));
+
+        // Setup blur pipeline for gameplay layers
+        _blurEffect = Game.Content.Load<Effect>("Effects/Blur");
+        var viewport = Game.GraphicsDevice.Viewport;
+        _gameplayTarget = new RenderTarget2D(Game.GraphicsDevice, viewport.Width, viewport.Height);
+
+        _blurEffect.Parameters["TexelSize"]?.SetValue(new Vector2(1f / viewport.Width, 1f / viewport.Height));
+        _blurEffect.Parameters["BlurAmount"]?.SetValue(2f);
+
+        var pipeline = new RenderPipeline()
+            .Add(new RenderLayersStep { LayerEnd = RenderLayers.UI, Output = _gameplayTarget })
+            .Add(new ApplyEffectStep { Effect = _blurEffect, Output = null })
+            .Add(new RenderLayersStep { Output = null, ClearTarget = false });
+
+        _renderService.SetPipeline(pipeline);
     }
 }

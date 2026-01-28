@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Solo;
+namespace Solo.Utils;
 
 public static class Texture2DExtensions
 {
