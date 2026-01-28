@@ -2,9 +2,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Solo;
 using Solo.Components;
-using Solo.Services;
 using Solocaster.Monsters;
-using Solocaster.UI;
 
 namespace Solocaster.Components;
 
@@ -35,10 +33,6 @@ public class MonsterBrainComponent : Component
 
     protected override void UpdateCore(GameTime gameTime)
     {
-        //TODO: this should not be here
-        if (GamePauseManager.Instance.IsPaused == true)
-            return;
-
         if (_spriteProvider == null || _player == null)
             return;
 

@@ -1,34 +1,36 @@
 using Microsoft.Xna.Framework;
 using Solo;
 using Solo.Components;
-using Solocaster.Input;
-using Solocaster.UI;
+using Solo.Services;
+using Solocaster.Scenes;
+using Solocaster.Services;
 
 namespace Solocaster.Components;
 
 public class PlayerUIController : Component
 {
-    public CharacterPanel? CharacterPanel { get; set; }
-    public MetricsPanel? MetricsPanel { get; set; }
+    private readonly InputService _inputService;
+
     public GameObject? MiniMapEntity { get; set; }
     public GameObject? DebugUIEntity { get; set; }
 
-    public PlayerUIController(GameObject owner) : base(owner)
+    public PlayerUIController(GameObject owner, InputService inputService) : base(owner)
     {
+        _inputService = inputService;
     }
 
     protected override void UpdateCore(GameTime gameTime)
     {
-        if (InputBindings.IsActionPressed(InputActions.ToggleCharacterPanel))
-            CharacterPanel?.Toggle();
+        if (_inputService.IsActionPressed(InputActions.ToggleCharacterPanel))
+            SceneManager.Instance.PushScene(SceneNames.CharacterPanel);
 
-        if (InputBindings.IsActionPressed(InputActions.ToggleMinimap) && MiniMapEntity != null)
+        if (_inputService.IsActionPressed(InputActions.ToggleMinimap) && MiniMapEntity != null)
             MiniMapEntity.Enabled = !MiniMapEntity.Enabled;
 
-        if (InputBindings.IsActionPressed(InputActions.ToggleDebug) && DebugUIEntity != null)
+        if (_inputService.IsActionPressed(InputActions.ToggleDebug) && DebugUIEntity != null)
             DebugUIEntity.Enabled = !DebugUIEntity.Enabled;
 
-        if (InputBindings.IsActionPressed(InputActions.ToggleMetrics))
-            MetricsPanel?.Toggle();
+        if (_inputService.IsActionPressed(InputActions.ToggleMetrics))
+            SceneManager.Instance.PushScene(SceneNames.MetricsPanel);
     }
 }

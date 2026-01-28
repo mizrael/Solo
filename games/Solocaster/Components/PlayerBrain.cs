@@ -3,11 +3,9 @@ using Microsoft.Xna.Framework.Input;
 using Solo;
 using Solo.AI;
 using Solo.Components;
-using Solo.Services;
 using Solocaster.AI.Player;
 using Solocaster.Entities;
-using Solocaster.Input;
-using Solocaster.UI;
+using Solocaster.Services;
 using System;
 
 namespace Solocaster.Components;
@@ -15,6 +13,7 @@ namespace Solocaster.Components;
 public class PlayerBrain : Component
 {
     private readonly Map _map;
+    private readonly InputService _inputService;
 
     private TransformComponent _transform = null!;
     private InventoryComponent _inventory = null!;
@@ -40,9 +39,10 @@ public class PlayerBrain : Component
     public float LeftHandRaiseAmount => _context?.LeftHandRaiseAmount ?? 0f;
     public float RightHandRaiseAmount => _context?.RightHandRaiseAmount ?? 0f;
 
-    public PlayerBrain(GameObject owner, Map map) : base(owner)
+    public PlayerBrain(GameObject owner, Map map, InputService inputService) : base(owner)
     {
         _map = map;
+        _inputService = inputService;
     }
 
     protected override void InitCore()
@@ -50,8 +50,6 @@ public class PlayerBrain : Component
         _transform = Owner.Components.Get<TransformComponent>();
         _inventory = Owner.Components.Get<InventoryComponent>();
         _stats = Owner.Components.Get<StatsComponent>();
-
-        InputBindings.Initialize();
 
         _context = new PlayerStateContext
         {
@@ -74,23 +72,23 @@ public class PlayerBrain : Component
     {
         // Exploring -> Combat (R key)
         _stateMachine.AddTransition(_exploringState, _combatState,
-            _ => InputBindings.IsActionPressed(InputActions.ToggleCombat));
+            _ => _inputService.IsActionPressed(InputActions.ToggleCombat));
 
         // Combat -> Exploring (R key)
         _stateMachine.AddTransition(_combatState, _exploringState,
-            _ => InputBindings.IsActionPressed(InputActions.ToggleCombat));
+            _ => _inputService.IsActionPressed(InputActions.ToggleCombat));
 
         // Exploring -> Running (Shift + Forward + has stamina)
         _stateMachine.AddTransition(_exploringState, _runningState,
-            _ => InputBindings.IsActionDown(InputActions.Run) &&
-                 InputBindings.IsActionDown(InputActions.MoveForward) &&
+            _ => _inputService.IsActionDown(InputActions.Run) &&
+                 _inputService.IsActionDown(InputActions.MoveForward) &&
                  _stats.CurrentStamina > 0,
             _ => _context.StateBeforeRun = _exploringState);
 
         // Combat -> Running (Shift + Forward + has stamina)
         _stateMachine.AddTransition(_combatState, _runningState,
-            _ => InputBindings.IsActionDown(InputActions.Run) &&
-                 InputBindings.IsActionDown(InputActions.MoveForward) &&
+            _ => _inputService.IsActionDown(InputActions.Run) &&
+                 _inputService.IsActionDown(InputActions.MoveForward) &&
                  _stats.CurrentStamina > 0,
             _ => _context.StateBeforeRun = _combatState);
 
@@ -100,18 +98,18 @@ public class PlayerBrain : Component
 
         // Running -> Exploring (pressed backward - always to exploring)
         _stateMachine.AddTransition(_runningState, _exploringState,
-            _ => InputBindings.IsActionDown(InputActions.MoveBackward));
+            _ => _inputService.IsActionDown(InputActions.MoveBackward));
 
         // Running -> Exploring (stopped running, was exploring)
         _stateMachine.AddTransition(_runningState, _exploringState,
-            _ => (!InputBindings.IsActionDown(InputActions.Run) ||
-                  !InputBindings.IsActionDown(InputActions.MoveForward)) &&
+            _ => (!_inputService.IsActionDown(InputActions.Run) ||
+                  !_inputService.IsActionDown(InputActions.MoveForward)) &&
                  _context.StateBeforeRun == _exploringState);
 
         // Running -> Combat (stopped running, was in combat)
         _stateMachine.AddTransition(_runningState, _combatState,
-            _ => (!InputBindings.IsActionDown(InputActions.Run) ||
-                  !InputBindings.IsActionDown(InputActions.MoveForward)) &&
+            _ => (!_inputService.IsActionDown(InputActions.Run) ||
+                  !_inputService.IsActionDown(InputActions.MoveForward)) &&
                  _context.StateBeforeRun == _combatState);
 
         // Exhausted -> Exploring (recovered, was exploring)
@@ -125,12 +123,6 @@ public class PlayerBrain : Component
 
     protected override void UpdateCore(GameTime gameTime)
     {
-        // Must update input state every frame for IsActionPressed to work correctly
-        InputBindings.Update();
-
-        if (GamePauseManager.Instance.IsPaused)
-            return;
-
         float ms = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
         float baseSpeed = ms * 0.005f;
         float rotSpeed = ms * 0.005f;
@@ -193,7 +185,7 @@ public class PlayerBrain : Component
 
     private void HandleInteract()
     {
-        if (InputBindings.IsActionPressed(InputActions.Interact))
+        if (_inputService.IsActionPressed(InputActions.Interact))
             TryOpenDoor();
     }
 
@@ -222,9 +214,9 @@ public class PlayerBrain : Component
         float moveSpeed = baseSpeed * _context.SpeedMultiplier;
         float moveAmount = 0f;
 
-        if (InputBindings.IsActionDown(InputActions.MoveForward))
+        if (_inputService.IsActionDown(InputActions.MoveForward))
             moveAmount = moveSpeed;
-        else if (InputBindings.IsActionDown(InputActions.MoveBackward))
+        else if (_inputService.IsActionDown(InputActions.MoveBackward))
             moveAmount = -moveSpeed;
 
         _context.CurrentMoveSpeed = MathF.Abs(moveAmount);
@@ -253,9 +245,9 @@ public class PlayerBrain : Component
 
     private void HandleRotation(float rotSpeed)
     {
-        if (InputBindings.IsActionDown(InputActions.RotateLeft))
+        if (_inputService.IsActionDown(InputActions.RotateLeft))
             RotatePlayer(-rotSpeed);
-        else if (InputBindings.IsActionDown(InputActions.RotateRight))
+        else if (_inputService.IsActionDown(InputActions.RotateRight))
             RotatePlayer(rotSpeed);
     }
 

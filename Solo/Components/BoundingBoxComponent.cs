@@ -52,10 +52,7 @@ public class BoundingBoxComponent : Component
     public void Render(SpriteBatch spriteBatch)
     {
         if (_pixelTexture is null)
-        {
-            var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
-            _pixelTexture = Texture2DUtils.Generate(renderService.Graphics.GraphicsDevice, 1, 1, Color.White);
-        }
+            _pixelTexture = Texture2DUtils.Generate(GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice, 1, 1, Color.White);
 
         spriteBatch.Draw(_pixelTexture, new Rectangle(_bounds.X, _bounds.Y, _bounds.Width, 1), Color.Yellow);
         spriteBatch.Draw(_pixelTexture, new Rectangle(_bounds.X, _bounds.Y, 1, _bounds.Height), Color.Yellow);

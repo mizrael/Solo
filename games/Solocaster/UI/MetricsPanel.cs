@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Solo.Services;
 using Solocaster.Components;
 using Solocaster.Inventory;
 using Solocaster.UI.Widgets;
@@ -224,21 +223,6 @@ public class MetricsPanel : PanelWidget
         };
         y += LineHeight;
         return row;
-    }
-
-    public void Toggle()
-    {
-        Visible = !Visible;
-
-        if (Visible)
-        {
-            ScrollOffset = 0;
-            GamePauseManager.Instance.RequestPause(this);
-        }
-        else
-        {
-            GamePauseManager.Instance.ReleasePause(this);
-        }
     }
 
     public void CenterOnScreen(int screenWidth, int screenHeight)

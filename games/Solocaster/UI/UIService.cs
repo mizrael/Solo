@@ -7,34 +7,24 @@ using System.Collections.Generic;
 
 namespace Solocaster.UI;
 
-public class UIService : IGameService
+public class UIService : IGameService, IRenderable
 {
     private const int DragItemSize = 48;
-    private const float OverlayOpacity = 0.6f;
 
     private readonly List<Widget> _rootWidgets = new();
-    private readonly GraphicsDeviceManager _graphics;
-    private SpriteBatch? _spriteBatch;
     private MouseState _previousMouseState;
     private TooltipWidget? _tooltip;
     private SpriteFont? _tooltipFont;
-    private Texture2D? _pixelTexture;
 
     public readonly DragDropManager DragDropManager = new();
 
-    public UIService(GraphicsDeviceManager graphics)
-    {
-        _graphics = graphics;
-    }
+    public int LayerIndex { get; set; } = RenderLayers.UI;
+    public bool Hidden { get; set; } = false;
 
     public void Initialize()
     {
-        _spriteBatch = new SpriteBatch(_graphics.GraphicsDevice);
         _previousMouseState = Mouse.GetState();
         _tooltip = new TooltipWidget();
-
-        _pixelTexture = new Texture2D(_graphics.GraphicsDevice, 1, 1);
-        _pixelTexture.SetData(new[] { Color.White });
     }
 
     public void SetTooltipFont(SpriteFont font)
@@ -60,7 +50,7 @@ public class UIService : IGameService
         _rootWidgets.Clear();
     }
 
-    public void Step(GameTime gameTime)
+    public void Update(GameTime gameTime)
     {
         var mouseState = Mouse.GetState();
 
@@ -117,8 +107,8 @@ public class UIService : IGameService
             var tooltipY = mouseState.Y + 16;
 
             // Keep on screen
-            var screenWidth = _graphics.GraphicsDevice.Viewport.Width;
-            var screenHeight = _graphics.GraphicsDevice.Viewport.Height;
+            var screenWidth = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice.Viewport.Width;
+            var screenHeight = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice.Viewport.Height;
 
             if (tooltipX + _tooltip.Size.X > screenWidth)
                 tooltipX = mouseState.X - (int)_tooltip.Size.X - 8;
@@ -156,37 +146,6 @@ public class UIService : IGameService
         return null;
     }
 
-    public void Render()
-    {
-        if (_spriteBatch == null)
-            return;
-
-        _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
-
-        // Render dark overlay when paused
-        if (GamePauseManager.Instance?.IsPaused == true && _pixelTexture != null)
-        {
-            var viewport = _graphics.GraphicsDevice.Viewport;
-            _spriteBatch.Draw(
-                _pixelTexture,
-                new Rectangle(0, 0, viewport.Width, viewport.Height),
-                Color.Black * OverlayOpacity);
-        }
-
-        foreach (var widget in _rootWidgets)
-        {
-            widget.Render(_spriteBatch);
-        }
-
-        // Render dragged item on top of all widgets
-        DragDropManager?.Render(_spriteBatch, DragItemSize);
-
-        // Render tooltip last (always on top)
-        _tooltip?.Render(_spriteBatch);
-
-        _spriteBatch.End();
-    }
-
     public bool HasVisibleWidgets()
     {
         foreach (var widget in _rootWidgets)
@@ -195,5 +154,16 @@ public class UIService : IGameService
                 return true;
         }
         return false;
+    }
+
+    public void Render(SpriteBatch spriteBatch)
+    {
+        foreach (var widget in _rootWidgets)
+        {
+            widget.Render(spriteBatch);
+        }
+
+        DragDropManager?.Render(spriteBatch, DragItemSize);
+        _tooltip?.Render(spriteBatch);
     }
 }

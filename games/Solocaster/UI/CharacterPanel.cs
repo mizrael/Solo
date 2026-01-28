@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Solo.Services;
 using Solocaster.Components;
 using Solocaster.UI.Widgets;
 
@@ -23,13 +22,9 @@ public class CharacterPanel : Widget
         _statsPanel = new StatsPanel(stats, font, game);
         _inventoryPanel = new InventoryPanel(inventory, dragDropManager, font, game);
 
-        // Position stats panel on the left
         _statsPanel.Position = Vector2.Zero;
-
-        // Position inventory panel to the right of stats panel
         _inventoryPanel.Position = new Vector2(_statsPanel.Size.X + PanelSpacing, 0);
 
-        // Calculate total size
         Size = new Vector2(
             _statsPanel.Size.X + PanelSpacing + _inventoryPanel.Size.X,
             MathHelper.Max(_statsPanel.Size.Y, _inventoryPanel.Size.Y)
@@ -39,16 +34,6 @@ public class CharacterPanel : Widget
         AddChild(_inventoryPanel);
 
         Visible = false;
-    }
-
-    public void Toggle()
-    {
-        Visible = !Visible;
-
-        if (Visible)
-            GamePauseManager.Instance.RequestPause(this);
-        else
-            GamePauseManager.Instance?.ReleasePause(this);
     }
 
     public void CenterOnScreen(int screenWidth, int screenHeight)
