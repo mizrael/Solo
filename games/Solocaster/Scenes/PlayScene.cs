@@ -22,8 +22,7 @@ public class PlayScene : Scene
 
     private InputService _inputService;
     private UIService _uiService;
-    private RenderTarget2D _gameplayTarget;
-    private Effect _blurEffect;
+    private RenderTarget2D _sceneCapture;
 
     public PlayScene(Game game) : base(game)
     {
@@ -123,25 +122,21 @@ public class PlayScene : Scene
         playerHandsRenderer.LayerIndex = 5;
         ObjectsGraph.Root.AddChild(playerHandsEntity);
 
-        // Register overlay scenes with player data
-        SceneManager.Instance.AddScene(SceneNames.CharacterPanel,
-            new CharacterPanelScene(Game, inventoryComponent, statsComponent));
-        SceneManager.Instance.AddScene(SceneNames.MetricsPanel,
-            new MetricsPanelScene(Game, statsComponent));
-
-        // Setup blur pipeline for gameplay layers
-        _blurEffect = Game.Content.Load<Effect>("Effects/Blur");
+        // Create scene capture texture for overlay backgrounds
         var viewport = Game.GraphicsDevice.Viewport;
-        _gameplayTarget = new RenderTarget2D(Game.GraphicsDevice, viewport.Width, viewport.Height);
+        _sceneCapture = new RenderTarget2D(Game.GraphicsDevice, viewport.Width, viewport.Height);
 
-        _blurEffect.Parameters["TexelSize"]?.SetValue(new Vector2(1f / viewport.Width, 1f / viewport.Height));
-        _blurEffect.Parameters["BlurAmount"]?.SetValue(2f);
-
+        // Pipeline: render all layers to capture texture, then copy to screen
         var pipeline = new RenderPipeline()
-            .Add(new RenderLayersStep { LayerEnd = RenderLayers.UI, Output = _gameplayTarget })
-            .Add(new ApplyEffectStep { Effect = _blurEffect, Output = null })
-            .Add(new RenderLayersStep { Output = null, ClearTarget = false });
+            .Add(new RenderLayersStep { Output = _sceneCapture })
+            .Add(new ApplyEffectStep { Output = null });
 
         _renderService.SetPipeline(pipeline);
+
+        // Register overlay scenes with player data and scene capture
+        SceneManager.Instance.AddScene(SceneNames.CharacterPanel,
+            new CharacterPanelScene(Game, inventoryComponent, statsComponent, _sceneCapture));
+        SceneManager.Instance.AddScene(SceneNames.MetricsPanel,
+            new MetricsPanelScene(Game, statsComponent, _sceneCapture));
     }
 }

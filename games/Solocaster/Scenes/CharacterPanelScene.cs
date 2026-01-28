@@ -12,17 +12,17 @@ public class CharacterPanelScene : Scene
 {
     private readonly InventoryComponent _inventory;
     private readonly StatsComponent _stats;
+    private readonly RenderTarget2D _sceneCapture;
 
     private InputService _inputService;
     private UIService _uiService;
+    private RenderPipeline _pipeline;
 
-    private RenderTarget2D? _gameplayTarget;
-    private Effect? _blurEffect;
-
-    public CharacterPanelScene(Game game, InventoryComponent inventory, StatsComponent stats) : base(game)
+    public CharacterPanelScene(Game game, InventoryComponent inventory, StatsComponent stats, RenderTarget2D sceneCapture) : base(game)
     {
         _inventory = inventory;
         _stats = stats;
+        _sceneCapture = sceneCapture;
     }
 
     protected override void InitializeCore()
@@ -49,31 +49,16 @@ public class CharacterPanelScene : Scene
         characterPanel.Visible = true;
         _uiService.AddWidget(characterPanel);
 
-        // Load blur effect
-        _blurEffect = Game.Content.Load<Effect>("Effects/Blur");
-
-        // Create render target for gameplay capture
+        var blurEffect = Game.Content.Load<Effect>("Effects/Blur");
         var viewport = Game.GraphicsDevice.Viewport;
-        _gameplayTarget = new RenderTarget2D(Game.GraphicsDevice, viewport.Width, viewport.Height);
+        blurEffect.Parameters["TexelSize"]?.SetValue(new Vector2(1f / viewport.Width, 1f / viewport.Height));
+        blurEffect.Parameters["BlurAmount"]?.SetValue(2f);
+        blurEffect.Parameters["DarkenAmount"]?.SetValue(0.5f);
 
-        // Set blur shader parameters
-        _blurEffect.Parameters["TexelSize"]?.SetValue(new Vector2(1f / viewport.Width, 1f / viewport.Height));
-        _blurEffect.Parameters["BlurAmount"]?.SetValue(2f);
-
-        // Create pipeline: render gameplay to texture, apply blur to screen, render UI on top
-        var pipeline = new RenderPipeline()
-            .Add(new RenderLayersStep { LayerEnd = RenderLayers.UI, Output = _gameplayTarget })
-            .Add(new ApplyEffectStep { Effect = _blurEffect, Output = null })
+        _pipeline = new RenderPipeline()
+            .Add(new ApplyEffectStep { Effect = blurEffect, Output = null, Input = _sceneCapture })
             .Add(new RenderLayersStep { Output = null, ClearTarget = false });
-
-        _renderService.SetPipeline(pipeline);
-    }
-
-    protected override void ExitCore()
-    {
-        _renderService.SetPipeline(null);
-        _gameplayTarget?.Dispose();
-        _gameplayTarget = null;
+        _renderService.SetPipeline(_pipeline);
     }
 
     protected override void UpdateCore(GameTime gameTime)
