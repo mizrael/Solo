@@ -199,14 +199,13 @@ public record PlayerCombatState : Solo.AI.State
                 break;
         }
 
-        if (mouseHeld && state == HandActionState.Idle && cooldown <= 0)
+        if (mouseHeld && cooldown <= 0 &&
+            state == HandActionState.Idle &&
+            otherHandState != HandActionState.Raising && otherHandState != HandActionState.Held)
         {
-            if (otherHandState != HandActionState.Raising && otherHandState != HandActionState.Held)
-            {
-                state = HandActionState.Raising;
-                timer = 0f;
-                cooldown = weapon != null ? CalculateCooldown(weapon.Template) : BaseCooldown;
-            }
+            state = HandActionState.Raising;
+            timer = 0f;
+            cooldown = weapon != null ? CalculateCooldown(weapon.Template) : BaseCooldown;
         }
     }
 

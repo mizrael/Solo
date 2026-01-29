@@ -198,8 +198,6 @@ internal class PlayScene : Scene
         GameObject player,
         Spawner explosionSpawner)
     {
-        var graphicsDevice = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice;
-
         var spriteNames = new[]
         {
             "meteorBrown_big1",
@@ -305,8 +303,6 @@ internal class PlayScene : Scene
 
     private GameObject BuildBackground()
     {
-        var graphicsDevice = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice;
-
         var background = new GameObject();
 
         var sprite = Sprite.FromTexture("Backgrounds/blue", Game.Content);

@@ -14,8 +14,6 @@ public class PlayScene : Scene
 
     protected override void EnterCore()
     {
-        var viewport = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice.Viewport;
-
         var board = new Board(16, 16);
         var snake = new Snake()
         {

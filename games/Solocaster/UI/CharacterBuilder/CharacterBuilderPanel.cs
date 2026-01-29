@@ -24,7 +24,7 @@ public class CharacterBuilderPanel : PanelWidget
     private readonly PanelWidget _contentPanel;
 
     private enum StepType { Race, Class, Skills, Sex, Avatar, Name, Summary }
-    private List<StepType> _activeSteps = new();
+    private readonly List<StepType> _activeSteps = new();
     private int _currentStepIndex;
     private readonly HashSet<int> _completedSteps = new();
 
@@ -210,7 +210,6 @@ public class CharacterBuilderPanel : PanelWidget
     private Widget? CreateStepContent(StepType stepType)
     {
         var contentSize = _contentPanel.Size;
-        var character = GameState.CurrentCharacter!;
 
         return stepType switch
         {

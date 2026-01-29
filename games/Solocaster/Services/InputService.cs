@@ -52,15 +52,15 @@ public class InputService : IGameService
         {
             var json = File.ReadAllText(DefaultPath);
             var loaded = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
-            if (loaded != null)
+            if (loaded == null)
+                return;
+
+            foreach (var kvp in loaded)
             {
-                foreach (var kvp in loaded)
-                {
-                    if (Enum.TryParse<Keys>(kvp.Value, ignoreCase: true, out var key))
-                        _bindings[kvp.Key] = key;
-                    else
-                        Console.WriteLine($"InputService: Unknown key '{kvp.Value}' for action '{kvp.Key}'");
-                }
+                if (Enum.TryParse<Keys>(kvp.Value, ignoreCase: true, out var key))
+                    _bindings[kvp.Key] = key;
+                else
+                    Console.WriteLine($"InputService: Unknown key '{kvp.Value}' for action '{kvp.Key}'");
             }
         }
         catch (Exception ex)
