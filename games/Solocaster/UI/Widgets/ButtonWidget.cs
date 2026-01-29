@@ -21,15 +21,18 @@ public class ButtonWidget : PanelWidget
     public SpriteFont? Font { get; set; }
     public Color TextColor { get; set; } = UITheme.Text.Primary;
     public Color HoverTextColor { get; set; } = UITheme.Text.Title;
-    public Color HoverBackgroundColor { get; set; } = new Color(80, 75, 65, 240);
-    public Color HoverBorderColor { get; set; } = UITheme.Selection.SelectionBorder;
+    public Color HoverBackgroundColor { get; set; } = UITheme.Button.HoverBackgroundColor;
+    public Color HoverBorderColor { get; set; } = UITheme.Button.HoverBorderColor;
+    public Color DisabledTextColor { get; set; } = UITheme.Text.Muted;
+    public Color DisabledBackgroundColor { get; set; } = UITheme.Button.DisabledBackgroundColor;
+    public Color DisabledBorderColor { get; set; } = UITheme.Button.DisabledBorderColor;
 
-    public bool IsHovered => _isHovered;
+    public bool IsHovered => _isHovered && Enabled;
 
     protected override void UpdateCore(GameTime gameTime, MouseState mouseState, MouseState previousMouseState)
     {
         var mousePoint = new Point(mouseState.X, mouseState.Y);
-        _isHovered = Bounds.Contains(mousePoint);
+        _isHovered = Enabled && Bounds.Contains(mousePoint);
 
         base.UpdateCore(gameTime, mouseState, previousMouseState);
     }
@@ -39,7 +42,12 @@ public class ButtonWidget : PanelWidget
         var originalBackgroundColor = BackgroundColor;
         var originalBorderColor = BorderColor;
 
-        if (_isHovered)
+        if (!Enabled)
+        {
+            BackgroundColor = DisabledBackgroundColor;
+            BorderColor = DisabledBorderColor;
+        }
+        else if (_isHovered)
         {
             BackgroundColor = HoverBackgroundColor;
             BorderColor = HoverBorderColor;
@@ -55,7 +63,7 @@ public class ButtonWidget : PanelWidget
         {
             var textSize = Font.MeasureString(Text);
             var textPos = ScreenPosition + (Size - textSize) / 2;
-            var currentTextColor = _isHovered ? HoverTextColor : TextColor;
+            var currentTextColor = !Enabled ? DisabledTextColor : (_isHovered ? HoverTextColor : TextColor);
             spriteBatch.DrawString(Font, Text, textPos, currentTextColor);
         }
     }

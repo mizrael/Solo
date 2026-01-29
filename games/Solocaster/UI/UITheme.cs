@@ -11,7 +11,7 @@ public static class UITheme
     private static UIThemeData _theme = new();
 
     public static PanelStyle Panel => _theme.Panel;
-    public static PanelStyle Button => _theme.Button;
+    public static ButtonStyle Button => _theme.Button;
     public static PanelStyle ItemSlot => _theme.ItemSlot;
     public static PanelStyle Tooltip => _theme.Tooltip;
     public static TextColors Text => _theme.Text;
@@ -39,7 +39,7 @@ public static class UITheme
             _theme = new UIThemeData
             {
                 Panel = ParsePanelStyle(data.Panel),
-                Button = ParsePanelStyle(data.Button),
+                Button = ParseButtonStyle(data.Button),
                 ItemSlot = ParsePanelStyle(data.ItemSlot),
                 Tooltip = ParsePanelStyle(data.Tooltip),
                 Text = ParseTextColors(data.Text),
@@ -62,6 +62,24 @@ public static class UITheme
             BorderColor = ParseColor(json.BorderColor) ?? new Color(80, 80, 80),
             BorderWidth = json.BorderWidth ?? 2,
             ContentPadding = json.ContentPadding ?? 16
+        };
+    }
+
+    private static ButtonStyle ParseButtonStyle(ButtonStyleJson? json)
+    {
+        if (json == null)
+            return new ButtonStyle();
+
+        return new ButtonStyle
+        {
+            BackgroundColor = ParseColor(json.BackgroundColor) ?? new Color(60, 60, 60, 230),
+            BorderColor = ParseColor(json.BorderColor) ?? new Color(100, 100, 100),
+            BorderWidth = json.BorderWidth ?? 2,
+            ContentPadding = json.ContentPadding ?? 0,
+            HoverBackgroundColor = ParseColor(json.HoverBackgroundColor) ?? new Color(80, 75, 65, 240),
+            HoverBorderColor = ParseColor(json.HoverBorderColor) ?? new Color(200, 180, 140),
+            DisabledBackgroundColor = ParseColor(json.DisabledBackgroundColor) ?? new Color(35, 35, 35, 200),
+            DisabledBorderColor = ParseColor(json.DisabledBorderColor) ?? new Color(50, 50, 50)
         };
     }
 
@@ -167,7 +185,7 @@ public static class UITheme
     private class UIThemeJson
     {
         public PanelStyleJson? Panel { get; set; }
-        public PanelStyleJson? Button { get; set; }
+        public ButtonStyleJson? Button { get; set; }
         public PanelStyleJson? ItemSlot { get; set; }
         public PanelStyleJson? Tooltip { get; set; }
         public TextColorsJson? Text { get; set; }
@@ -183,6 +201,14 @@ public static class UITheme
         public int[]? BorderColor { get; set; }
         public int? BorderWidth { get; set; }
         public int? ContentPadding { get; set; }
+    }
+
+    private class ButtonStyleJson : PanelStyleJson
+    {
+        public int[]? HoverBackgroundColor { get; set; }
+        public int[]? HoverBorderColor { get; set; }
+        public int[]? DisabledBackgroundColor { get; set; }
+        public int[]? DisabledBorderColor { get; set; }
     }
 
     private class TextColorsJson
@@ -244,7 +270,7 @@ public static class UITheme
 public class UIThemeData
 {
     public PanelStyle Panel { get; set; } = new();
-    public PanelStyle Button { get; set; } = new();
+    public ButtonStyle Button { get; set; } = new();
     public PanelStyle ItemSlot { get; set; } = new();
     public PanelStyle Tooltip { get; set; } = new();
     public TextColors Text { get; set; } = new();
@@ -260,6 +286,14 @@ public class PanelStyle
     public Color BorderColor { get; set; } = new Color(80, 80, 80);
     public int BorderWidth { get; set; } = 2;
     public int ContentPadding { get; set; } = 16;
+}
+
+public class ButtonStyle : PanelStyle
+{
+    public Color HoverBackgroundColor { get; set; } = new Color(80, 75, 65, 240);
+    public Color HoverBorderColor { get; set; } = new Color(200, 180, 140);
+    public Color DisabledBackgroundColor { get; set; } = new Color(35, 35, 35, 200);
+    public Color DisabledBorderColor { get; set; } = new Color(50, 50, 50);
 }
 
 public class TextColors

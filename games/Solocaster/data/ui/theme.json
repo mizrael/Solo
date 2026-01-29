@@ -9,7 +9,11 @@
     "backgroundColor": [60, 60, 60, 230],
     "borderColor": [100, 100, 100],
     "borderWidth": 2,
-    "contentPadding": 8
+    "contentPadding": 8,
+    "hoverBackgroundColor": [80, 75, 65, 240],
+    "hoverBorderColor": [200, 180, 140],
+    "disabledBackgroundColor": [35, 35, 35, 200],
+    "disabledBorderColor": [50, 50, 50]
   },
   "itemSlot": {
     "backgroundColor": [30, 30, 30, 200],
