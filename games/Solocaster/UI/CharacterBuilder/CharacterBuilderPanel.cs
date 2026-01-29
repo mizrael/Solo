@@ -240,6 +240,22 @@ public class CharacterBuilderPanel : PanelWidget
         UpdateNextButtonState();
     }
 
+    private bool AreAllSkillPointsSpent()
+    {
+        var character = GameState.CurrentCharacter!;
+        if (!CharacterTemplateLoader.TryGetRace(character.RaceId, out var race) || race == null)
+            return true;
+
+        int totalPoints = race.SkillPoints;
+        int spentPoints = 0;
+        foreach (var kvp in character.SkillPointAllocations)
+        {
+            spentPoints += kvp.Value;
+        }
+
+        return spentPoints >= totalPoints;
+    }
+
     private void UpdateNextButtonState()
     {
         var character = GameState.CurrentCharacter!;
@@ -249,7 +265,7 @@ public class CharacterBuilderPanel : PanelWidget
         {
             StepType.Race => !string.IsNullOrEmpty(character.RaceId),
             StepType.Class => !string.IsNullOrEmpty(character.ClassId),
-            StepType.Skills => true, // Skills always allows proceeding (unspent points are optional)
+            StepType.Skills => AreAllSkillPointsSpent(),
             StepType.Sex => true, // Sex always has a value
             StepType.Avatar => !string.IsNullOrEmpty(character.AvatarSpriteName),
             StepType.Name => !string.IsNullOrEmpty(character.Name) && character.Name.Length >= 2,
