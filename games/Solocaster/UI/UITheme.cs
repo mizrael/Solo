@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Text.Json;
 using Microsoft.Xna.Framework;
-using Solocaster.Inventory;
+using Solocaster.Character;
 
 namespace Solocaster.UI;
 
@@ -310,15 +310,15 @@ public class StatColors
     public Color Intelligence { get; set; } = new Color(80, 120, 200);
     public Color Wisdom { get; set; } = new Color(160, 80, 200);
 
-    public Color GetColorForStat(StatType stat)
+    public Color GetColorForStat(Stats stat)
     {
         return stat switch
         {
-            StatType.Strength => Strength,
-            StatType.Agility => Agility,
-            StatType.Vitality => Vitality,
-            StatType.Intelligence => Intelligence,
-            StatType.Wisdom => Wisdom,
+            Stats.Strength => Strength,
+            Stats.Agility => Agility,
+            Stats.Vitality => Vitality,
+            Stats.Intelligence => Intelligence,
+            Stats.Wisdom => Wisdom,
             _ => Color.Gray
         };
     }

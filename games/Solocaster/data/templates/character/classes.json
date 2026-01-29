@@ -24,6 +24,12 @@
         "Vitality": 1.15,
         "Intelligence": 0.7,
         "Wisdom": 0.8
+      },
+      "skillEffectiveness": {
+        "Sneaking": 0.8,
+        "Negotiation": 0.9,
+        "Persuasion": 0.85,
+        "Lockpicking": 0.7
       }
     },
     {
@@ -50,6 +56,12 @@
         "Vitality": 1.1,
         "Intelligence": 1.0,
         "Wisdom": 1.2
+      },
+      "skillEffectiveness": {
+        "Sneaking": 0.8,
+        "Negotiation": 1.15,
+        "Persuasion": 1.2,
+        "Lockpicking": 0.7
       }
     },
     {
@@ -76,6 +88,12 @@
         "Vitality": 0.95,
         "Intelligence": 1.05,
         "Wisdom": 0.95
+      },
+      "skillEffectiveness": {
+        "Sneaking": 1.3,
+        "Negotiation": 1.1,
+        "Persuasion": 1.0,
+        "Lockpicking": 1.4
       }
     },
     {
@@ -102,6 +120,12 @@
         "Vitality": 0.8,
         "Intelligence": 1.25,
         "Wisdom": 1.1
+      },
+      "skillEffectiveness": {
+        "Sneaking": 0.9,
+        "Negotiation": 1.0,
+        "Persuasion": 1.1,
+        "Lockpicking": 0.8
       }
     }
   ]

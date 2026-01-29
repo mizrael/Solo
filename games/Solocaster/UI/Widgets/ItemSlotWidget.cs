@@ -3,6 +3,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Solocaster.Character;
 using Solocaster.Inventory;
 
 namespace Solocaster.UI.Widgets;
@@ -197,44 +198,44 @@ public class ItemSlotWidget : PanelWidget
         return sb.ToString().TrimEnd();
     }
 
-    private static string FormatStatName(StatType stat)
+    private static string FormatStatName(Stats stat)
     {
         return stat switch
         {
-            StatType.Strength => "Strength",
-            StatType.Agility => "Agility",
-            StatType.Vitality => "Vitality",
-            StatType.Intelligence => "Intelligence",
-            StatType.MaxHealth => "Max Health",
-            StatType.MaxWeight => "Max Weight",
-            StatType.Damage => "Damage",
-            StatType.Defense => "Defense",
-            StatType.AttackSpeed => "Attack Speed",
-            StatType.CriticalChance => "Critical Chance",
-            StatType.MaxMana => "Max Mana",
-            StatType.ManaRegen => "Mana Regen",
-            StatType.SpellPower => "Spell Power",
+            Stats.Strength => "Strength",
+            Stats.Agility => "Agility",
+            Stats.Vitality => "Vitality",
+            Stats.Intelligence => "Intelligence",
+            Stats.MaxHealth => "Max Health",
+            Stats.MaxWeight => "Max Weight",
+            Stats.Damage => "Damage",
+            Stats.Defense => "Defense",
+            Stats.AttackSpeed => "Attack Speed",
+            Stats.CriticalChance => "Critical Chance",
+            Stats.MaxMana => "Max Mana",
+            Stats.ManaRegen => "Mana Regen",
+            Stats.SpellPower => "Spell Power",
             _ => stat.ToString()
         };
     }
 
-    private static string GetStatAbbreviation(StatType stat)
+    private static string GetStatAbbreviation(Stats stat)
     {
         return stat switch
         {
-            StatType.Strength => "STR",
-            StatType.Agility => "AGI",
-            StatType.Vitality => "VIT",
-            StatType.Intelligence => "INT",
-            StatType.MaxHealth => "HP",
-            StatType.MaxWeight => "WT",
-            StatType.Damage => "DMG",
-            StatType.Defense => "DEF",
-            StatType.AttackSpeed => "SPD",
-            StatType.CriticalChance => "CRIT",
-            StatType.MaxMana => "MP",
-            StatType.ManaRegen => "MPR",
-            StatType.SpellPower => "PWR",
+            Stats.Strength => "STR",
+            Stats.Agility => "AGI",
+            Stats.Vitality => "VIT",
+            Stats.Intelligence => "INT",
+            Stats.MaxHealth => "HP",
+            Stats.MaxWeight => "WT",
+            Stats.Damage => "DMG",
+            Stats.Defense => "DEF",
+            Stats.AttackSpeed => "SPD",
+            Stats.CriticalChance => "CRIT",
+            Stats.MaxMana => "MP",
+            Stats.ManaRegen => "MPR",
+            Stats.SpellPower => "PWR",
             _ => stat.ToString()
         };
     }

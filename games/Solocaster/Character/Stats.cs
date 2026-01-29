@@ -1,6 +1,6 @@
-namespace Solocaster.Inventory;
+namespace Solocaster.Character;
 
-public enum StatType
+public enum Stats
 {
     // Primary stats
     Strength,

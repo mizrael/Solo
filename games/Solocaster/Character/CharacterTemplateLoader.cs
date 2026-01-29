@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Solocaster.Inventory;
 
 namespace Solocaster.Character;
 
@@ -53,7 +52,8 @@ public static class CharacterTemplateLoader
                 StatBonuses = ParseStatDictionary(raceData.StatBonuses),
                 ProgressRates = ParseStatDictionary(raceData.ProgressRates),
                 GainMultipliers = ParseStatDictionary(raceData.GainMultipliers),
-                ActionProgress = ParseActionProgressDictionary(raceData.ActionProgress)
+                ActionProgress = ParseActionProgressDictionary(raceData.ActionProgress),
+                SkillEffectiveness = ParseSkillsDictionary(raceData.SkillEffectiveness)
             };
 
             _races[template.Id] = template;
@@ -82,32 +82,48 @@ public static class CharacterTemplateLoader
                 Description = classData.Description ?? string.Empty,
                 StatBonuses = ParseStatDictionary(classData.StatBonuses),
                 ProgressRates = ParseStatDictionary(classData.ProgressRates),
-                GainMultipliers = ParseStatDictionary(classData.GainMultipliers)
+                GainMultipliers = ParseStatDictionary(classData.GainMultipliers),
+                SkillEffectiveness = ParseSkillsDictionary(classData.SkillEffectiveness)
             };
 
             _classes[template.Id] = template;
         }
     }
 
-    private static Dictionary<StatType, float> ParseStatDictionary(Dictionary<string, float>? source)
+    private static Dictionary<Stats, float> ParseStatDictionary(Dictionary<string, float>? source)
     {
-        var result = new Dictionary<StatType, float>();
+        var result = new Dictionary<Stats, float>();
         if (source == null)
             return result;
 
         foreach (var kvp in source)
         {
-            if (Enum.TryParse<StatType>(kvp.Key, true, out var statType))
+            if (Enum.TryParse<Stats>(kvp.Key, true, out var statType))
                 result[statType] = kvp.Value;
         }
 
         return result;
     }
 
-    private static Dictionary<MetricType, Dictionary<StatType, float>> ParseActionProgressDictionary(
+    private static Dictionary<Skills, float> ParseSkillsDictionary(Dictionary<string, float>? source)
+    {
+        var result = new Dictionary<Skills, float>();
+        if (source == null)
+            return result;
+
+        foreach (var kvp in source)
+        {
+            if (Enum.TryParse<Skills>(kvp.Key, true, out var skill))
+                result[skill] = kvp.Value;
+        }
+
+        return result;
+    }
+
+    private static Dictionary<MetricType, Dictionary<Stats, float>> ParseActionProgressDictionary(
         Dictionary<string, Dictionary<string, float>>? source)
     {
-        var result = new Dictionary<MetricType, Dictionary<StatType, float>>();
+        var result = new Dictionary<MetricType, Dictionary<Stats, float>>();
         if (source == null)
             return result;
 
@@ -172,6 +188,7 @@ public static class CharacterTemplateLoader
         public Dictionary<string, float>? ProgressRates { get; set; }
         public Dictionary<string, float>? GainMultipliers { get; set; }
         public Dictionary<string, Dictionary<string, float>>? ActionProgress { get; set; }
+        public Dictionary<string, float>? SkillEffectiveness { get; set; }
     }
 
     private class ClassFileData
@@ -187,5 +204,6 @@ public static class CharacterTemplateLoader
         public Dictionary<string, float>? StatBonuses { get; set; }
         public Dictionary<string, float>? ProgressRates { get; set; }
         public Dictionary<string, float>? GainMultipliers { get; set; }
+        public Dictionary<string, float>? SkillEffectiveness { get; set; }
     }
 }

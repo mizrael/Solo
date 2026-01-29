@@ -19,9 +19,9 @@ public class StatsComponent : Component
     private const float CombatActionRegenPause = 1.5f;
     private const float ExhaustedDuration = 2f;
 
-    private readonly Dictionary<StatType, float> _baseStats = new();
-    private readonly Dictionary<StatType, float> _equipmentBonuses = new();
-    private readonly Dictionary<StatType, float> _statProgress = new(); // 0-100%
+    private readonly Dictionary<Stats, float> _baseStats = new();
+    private readonly Dictionary<Stats, float> _equipmentBonuses = new();
+    private readonly Dictionary<Stats, float> _statProgress = new(); // 0-100%
 
     private float _currentHealth;
     private float _currentMana;
@@ -43,7 +43,7 @@ public class StatsComponent : Component
         get => _currentHealth;
         set
         {
-            _currentHealth = Math.Clamp(value, 0, GetTotalStat(StatType.MaxHealth));
+            _currentHealth = Math.Clamp(value, 0, GetTotalStat(Stats.MaxHealth));
             OnStatsChanged?.Invoke();
         }
     }
@@ -53,7 +53,7 @@ public class StatsComponent : Component
         get => _currentMana;
         set
         {
-            _currentMana = Math.Clamp(value, 0, GetTotalStat(StatType.MaxMana));
+            _currentMana = Math.Clamp(value, 0, GetTotalStat(Stats.MaxMana));
             OnStatsChanged?.Invoke();
         }
     }
@@ -68,8 +68,8 @@ public class StatsComponent : Component
         }
     }
 
-    public float MaxStamina => 50 + GetTotalStat(StatType.Vitality) * 5;
-    public float StaminaRegenRate => 5 + GetTotalStat(StatType.Agility) * 0.5f;
+    public float MaxStamina => 50 + GetTotalStat(Stats.Vitality) * 5;
+    public float StaminaRegenRate => 5 + GetTotalStat(Stats.Agility) * 0.5f;
     public bool IsExhausted => _isExhausted;
 
     public StatsComponent(GameObject owner) : base(owner)
@@ -82,20 +82,20 @@ public class StatsComponent : Component
 
     private void InitializeBaseStats()
     {
-        _baseStats[StatType.Strength] = DefaultBaseStat;
-        _baseStats[StatType.Agility] = DefaultBaseStat;
-        _baseStats[StatType.Vitality] = DefaultBaseStat;
-        _baseStats[StatType.Intelligence] = DefaultBaseStat;
-        _baseStats[StatType.Wisdom] = DefaultBaseStat;
+        _baseStats[Stats.Strength] = DefaultBaseStat;
+        _baseStats[Stats.Agility] = DefaultBaseStat;
+        _baseStats[Stats.Vitality] = DefaultBaseStat;
+        _baseStats[Stats.Intelligence] = DefaultBaseStat;
+        _baseStats[Stats.Wisdom] = DefaultBaseStat;
     }
 
     private void InitializeStatProgress()
     {
-        _statProgress[StatType.Strength] = 0f;
-        _statProgress[StatType.Agility] = 0f;
-        _statProgress[StatType.Vitality] = 0f;
-        _statProgress[StatType.Intelligence] = 0f;
-        _statProgress[StatType.Wisdom] = 0f;
+        _statProgress[Stats.Strength] = 0f;
+        _statProgress[Stats.Agility] = 0f;
+        _statProgress[Stats.Vitality] = 0f;
+        _statProgress[Stats.Intelligence] = 0f;
+        _statProgress[Stats.Wisdom] = 0f;
     }
 
     public void SetCharacter(string raceId, string classId, Sex sex)
@@ -132,7 +132,7 @@ public class StatsComponent : Component
         }
 
         // Ensure no stat goes below 1
-        foreach (var stat in new[] { StatType.Strength, StatType.Agility, StatType.Vitality, StatType.Intelligence, StatType.Wisdom })
+        foreach (var stat in new[] { Stats.Strength, Stats.Agility, Stats.Vitality, Stats.Intelligence, Stats.Wisdom })
         {
             if (_baseStats[stat] < 1)
                 _baseStats[stat] = 1;
@@ -153,7 +153,7 @@ public class StatsComponent : Component
         }
     }
 
-    public void AddStatProgress(StatType stat, float amount)
+    public void AddStatProgress(Stats stat, float amount)
     {
         if (!_statProgress.ContainsKey(stat))
             return;
@@ -174,7 +174,7 @@ public class StatsComponent : Component
         OnStatProgressChanged?.Invoke(stat, _statProgress[stat]);
     }
 
-    private float GetProgressRate(StatType stat)
+    private float GetProgressRate(Stats stat)
     {
         float rate = 1f;
 
@@ -187,7 +187,7 @@ public class StatsComponent : Component
         return rate;
     }
 
-    private float GetGainMultiplier(StatType stat)
+    private float GetGainMultiplier(Stats stat)
     {
         float multiplier = 1f;
 
@@ -200,7 +200,7 @@ public class StatsComponent : Component
         return multiplier;
     }
 
-    private void LevelUpStat(StatType stat)
+    private void LevelUpStat(Stats stat)
     {
         float gainMultiplier = GetGainMultiplier(stat);
         float gain = BaseStatGain * gainMultiplier;
@@ -211,7 +211,7 @@ public class StatsComponent : Component
         OnStatsChanged?.Invoke();
     }
 
-    public float GetStatProgress(StatType stat)
+    public float GetStatProgress(Stats stat)
     {
         return _statProgress.TryGetValue(stat, out var progress) ? progress : 0f;
     }
@@ -220,110 +220,110 @@ public class StatsComponent : Component
     {
         base.InitCore();
         // Initialize current values to max
-        _currentHealth = GetTotalStat(StatType.MaxHealth);
-        _currentMana = GetTotalStat(StatType.MaxMana);
+        _currentHealth = GetTotalStat(Stats.MaxHealth);
+        _currentMana = GetTotalStat(Stats.MaxMana);
         _currentStamina = MaxStamina;
     }
 
-    public float GetBaseStat(StatType stat)
+    public float GetBaseStat(Stats stat)
     {
         return _baseStats.TryGetValue(stat, out var value) ? value : 0f;
     }
 
-    public void SetBaseStat(StatType stat, float value)
+    public void SetBaseStat(Stats stat, float value)
     {
         _baseStats[stat] = value;
         OnStatsChanged?.Invoke();
     }
 
-    public float GetEquipmentBonus(StatType stat)
+    public float GetEquipmentBonus(Stats stat)
     {
         return _equipmentBonuses.TryGetValue(stat, out var value) ? value : 0f;
     }
 
-    public float GetTotalStat(StatType stat)
+    public float GetTotalStat(Stats stat)
     {
         return stat switch
         {
-            StatType.MaxHealth => CalculateMaxHealth(),
-            StatType.MaxWeight => CalculateMaxWeight(),
-            StatType.MaxMana => CalculateMaxMana(),
-            StatType.Damage => CalculateDamage(),
-            StatType.Defense => CalculateDefense(),
-            StatType.AttackSpeed => CalculateAttackSpeed(),
-            StatType.CriticalChance => CalculateCriticalChance(),
-            StatType.ManaRegen => CalculateManaRegen(),
-            StatType.SpellPower => CalculateSpellPower(),
+            Stats.MaxHealth => CalculateMaxHealth(),
+            Stats.MaxWeight => CalculateMaxWeight(),
+            Stats.MaxMana => CalculateMaxMana(),
+            Stats.Damage => CalculateDamage(),
+            Stats.Defense => CalculateDefense(),
+            Stats.AttackSpeed => CalculateAttackSpeed(),
+            Stats.CriticalChance => CalculateCriticalChance(),
+            Stats.ManaRegen => CalculateManaRegen(),
+            Stats.SpellPower => CalculateSpellPower(),
             _ => GetBaseStat(stat) + GetEquipmentBonus(stat)
         };
     }
 
     private float CalculateMaxHealth()
     {
-        float vitality = GetTotalStat(StatType.Vitality);
-        float bonusHealth = GetEquipmentBonus(StatType.MaxHealth);
+        float vitality = GetTotalStat(Stats.Vitality);
+        float bonusHealth = GetEquipmentBonus(Stats.MaxHealth);
         // Base 50 HP + 5 per Vitality point
         return 50 + vitality * 5 + bonusHealth;
     }
 
     private float CalculateMaxWeight()
     {
-        float strength = GetTotalStat(StatType.Strength);
-        float bonusWeight = GetEquipmentBonus(StatType.MaxWeight);
+        float strength = GetTotalStat(Stats.Strength);
+        float bonusWeight = GetEquipmentBonus(Stats.MaxWeight);
         return 20 + strength * 2 + bonusWeight;
     }
 
     private float CalculateMaxMana()
     {
-        float intelligence = GetTotalStat(StatType.Intelligence);
-        float wisdom = GetTotalStat(StatType.Wisdom);
-        float bonusMana = GetEquipmentBonus(StatType.MaxMana);
+        float intelligence = GetTotalStat(Stats.Intelligence);
+        float wisdom = GetTotalStat(Stats.Wisdom);
+        float bonusMana = GetEquipmentBonus(Stats.MaxMana);
         // Base 20 MP + 3 per Intelligence + 2 per Wisdom
         return 20 + intelligence * 3 + wisdom * 2 + bonusMana;
     }
 
     private float CalculateDamage()
     {
-        float strength = GetBaseStat(StatType.Strength) + GetEquipmentBonus(StatType.Strength);
-        float bonusDamage = GetEquipmentBonus(StatType.Damage);
+        float strength = GetBaseStat(Stats.Strength) + GetEquipmentBonus(Stats.Strength);
+        float bonusDamage = GetEquipmentBonus(Stats.Damage);
         return strength * 0.5f + bonusDamage;
     }
 
     private float CalculateDefense()
     {
-        float agility = GetBaseStat(StatType.Agility) + GetEquipmentBonus(StatType.Agility);
-        float bonusDefense = GetEquipmentBonus(StatType.Defense);
+        float agility = GetBaseStat(Stats.Agility) + GetEquipmentBonus(Stats.Agility);
+        float bonusDefense = GetEquipmentBonus(Stats.Defense);
         return agility * 0.3f + bonusDefense;
     }
 
     private float CalculateAttackSpeed()
     {
-        float agility = GetBaseStat(StatType.Agility) + GetEquipmentBonus(StatType.Agility);
-        float bonusAttackSpeed = GetEquipmentBonus(StatType.AttackSpeed);
+        float agility = GetBaseStat(Stats.Agility) + GetEquipmentBonus(Stats.Agility);
+        float bonusAttackSpeed = GetEquipmentBonus(Stats.AttackSpeed);
         // Base 1.0 + 0.02 per Agility point
         return 1.0f + agility * 0.02f + bonusAttackSpeed;
     }
 
     private float CalculateCriticalChance()
     {
-        float agility = GetBaseStat(StatType.Agility) + GetEquipmentBonus(StatType.Agility);
-        float bonusCrit = GetEquipmentBonus(StatType.CriticalChance);
+        float agility = GetBaseStat(Stats.Agility) + GetEquipmentBonus(Stats.Agility);
+        float bonusCrit = GetEquipmentBonus(Stats.CriticalChance);
         // Base 5% + 0.5% per Agility point
         return 5f + agility * 0.5f + bonusCrit;
     }
 
     private float CalculateManaRegen()
     {
-        float wisdom = GetBaseStat(StatType.Wisdom) + GetEquipmentBonus(StatType.Wisdom);
-        float bonusManaRegen = GetEquipmentBonus(StatType.ManaRegen);
+        float wisdom = GetBaseStat(Stats.Wisdom) + GetEquipmentBonus(Stats.Wisdom);
+        float bonusManaRegen = GetEquipmentBonus(Stats.ManaRegen);
         // Base 1.0 + 0.2 per Wisdom point
         return 1.0f + wisdom * 0.2f + bonusManaRegen;
     }
 
     private float CalculateSpellPower()
     {
-        float intelligence = GetBaseStat(StatType.Intelligence) + GetEquipmentBonus(StatType.Intelligence);
-        float bonusSpellPower = GetEquipmentBonus(StatType.SpellPower);
+        float intelligence = GetBaseStat(Stats.Intelligence) + GetEquipmentBonus(Stats.Intelligence);
+        float bonusSpellPower = GetEquipmentBonus(Stats.SpellPower);
         // 0.5 per Intelligence point
         return intelligence * 0.5f + bonusSpellPower;
     }
@@ -413,6 +413,6 @@ public class StatsComponent : Component
     }
 
     public event Action? OnStatsChanged;
-    public event Action<StatType, float>? OnStatProgressChanged;
-    public event Action<StatType, float>? OnStatLevelUp;
+    public event Action<Stats, float>? OnStatProgressChanged;
+    public event Action<Stats, float>? OnStatLevelUp;
 }

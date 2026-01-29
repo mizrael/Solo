@@ -14,7 +14,6 @@ public enum MetricType
     Healing,
     Walking,
     Running,
-    Hiding,
     Sneaking,
     NPCInteraction,
     ItemBought,
@@ -46,7 +45,6 @@ public class PlayerMetrics
     public float TimeWalked { get; private set; }
     public float DistanceRun { get; private set; }
     public float TimeRun { get; private set; }
-    public float TimeHiding { get; private set; }
     public float TimeSneaking { get; private set; }
 
     // Social/Trade metrics
@@ -128,12 +126,6 @@ public class PlayerMetrics
         DistanceRun += distance;
         TimeRun += time;
         OnMetricChanged?.Invoke(MetricType.Running, distance);
-    }
-
-    public void RecordHiding(float seconds)
-    {
-        TimeHiding += seconds;
-        OnMetricChanged?.Invoke(MetricType.Hiding, seconds);
     }
 
     public void RecordSneaking(float seconds)

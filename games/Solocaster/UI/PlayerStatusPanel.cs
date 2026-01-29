@@ -2,8 +2,8 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Solo.Assets.Loaders;
+using Solocaster.Character;
 using Solocaster.Components;
-using Solocaster.Inventory;
 using Solocaster.State;
 using Solocaster.UI.Widgets;
 
@@ -100,11 +100,11 @@ public class PlayerStatusPanel : PanelWidget
         int staminaBarY = manaBarY + BarHeight + BarSpacing;
 
         // Health bar
-        float healthRatio = _stats.CurrentHealth / _stats.GetTotalStat(StatType.MaxHealth);
+        float healthRatio = _stats.CurrentHealth / _stats.GetTotalStat(Stats.MaxHealth);
         DrawBar(spriteBatch, barX, healthBarY, healthRatio, UITheme.StatusBar.HealthFill, UITheme.StatusBar.HealthBackground);
 
         // Mana bar
-        float manaRatio = _stats.CurrentMana / _stats.GetTotalStat(StatType.MaxMana);
+        float manaRatio = _stats.CurrentMana / _stats.GetTotalStat(Stats.MaxMana);
         DrawBar(spriteBatch, barX, manaBarY, manaRatio, UITheme.StatusBar.ManaFill, UITheme.StatusBar.ManaBackground);
 
         // Stamina bar

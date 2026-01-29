@@ -1,3 +1,4 @@
+using Solocaster.Character;
 using System.Collections.Generic;
 
 namespace Solocaster.Inventory;
@@ -15,8 +16,8 @@ public class ItemTemplate
     public float Weight { get; init; } = 1f;
     public bool Stackable { get; init; } = false;
     public int MaxStackSize { get; init; } = 1;
-    public Dictionary<StatType, float> StatModifiers { get; init; } = new();
-    public Dictionary<StatType, float> Requirements { get; init; } = new();
+    public Dictionary<Stats, float> StatModifiers { get; init; } = new();
+    public Dictionary<Stats, float> Requirements { get; init; } = new();
     public float AttackSpeed { get; init; } = 1.0f;
 
     public bool IsEquippable => EquipSlot != EquipSlot.None;

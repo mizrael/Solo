@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Solocaster.Inventory;
 
 namespace Solocaster.Character;
 
@@ -10,14 +9,17 @@ public class RaceTemplate
     public string Description { get; set; } = string.Empty;
 
     // Starting stat bonuses (added to base stats)
-    public Dictionary<StatType, float> StatBonuses { get; set; } = new();
+    public Dictionary<Stats, float> StatBonuses { get; set; } = new();
 
     // Multiplier for how fast stat progress grows (1.0 = normal, 1.2 = 20% faster)
-    public Dictionary<StatType, float> ProgressRates { get; set; } = new();
+    public Dictionary<Stats, float> ProgressRates { get; set; } = new();
 
     // Multiplier for stat gain amount when progress reaches 100% (1.0 = normal)
-    public Dictionary<StatType, float> GainMultipliers { get; set; } = new();
+    public Dictionary<Stats, float> GainMultipliers { get; set; } = new();
 
     // How much stat progress each action grants (action → stat → multiplier of BaseProgressPerAction)
-    public Dictionary<MetricType, Dictionary<StatType, float>> ActionProgress { get; set; } = new();
+    public Dictionary<MetricType, Dictionary<Stats, float>> ActionProgress { get; set; } = new();
+
+    // Multiplier for skill effectiveness (1.0 = normal, 1.2 = 20% better at the skill)
+    public Dictionary<Skills, float> SkillEffectiveness { get; set; } = new();
 }

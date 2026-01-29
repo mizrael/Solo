@@ -1,6 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Solocaster.Inventory;
+using Solocaster.Character;
 using Solocaster.UI;
 
 namespace Solocaster.UI.Widgets;
@@ -18,7 +18,7 @@ public class StatProgressRowWidget : Widget
     public string StatName { get; set; } = string.Empty;
     public float StatValue { get; set; }
     public float Progress { get; set; }
-    public StatType StatType { get; set; }
+    public Stats StatType { get; set; }
     public SpriteFont? Font { get; set; }
     public Color LabelColor { get; set; } = UITheme.Text.Secondary;
 

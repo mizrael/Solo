@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Solo;
+using Solocaster.Character;
 using Solocaster.Inventory;
 using System;
 
@@ -212,7 +213,7 @@ public record PlayerCombatState : Solo.AI.State
     private float CalculateCooldown(ItemTemplate weapon)
     {
         float attackSpeed = weapon.AttackSpeed;
-        float agility = _ctx.Stats.GetTotalStat(StatType.Agility);
+        float agility = _ctx.Stats.GetTotalStat(Stats.Agility);
         float weaponModifier = 1f / attackSpeed;
         float agilityModifier = 1f / (1f + agility * AgilityModifierRate);
         return BaseCooldown * weaponModifier * agilityModifier;

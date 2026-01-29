@@ -36,11 +36,16 @@
         "Running": { "Agility": 0.2, "Vitality": 0.1 },
         "Walking": { "Vitality": 0.05 },
         "Sneaking": { "Agility": 0.3 },
-        "Hiding": { "Agility": 0.3 },
         "LockPick": { "Agility": 1.0 },
         "NPCInteraction": { "Wisdom": 0.3 },
         "ItemBought": { "Wisdom": 0.2 },
         "ItemSold": { "Wisdom": 0.2 }
+      },
+      "skillEffectiveness": {
+        "Sneaking": 1.0,
+        "Negotiation": 1.0,
+        "Persuasion": 1.0,
+        "Lockpicking": 1.0
       }
     },
     {
@@ -79,11 +84,16 @@
         "Running": { "Agility": 0.15, "Vitality": 0.15 },
         "Walking": { "Vitality": 0.07 },
         "Sneaking": { "Agility": 0.2 },
-        "Hiding": { "Agility": 0.2 },
         "LockPick": { "Agility": 0.7 },
         "NPCInteraction": { "Wisdom": 0.3 },
         "ItemBought": { "Wisdom": 0.25 },
         "ItemSold": { "Wisdom": 0.25 }
+      },
+      "skillEffectiveness": {
+        "Sneaking": 0.8,
+        "Negotiation": 1.15,
+        "Persuasion": 0.9,
+        "Lockpicking": 1.0
       }
     },
     {
@@ -122,11 +132,16 @@
         "Running": { "Agility": 0.25, "Vitality": 0.08 },
         "Walking": { "Vitality": 0.04 },
         "Sneaking": { "Agility": 0.5 },
-        "Hiding": { "Agility": 0.5 },
         "LockPick": { "Agility": 1.2 },
         "NPCInteraction": { "Wisdom": 0.4 },
         "ItemBought": { "Wisdom": 0.2 },
         "ItemSold": { "Wisdom": 0.2 }
+      },
+      "skillEffectiveness": {
+        "Sneaking": 1.2,
+        "Negotiation": 1.05,
+        "Persuasion": 1.15,
+        "Lockpicking": 1.1
       }
     }
   ]
