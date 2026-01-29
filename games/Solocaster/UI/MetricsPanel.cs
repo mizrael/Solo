@@ -225,13 +225,6 @@ public class MetricsPanel : PanelWidget
         return row;
     }
 
-    public void Toggle()
-    {
-        Visible = !Visible;
-        if (Visible)
-            ScrollOffset = 0;
-    }
-
     public void CenterOnScreen(int screenWidth, int screenHeight)
     {
         Position = new Vector2(

@@ -1,39 +1,66 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 
 namespace Solo.Services;
 
 public abstract class Scene
 {
     public Game Game { get; }
+    
+    public readonly GameServicesCollection Services = new();
+
+    public readonly SceneObjectsGraph ObjectsGraph = new();
+
+    public readonly RenderService RenderService;
+
+    private bool _initialized = false;
 
     protected Scene(Game game)
     {
-        this.Game = game ?? throw new ArgumentNullException(nameof(game));
-    }
+        Game = game ?? throw new ArgumentNullException(nameof(game));
 
-    public void Step(GameTime gameTime)
-    {
-        if (null != Root)
-            Root.Update(gameTime);
-        this.Update(gameTime);
+        Services.Add(ObjectsGraph);
+
+        RenderService = new RenderService(this.Game.GraphicsDevice);
+        Services.Add(RenderService);
     }
 
     public void Enter()
     {
-        this.Root = new GameObject();
-        this.EnterCore();
+        Initialize();
+        EnterCore();
     }
 
-    protected virtual void EnterCore() { }
+    private void Initialize()
+    {
+        if(_initialized)
+            return; 
+
+        InitializeCore();
+
+        _initialized = true;
+    }
+
+    public void Update(GameTime gameTime)
+    {
+        Services.Step(gameTime);
+
+        UpdateCore(gameTime);
+    }
+
+    public void Render()
+    {
+        RenderService.Render();
+        RenderCore();
+    }
 
     public void Exit()
     {
-        this.Root = null;
-        this.ExitCore();
+        ExitCore();
     }
 
+    protected virtual void InitializeCore() { }
+    protected virtual void EnterCore() { }
     protected virtual void ExitCore() { }
-    protected virtual void Update(GameTime gameTime) { }
-
-    public GameObject Root { get; private set; }
+    protected virtual void UpdateCore(GameTime gameTime) { }
+    protected virtual void RenderCore() { }
 }

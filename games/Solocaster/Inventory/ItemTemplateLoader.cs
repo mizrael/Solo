@@ -57,7 +57,8 @@ public static class ItemTemplateLoader
                 Stackable = itemData.Stackable ?? false,
                 MaxStackSize = itemData.MaxStackSize ?? 1,
                 StatModifiers = ParseStatDictionary(itemData.StatModifiers),
-                Requirements = ParseStatDictionary(itemData.Requirements)
+                Requirements = ParseStatDictionary(itemData.Requirements),
+                AttackSpeed = itemData.AttackSpeed ?? 1.0f
             };
 
             _cache[template.Id] = template;
@@ -126,5 +127,6 @@ public static class ItemTemplateLoader
         public int? MaxStackSize { get; set; }
         public Dictionary<string, float>? StatModifiers { get; set; }
         public Dictionary<string, float>? Requirements { get; set; }
+        public float? AttackSpeed { get; set; }
     }
 }

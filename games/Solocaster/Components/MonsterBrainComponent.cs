@@ -9,12 +9,10 @@ namespace Solocaster.Components;
 public class MonsterBrainComponent : Component
 {
     private TransformComponent _transform;
-    private BillboardComponent _billboard;
-    private AnimatedSpriteProvider _animationController;
+    private IDirectionalFrameProvider _spriteProvider;
     private GameObject _player;
 
-    private string _currentState = "idle";
-    private float _facingAngle;
+    private const float FacingAngle = 0f;
 
     public MonsterTemplate Template { get; set; }
 
@@ -22,25 +20,23 @@ public class MonsterBrainComponent : Component
     {
     }
 
-    public void Initialize(AnimatedSpriteProvider animationController, GameObject player)
+    public void Initialize(IDirectionalFrameProvider spriteProvider, GameObject player)
     {
-        _animationController = animationController;
+        _spriteProvider = spriteProvider;
         _player = player;
     }
 
     protected override void InitCore()
     {
         _transform = Owner.Components.Get<TransformComponent>();
-        _billboard = Owner.Components.Get<BillboardComponent>();
     }
 
     protected override void UpdateCore(GameTime gameTime)
     {
-        if (_animationController == null || _player == null)
+        if (_spriteProvider == null || _player == null)
             return;
 
         UpdateDirectionToPlayer();
-        _animationController.Update(gameTime);
     }
 
     private void UpdateDirectionToPlayer()
@@ -52,7 +48,7 @@ public class MonsterBrainComponent : Component
         var toPlayer = playerTransform.World.Position - _transform.World.Position;
         var angleToPlayer = MathF.Atan2(toPlayer.Y, toPlayer.X);
 
-        var relativeAngle = angleToPlayer - _facingAngle;
+        var relativeAngle = angleToPlayer - FacingAngle;
 
         // Normalize to -PI to PI
         while (relativeAngle > MathF.PI) relativeAngle -= MathF.PI * 2;
@@ -68,14 +64,6 @@ public class MonsterBrainComponent : Component
             _ => Direction.Back
         };
 
-        _animationController.SetDirection(direction);
+        _spriteProvider.SetDirection(direction);
     }
-
-    public void SetState(string state)
-    {
-        _currentState = state;
-        _animationController?.SetState(state);
-    }
-
-    public string CurrentState => _currentState;
 }

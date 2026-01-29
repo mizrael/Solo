@@ -48,7 +48,7 @@ public static class MonsterTemplateLoader
                 AttackRange = dto.Behavior?.AttackRange ?? 1.2f,
                 MoveSpeed = dto.Behavior?.MoveSpeed ?? 2.0f
             },
-            Animations = dto.Animations ?? new Dictionary<string, string>(),
+            SpritesheetBasePath = dto.SpritesheetBasePath ?? string.Empty,
             Scale = dto.Scale,
             Anchor = dto.Anchor
         };
@@ -92,7 +92,7 @@ public static class MonsterTemplateLoader
         public string Name { get; set; }
         public Dictionary<string, float> Stats { get; set; }
         public BehaviorDto Behavior { get; set; }
-        public Dictionary<string, string> Animations { get; set; }
+        public string SpritesheetBasePath { get; set; }
         public float Scale { get; set; } = 1.0f;
         public BillboardAnchor Anchor { get; set; } = BillboardAnchor.Bottom;
 

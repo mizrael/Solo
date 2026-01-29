@@ -38,8 +38,7 @@ public class MiniMapRenderer : Component, IRenderable
 
     protected override void InitCore()
     {
-        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
-        var graphicsDevice = renderService.Graphics.GraphicsDevice;
+        var graphicsDevice = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice;
         float zoom = 0.25f;
         int minimapWidth = (int)(graphicsDevice.Viewport.Width * zoom);
         int minimapHeight = (int)(graphicsDevice.Viewport.Height * zoom);

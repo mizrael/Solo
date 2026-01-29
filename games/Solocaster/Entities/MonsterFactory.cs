@@ -1,7 +1,6 @@
 using Microsoft.Xna.Framework;
 using Solo;
 using Solo.Components;
-using Solocaster.Animations;
 using Solocaster.Components;
 using Solocaster.Monsters;
 
@@ -23,36 +22,19 @@ public static class MonsterFactory
         var transform = monster.Components.Add<TransformComponent>();
         transform.Local.Position = position;
 
-        var animationController = CreateAnimationController(template, game);
+        var spriteProvider = DirectionalSpriteLoader.Load(template.SpritesheetBasePath, game);
 
-        var billboard = new BillboardComponent(monster, animationController);
+        var billboard = new BillboardComponent(monster, spriteProvider);
         monster.Components.Add(billboard);
         billboard.Scale = new Vector2(template.Scale, template.Scale);
         billboard.Anchor = template.Anchor;
 
         var brain = monster.Components.Add<MonsterBrainComponent>();
         brain.Template = template;
-        brain.Initialize(animationController, player);
+        brain.Initialize(spriteProvider, player);
 
         spatialGrid.Add(monster, position);
 
         return monster;
-    }
-
-    private static AnimatedSpriteProvider CreateAnimationController(MonsterTemplate template, Game game)
-    {
-        var controller = new AnimatedSpriteProvider();
-
-        foreach (var (state, basePath) in template.Animations)
-        {
-            var directionalAnim = DirectionalAnimationLoader.Load(basePath, game);
-            if (directionalAnim.HasAny)
-            {
-                controller.AddAnimation(state, directionalAnim);
-            }
-        }
-
-        controller.SetState("idle");
-        return controller;
     }
 }

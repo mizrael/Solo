@@ -71,6 +71,7 @@ Components implement `IRenderable` to participate in rendering. The `RenderServi
 - Every new implementation MUST happen in a feature branch
 - Never commit new features directly to main
 - If already on a feature branch, ask the user whether a sub-feature branch is needed before starting new work
+- NEVER commit changes - the user will commit manually after code review
 
 ## Coding Conventions
 - write comments only when strictly necessary (eg. the implementation is not obvious and the code is not self-explanatory)

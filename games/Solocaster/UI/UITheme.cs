@@ -116,6 +116,8 @@ public static class UITheme
             HealthBackground = ParseColor(json.HealthBackground) ?? new Color(60, 20, 20),
             ManaFill = ParseColor(json.ManaFill) ?? new Color(40, 80, 180),
             ManaBackground = ParseColor(json.ManaBackground) ?? new Color(20, 30, 60),
+            StaminaFill = ParseColor(json.StaminaFill) ?? new Color(200, 180, 40),
+            StaminaBackground = ParseColor(json.StaminaBackground) ?? new Color(60, 50, 20),
             ProgressFill = ParseColor(json.ProgressFill) ?? new Color(80, 200, 80),
             ProgressBackground = ParseColor(json.ProgressBackground) ?? new Color(40, 40, 40)
         };
@@ -217,6 +219,8 @@ public static class UITheme
         public int[]? HealthBackground { get; set; }
         public int[]? ManaFill { get; set; }
         public int[]? ManaBackground { get; set; }
+        public int[]? StaminaFill { get; set; }
+        public int[]? StaminaBackground { get; set; }
         public int[]? ProgressFill { get; set; }
         public int[]? ProgressBackground { get; set; }
     }
@@ -292,6 +296,8 @@ public class StatusBarColors
     public Color HealthBackground { get; set; } = new Color(60, 20, 20);
     public Color ManaFill { get; set; } = new Color(40, 80, 180);
     public Color ManaBackground { get; set; } = new Color(20, 30, 60);
+    public Color StaminaFill { get; set; } = new Color(200, 180, 40);
+    public Color StaminaBackground { get; set; } = new Color(60, 50, 20);
     public Color ProgressFill { get; set; } = new Color(80, 200, 80);
     public Color ProgressBackground { get; set; } = new Color(40, 40, 40);
 }

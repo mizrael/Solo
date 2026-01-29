@@ -1,0 +1,19 @@
+{
+  "id": "orc",
+  "name": "orc",
+  "stats": {
+    "Strength": 14,
+    "Agility": 12,
+    "Vitality": 8,
+    "Intelligence": 1,
+    "Wisdom": 1
+  },
+  "behavior": {
+    "detectionRange": 8.0,
+    "attackRange": 1.2,
+    "moveSpeed": 2.0
+  },
+  "spritesheetBasePath": "monsters/orcs",
+  "scale": 0.7,
+  "anchor": "Bottom"
+}

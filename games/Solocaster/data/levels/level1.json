@@ -103,18 +103,26 @@
     ]
   },
   "monsters": {
-    "density": 0.015,
+    "density": 0.05,
     "encounters": [
       {
-        "weight": 70,
+        "weight": 50,
         "groups": [
-          { "id": "skeleton", "min": 1, "max": 2 }
+          {
+            "id": "skeleton",
+            "min": 1,
+            "max": 2
+          }
         ]
       },
       {
-        "weight": 30,
+        "weight": 50,
         "groups": [
-          { "id": "skeleton", "min": 2, "max": 3 }
+          {
+            "id": "orc",
+            "min": 1,
+            "max": 2
+          }
         ]
       }
     ]
