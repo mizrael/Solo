@@ -22,4 +22,8 @@ public class RaceTemplate
 
     // Multiplier for skill effectiveness (1.0 = normal, 1.2 = 20% better at the skill)
     public Dictionary<Skills, float> SkillEffectiveness { get; set; } = new();
+
+    // Skill customization during character creation (for races like Human)
+    public int SkillPoints { get; set; } = 0;        // Points to distribute (0 = skip step)
+    public float PointBonus { get; set; } = 0.1f;    // Bonus per point (0.1 = +10%)
 }

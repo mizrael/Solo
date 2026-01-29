@@ -53,7 +53,9 @@ public static class CharacterTemplateLoader
                 ProgressRates = ParseStatDictionary(raceData.ProgressRates),
                 GainMultipliers = ParseStatDictionary(raceData.GainMultipliers),
                 ActionProgress = ParseActionProgressDictionary(raceData.ActionProgress),
-                SkillEffectiveness = ParseSkillsDictionary(raceData.SkillEffectiveness)
+                SkillEffectiveness = ParseSkillsDictionary(raceData.SkillEffectiveness),
+                SkillPoints = raceData.SkillPoints ?? 0,
+                PointBonus = raceData.PointBonus ?? 0.1f
             };
 
             _races[template.Id] = template;
@@ -189,6 +191,8 @@ public static class CharacterTemplateLoader
         public Dictionary<string, float>? GainMultipliers { get; set; }
         public Dictionary<string, Dictionary<string, float>>? ActionProgress { get; set; }
         public Dictionary<string, float>? SkillEffectiveness { get; set; }
+        public int? SkillPoints { get; set; }
+        public float? PointBonus { get; set; }
     }
 
     private class ClassFileData

@@ -3,7 +3,9 @@
     {
       "id": "human",
       "name": "Human",
-      "description": "Versatile and adaptable, humans excel at whatever path they choose.",
+      "description": "Versatile and adaptable, humans can specialize their skills to match their chosen path.",
+      "skillPoints": 3,
+      "pointBonus": 0.1,
       "statBonuses": {
         "Strength": 0,
         "Agility": 0,
