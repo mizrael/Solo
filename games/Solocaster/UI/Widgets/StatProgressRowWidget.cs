@@ -1,7 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Solocaster.Character;
-using Solocaster.UI;
 
 namespace Solocaster.UI.Widgets;
 

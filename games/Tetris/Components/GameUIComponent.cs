@@ -9,7 +9,6 @@ namespace Tetris.Components;
 
 public class GameUIComponent : Component, IRenderable
 {
-    private RenderService _renderService;
     private Texture2D _texture;
 
     private GameUIComponent(GameObject owner) : base(owner)
@@ -18,8 +17,8 @@ public class GameUIComponent : Component, IRenderable
 
     protected override void InitCore()
     {
-        _renderService = GameServicesManager.Instance.GetRequired<RenderService>();
-        _texture = _renderService.CreateTexture(Constants.TileTextureSize.Width, Constants.TileTextureSize.Height, Constants.TileTextureData);
+        var graphicsDevice = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice;
+        _texture = graphicsDevice.Generate(Constants.TileTextureSize.Width, Constants.TileTextureSize.Height, Constants.TileTextureData);
     }
 
     public void Render(SpriteBatch spriteBatch)

@@ -7,13 +7,9 @@ namespace Tetris;
 
 public class TetrisGame : Game
 {
-    private GraphicsDeviceManager _graphics;
-    private SceneManager _sceneManager;
-    private RenderService _renderService;
-
     public TetrisGame()
     {
-        _graphics = new GraphicsDeviceManager(this);
+        GraphicsDeviceManagerAccessor.Instance.Initialize(this);
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
         Window.AllowUserResizing = true;
@@ -21,25 +17,20 @@ public class TetrisGame : Game
 
     protected override void Initialize()
     {
-        _graphics.IsFullScreen = false;
-        _graphics.PreferredBackBufferWidth = 1024;
-        _graphics.PreferredBackBufferHeight = 768;
-        _graphics.ApplyChanges();
-
-        _renderService = new RenderService(_graphics, Window);
-        GameServicesManager.Instance.AddService(_renderService);
-
-        _sceneManager = new SceneManager();
-        GameServicesManager.Instance.AddService(_sceneManager);
+        var graphics = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager;
+        graphics.IsFullScreen = false;
+        graphics.PreferredBackBufferWidth = 1024;
+        graphics.PreferredBackBufferHeight = 768;
+        graphics.ApplyChanges();
 
         base.Initialize();
     }
 
     protected override void LoadContent()
     {
-        _sceneManager.AddScene(Scenes.SceneNames.Play, new Scenes.PlayScene(this));
+        SceneManager.Instance.AddScene(Scenes.SceneNames.Play, new Scenes.PlayScene(this));
 
-        _sceneManager.SetCurrentScene(Scenes.SceneNames.Play);
+        SceneManager.Instance.SetScene(Scenes.SceneNames.Play);
     }
 
     protected override void Update(GameTime gameTime)
@@ -47,14 +38,14 @@ public class TetrisGame : Game
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
 
-        GameServicesManager.Instance.Step(gameTime);
+        SceneManager.Instance.Step(gameTime);
 
         base.Update(gameTime);
     }
 
     protected override void Draw(GameTime gameTime)
     {
-        _renderService.Render();
+        SceneManager.Instance.Current?.RenderService.Render();
 
         base.Draw(gameTime);
     }

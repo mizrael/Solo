@@ -4,7 +4,6 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Solo.Services;
 using Solocaster.Character;
 using Solocaster.State;
 using Solocaster.UI.Widgets;

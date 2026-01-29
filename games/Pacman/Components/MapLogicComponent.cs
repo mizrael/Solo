@@ -76,19 +76,21 @@ public class MapLogicComponent : Component
 
         var renderer = Owner.Components.Add<SpriteRenderComponent>();
 
-        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
+        var gameWindow = SceneManager.Instance.Current?.Game?.Window;
+
         var calculateSize = new Action(() =>
         {
-            _posOffset.Y = renderService.Graphics.GraphicsDevice.Viewport.Height * 0.05f;
-            _posOffset.X = renderService.Graphics.GraphicsDevice.Viewport.Width * .125f; 
+            var currentViewport = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice.Viewport;
+            _posOffset.Y = currentViewport.Height * 0.05f;
+            _posOffset.X = currentViewport.Width * .125f;
 
-            var height = renderService.Graphics.GraphicsDevice.Viewport.Height - _posOffset.Y;
-            var width = renderService.Graphics.GraphicsDevice.Viewport.Width - _posOffset.X * 2f;
+            var height = currentViewport.Height - _posOffset.Y;
+            var width = currentViewport.Width - _posOffset.X * 2f;
 
             _tileSize.X = width / _tiles.GetLength(1);
             _tileSize.Y = height / _tiles.GetLength(0);
 
-            _tileCenter = new Vector2(_tileSize.X * .5f, _tileSize.Y * .5f);          
+            _tileCenter = new Vector2(_tileSize.X * .5f, _tileSize.Y * .5f);
 
             _transform.Local.Position.X = width * .5f + _posOffset.X;
             _transform.Local.Position.Y = height * .5f + _posOffset.Y;
@@ -98,7 +100,8 @@ public class MapLogicComponent : Component
         });
         calculateSize();
 
-        renderService.Window.ClientSizeChanged += (s, e) => calculateSize();
+        if (gameWindow != null)
+            gameWindow.ClientSizeChanged += (s, e) => calculateSize();
     }
 
     public TileInfo GetPlayerStartTile() => _tileInfos[14, 1];
@@ -245,8 +248,9 @@ public class MapLogicComponent : Component
     {
         if (_pixelTexture is null)
         {
-            var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
-            _pixelTexture = Texture2DUtils.Generate(renderService.Graphics.GraphicsDevice, 1, 1, new Color(Color.LightGray, 200));
+            var graphicsDevice = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice;
+            _pixelTexture = new Texture2D(graphicsDevice, 1, 1);
+            _pixelTexture.SetData(new[] { new Color(Color.LightGray, 200) });
         }
 
         for (int j = 0; j < _tiles.GetLength(1); j++)

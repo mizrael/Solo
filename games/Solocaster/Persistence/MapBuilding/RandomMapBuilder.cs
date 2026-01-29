@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Solo.Assets;
 using Solocaster.DungeonGenerator;
 using Solocaster.Entities;
 using Solocaster.Inventory;

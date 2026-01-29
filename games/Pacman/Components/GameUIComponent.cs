@@ -8,15 +8,12 @@ namespace Pacman.Components;
 
 public sealed class GameUIComponent : Component, IRenderable
 {
-    private RenderService _renderService;
-
     private GameUIComponent(GameObject owner) : base(owner)
     {
     }
 
     protected override void InitCore()
     {
-        _renderService = GameServicesManager.Instance.GetRequired<RenderService>();
     }
 
     public void Render(SpriteBatch spriteBatch)

@@ -27,15 +27,13 @@ public class GhostBrainComponent : Component
     protected override void InitCore()
     {
         var mapLogic = Map.Components.Get<MapLogicComponent>();
-      //  var currTile = mapLogic.GetGhostStartTile(this.GhostType);
 
         var transform = Owner.Components.Get<TransformComponent>();
-      //  transform.Local.Position = mapLogic.GetTileCenter(currTile);
 
         var renderer = Owner.Components.Get<AnimatedSpriteSheetRenderer>();
         var bbox = Owner.Components.Add<BoundingBoxComponent>();
 
-        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
+        var gameWindow = SceneManager.Instance.Current?.Game?.Window;
         var calculateSize = new Action(() =>
         {
             if (renderer.CurrentFrame is null)
@@ -51,7 +49,8 @@ public class GhostBrainComponent : Component
         });
         calculateSize();
 
-        renderService.Window.ClientSizeChanged += (s, e) => calculateSize();
+        if (gameWindow != null)
+            gameWindow.ClientSizeChanged += (s, e) => calculateSize();
 
         renderer.OnAnimationSet += _ => calculateSize();
 
@@ -65,9 +64,10 @@ public class GhostBrainComponent : Component
 
     public void Setup(
         PlayScene playScene,
-        GhostTypes ghostType, 
-        GameObject map, 
-        GameObject player)
+        GhostTypes ghostType,
+        GameObject map,
+        GameObject player,
+        MessageBus messageBus)
     {
         this.Map = map;
         this.Player = player;
@@ -88,8 +88,7 @@ public class GhostBrainComponent : Component
         _scaredAnim1 = AnimatedSpriteSheetLoader.Load("meta/animations/ghost_frightened1.json", playScene.Game);
         _scaredAnim2 = AnimatedSpriteSheetLoader.Load("meta/animations/ghost_frightened2.json", playScene.Game);
 
-        var bus = GameServicesManager.Instance.GetRequired<MessageBus>();
-        var magicPillEatenTopic = bus.GetTopic<MagicPillEaten>();
+        var magicPillEatenTopic = messageBus.GetTopic<MagicPillEaten>();
         magicPillEatenTopic.Subscribe(this.Owner, (s, e) =>
         {
             this.State = GhostStates.Scared;

@@ -5,7 +5,6 @@ using Solo.Components;
 using Solo.Services;
 using Solocaster.Entities;
 using System;
-using System.Collections.Generic;
 //using Map = Solocaster.Entities.Map;
 //using Random = System.Random;
 

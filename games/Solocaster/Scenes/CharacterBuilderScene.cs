@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Solo;
 using Solo.Services;
 using Solocaster.Character;
 using Solocaster.State;

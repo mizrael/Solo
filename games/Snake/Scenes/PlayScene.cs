@@ -14,7 +14,7 @@ public class PlayScene : Scene
 
     protected override void EnterCore()
     {
-        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
+        var viewport = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice.Viewport;
 
         var board = new Board(16, 16);
         var snake = new Snake()
@@ -30,7 +30,7 @@ public class PlayScene : Scene
         snakeRenderer.Snake = snake;
         snakeRenderer.LayerIndex = (int)RenderLayers.Player;
 
-        this.Root.AddChild(snakeObject);
+        this.ObjectsGraph.Root.AddChild(snakeObject);
 
         var boardObject = new GameObject();
         var boardBrain = boardObject.Components.Add<BoardBrain>();
@@ -41,21 +41,22 @@ public class PlayScene : Scene
 
         var setTileSize = new Action(() =>
         {
+            var vp = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice.Viewport;
             snakeRenderer.TileSize =
             boardRenderer.TileSize = new Vector2(
-                (float)renderService.Graphics.GraphicsDevice.Viewport.Width / board.Width,
-                (float)renderService.Graphics.GraphicsDevice.Viewport.Height / board.Height
+                (float)vp.Width / board.Width,
+                (float)vp.Height / board.Height
             );
         });
         setTileSize();
-        renderService.Window.ClientSizeChanged += (s, e) => setTileSize();
-        this.Root.AddChild(boardObject);
+        SceneManager.Instance.Current?.Game?.Window.ClientSizeChanged += (s, e) => setTileSize();
+        this.ObjectsGraph.Root.AddChild(boardObject);
 
         snake.Head.Tile = new Point(board.Width / 4, board.Height / 2);
 
         snakeBrain.OnDeath += () =>
         {
-            GameServicesManager.Instance.GetRequired<SceneManager>().SetCurrentScene(SceneNames.GameOver);
+            SceneManager.Instance.SetScene(SceneNames.GameOver);
         };
     }
 }

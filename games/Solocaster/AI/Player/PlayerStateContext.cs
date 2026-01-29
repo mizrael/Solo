@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework.Input;
 using Solocaster.Components;
-using Solocaster.Inventory;
 
 namespace Solocaster.AI.Player;
 

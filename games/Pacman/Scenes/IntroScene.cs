@@ -18,7 +18,7 @@ public class IntroScene : Scene
 
     protected override void EnterCore()
     {
-        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
+        var window = Game.Window;
 
         var sprite = Sprite.FromTexture("pacman_intro", Game.Content);
 
@@ -30,29 +30,29 @@ public class IntroScene : Scene
 
         var resize = new Action(() =>
         {
-            transform.Local.Scale.X = (float)renderService.Window.ClientBounds.Width / sprite.Bounds.Width;
-            transform.Local.Scale.Y = (float)renderService.Window.ClientBounds.Height / sprite.Bounds.Height;
+            transform.Local.Scale.X = (float)window.ClientBounds.Width / sprite.Bounds.Width;
+            transform.Local.Scale.Y = (float)window.ClientBounds.Height / sprite.Bounds.Height;
 
             transform.Local.Position = new Vector2(
-                (float)renderService.Window.ClientBounds.Width * .5f,
-                (float)renderService.Window.ClientBounds.Height * .5f);
+                (float)window.ClientBounds.Width * .5f,
+                (float)window.ClientBounds.Height * .5f);
         });
 
-        renderService.Window.ClientSizeChanged += (s, e) =>
+        window.ClientSizeChanged += (s, e) =>
         {
             resize();
         };
         resize();
 
-        this.Root.AddChild(introObj);
+        this.ObjectsGraph.Root.AddChild(introObj);
     }
 
-    protected override void Update(GameTime gameTime)
+    protected override void UpdateCore(GameTime gameTime)
     {
         var keyboardState = Keyboard.GetState();
         var canStart = _prevKeyState.IsKeyDown(Keys.Enter) && keyboardState.IsKeyUp(Keys.Enter);
         if (canStart)
-            GameServicesManager.Instance.GetRequired<SceneManager>().SetCurrentScene(SceneNames.Play);
+            SceneManager.Instance.SetScene(SceneNames.Play);
         _prevKeyState = keyboardState;
     }
 }

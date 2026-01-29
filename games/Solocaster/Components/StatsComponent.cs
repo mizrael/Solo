@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.Xna.Framework;
 using Solo;
 using Solo.Components;
 using Solocaster.Character;

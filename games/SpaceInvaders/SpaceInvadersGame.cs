@@ -2,22 +2,20 @@
 using Microsoft.Xna.Framework.Input;
 
 using Solo.Services;
-using Solo.Services.Messaging;
 
 namespace SpaceInvaders;
 
 public class SpaceInvadersGame : Game
 {
     private GraphicsDeviceManager _graphics;
-    private SceneManager _sceneManager;
-    private RenderService _renderService;
 
     public SpaceInvadersGame()
     {
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
         Window.AllowUserResizing = true;
-        _graphics = new GraphicsDeviceManager(this);
+        GraphicsDeviceManagerAccessor.Instance.Initialize(this);
+        _graphics = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager;
     }
 
     protected override void Initialize()
@@ -27,25 +25,15 @@ public class SpaceInvadersGame : Game
         _graphics.PreferredBackBufferHeight = 768;
         _graphics.ApplyChanges();
 
-        _renderService = new RenderService(_graphics, Window);
-        GameServicesManager.Instance.AddService(_renderService);
-
-        _sceneManager = new SceneManager();
-        GameServicesManager.Instance.AddService(_sceneManager);
-
-        GameServicesManager.Instance.AddService(new MessageBus());
-
-        GameServicesManager.Instance.AddService(new BoundingBoxCollisionService(new Point(64, 64)));
-
         base.Initialize();
     }
 
     protected override void LoadContent()
     {
-        _sceneManager.AddScene(Scenes.SceneNames.MainTitle, new Scenes.MainTitleScene(this));
-        _sceneManager.AddScene(Scenes.SceneNames.Play, new Scenes.PlayScene(this));
+        SceneManager.Instance.AddScene< Scenes.MainTitleScene>(Scenes.SceneNames.MainTitle, this);
+        SceneManager.Instance.AddScene<Scenes.PlayScene>(Scenes.SceneNames.Play, this);
 
-        _sceneManager.SetCurrentScene(Scenes.SceneNames.MainTitle);
+        SceneManager.Instance.SetScene(Scenes.SceneNames.MainTitle);
     }
 
     protected override void Update(GameTime gameTime)
@@ -53,14 +41,14 @@ public class SpaceInvadersGame : Game
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
 
-        GameServicesManager.Instance.Step(gameTime);
+        SceneManager.Instance.Step(gameTime);
 
         base.Update(gameTime);
     }
 
     protected override void Draw(GameTime gameTime)
     {
-        _renderService.Render();
+        SceneManager.Instance.Render();
 
         base.Draw(gameTime);
     }

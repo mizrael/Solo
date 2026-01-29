@@ -10,7 +10,6 @@ public class BulletBrain : Component
     private MovingBody _movingBody;
     private TransformComponent _transformComponent;
     private BoundingBoxComponent _boundingBox;
-    private RenderService _renderService;
 
     public BulletBrain(GameObject owner) : base(owner)
     {
@@ -35,17 +34,17 @@ public class BulletBrain : Component
 
             this.Owner.Enabled = false;
         };
-        _renderService = GameServicesManager.Instance.GetRequired<RenderService>();
     }
 
     protected override void UpdateCore(GameTime gameTime)
     {
         _movingBody.Thrust = this.Speed;
 
+        var viewport = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice.Viewport;
         var isOutScreen = _transformComponent.World.Position.X < 0 ||
                           _transformComponent.World.Position.Y < 0 ||
-                          _transformComponent.World.Position.X > _renderService.Graphics.GraphicsDevice.Viewport.Width ||
-                          _transformComponent.World.Position.Y > _renderService.Graphics.GraphicsDevice.Viewport.Height;
+                          _transformComponent.World.Position.X > viewport.Width ||
+                          _transformComponent.World.Position.Y > viewport.Height;
         if (isOutScreen)
             this.Owner.Enabled = false;
     }

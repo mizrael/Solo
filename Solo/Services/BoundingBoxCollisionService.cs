@@ -58,7 +58,9 @@ public class BoundingBoxCollisionService : IGameService
     {
         RefreshColliderBuckets(bbox);
 
-        var buckets = _bucketsByCollider[bbox.Owner.Id];
+        if(!_bucketsByCollider.TryGetValue(bbox.Owner.Id, out var buckets))
+            return;
+        
         foreach (var bucket in buckets)
         {
             bucket.CheckCollisions(bbox);

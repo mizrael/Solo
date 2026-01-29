@@ -28,7 +28,7 @@ public class PlayerBrainComponent : Component
         var renderer = Owner.Components.Get<AnimatedSpriteSheetRenderer>();
         var bbox = Owner.Components.Add<BoundingBoxComponent>();
 
-        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
+        var gameWindow = SceneManager.Instance.Current?.Game?.Window;
         var calculateSize = new Action(() =>
         {
             if (renderer.CurrentFrame is null)
@@ -46,7 +46,8 @@ public class PlayerBrainComponent : Component
         });
         calculateSize();
 
-        renderService.Window.ClientSizeChanged += (s, e) => calculateSize();
+        if (gameWindow != null)
+            gameWindow.ClientSizeChanged += (s, e) => calculateSize();
 
         base.InitCore();
     }
