@@ -1,0 +1,27 @@
+{
+  "spriteSheetName": "characters/skeletons_front",
+  "sprites": [
+    {
+      "name": "skeleton1_front",
+      "x": 0,
+      "y": 0,
+      "width": 735,
+      "height": 1200
+    },
+    {
+      "name": "skeleton2_front",
+      "x": 735,
+      "y": 0,
+      "width": 815,
+      "height": 1200
+    },
+    {
+      "name": "skeleton3_front",
+      "x": 0,
+      "y": 1200,
+      "width": 751,
+      "height": 1200
+    }
+  ],
+  "animations": []
+}

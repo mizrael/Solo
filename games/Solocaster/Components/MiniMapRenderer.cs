@@ -5,7 +5,6 @@ using Solo.Components;
 using Solo.Services;
 using Solocaster.Entities;
 using System;
-using System.Collections.Generic;
 //using Map = Solocaster.Entities.Map;
 //using Random = System.Random;
 
@@ -38,8 +37,7 @@ public class MiniMapRenderer : Component, IRenderable
 
     protected override void InitCore()
     {
-        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
-        var graphicsDevice = renderService.Graphics.GraphicsDevice;
+        var graphicsDevice = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice;
         float zoom = 0.25f;
         int minimapWidth = (int)(graphicsDevice.Viewport.Width * zoom);
         int minimapHeight = (int)(graphicsDevice.Viewport.Height * zoom);

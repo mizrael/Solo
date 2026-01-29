@@ -4,7 +4,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Solocaster.Character;
-using Solocaster.Inventory;
 using Solocaster.State;
 using Solocaster.UI.Widgets;
 
@@ -129,15 +128,15 @@ public class RaceStepPanel : Widget
             : "Stat Bonuses: None";
     }
 
-    private static string FormatStatName(StatType stat)
+    private static string FormatStatName(Stats stat)
     {
         return stat switch
         {
-            StatType.Strength => "STR",
-            StatType.Agility => "AGI",
-            StatType.Vitality => "VIT",
-            StatType.Intelligence => "INT",
-            StatType.Wisdom => "WIS",
+            Stats.Strength => "STR",
+            Stats.Agility => "AGI",
+            Stats.Vitality => "VIT",
+            Stats.Intelligence => "INT",
+            Stats.Wisdom => "WIS",
             _ => stat.ToString()
         };
     }

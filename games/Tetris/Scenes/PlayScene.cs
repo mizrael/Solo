@@ -40,7 +40,7 @@ public class PlayScene : Scene
         uiComponent.LayerIndex = (int)RenderLayers.UI;
         uiComponent.Font = Game.Content.Load<SpriteFont>("Fonts/GameFont");
         uiComponent.PieceGenerator = pieceGenerator;
-        this.Root.AddChild(uiObj);
+        this.ObjectsGraph.Root.AddChild(uiObj);
 
         return uiObj;
     }
@@ -51,13 +51,11 @@ public class PlayScene : Scene
         var brain = controller.Components.Add<PieceController>();
         brain.Board = board;
         brain.Generator = pieceGenerator;
-        this.Root.AddChild(controller);
+        this.ObjectsGraph.Root.AddChild(controller);
     }
 
     private void AddBoard(Board board, GameState gameState, GameObject uiObj)
     {
-        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
-
         var boardObject = new GameObject();
         var brain = boardObject.Components.Add<LambdaComponent>();
         brain.OnUpdate = (obj, dt) =>
@@ -72,8 +70,9 @@ public class PlayScene : Scene
 
         var onWindowResize = new Action(() =>
         {
-            var w = (float)renderService.Graphics.GraphicsDevice.Viewport.Width;
-            var h = (float)renderService.Graphics.GraphicsDevice.Viewport.Height;
+            var viewport = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice.Viewport;
+            var w = (float)viewport.Width;
+            var h = (float)viewport.Height;
 
             boardRenderer.TileSize = new Vector2(
                 w * 0.4f / board.Width,
@@ -88,7 +87,9 @@ public class PlayScene : Scene
             );
         });
         onWindowResize();
-        renderService.Window.ClientSizeChanged += (s, e) => onWindowResize();
-        this.Root.AddChild(boardObject);
+        var window = SceneManager.Instance.Current?.Game?.Window;
+        if (window != null)
+            window.ClientSizeChanged += (s, e) => onWindowResize();
+        this.ObjectsGraph.Root.AddChild(boardObject);
     }
 }

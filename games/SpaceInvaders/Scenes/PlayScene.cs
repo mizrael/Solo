@@ -16,23 +16,34 @@ namespace SpaceInvaders.Scenes;
 
 public class PlayScene : Scene
 {
+    private BoundingBoxCollisionService _collisionService;
+    private MessageBus _messageBus;
+
     public PlayScene(Game game) : base(game)
     {
     }
 
+    protected override void InitializeCore()
+    {
+        _collisionService = new BoundingBoxCollisionService(new Point(64, 64));
+        Services.Add(_collisionService);
+
+        _messageBus = new MessageBus();
+        Services.Add(_messageBus);
+    }
+
     protected override void EnterCore()
     {
-        var spriteSheet = SpriteSheetLoader.Get("meta/spritesheet.json", Game);        
-        var collisionService = GameServicesManager.Instance.GetRequired<BoundingBoxCollisionService>();
+        var spriteSheet = SpriteSheetLoader.Get("spritesheet", Game);
 
-        var bulletSpawner = BuildBulletSpawner(spriteSheet, collisionService);
-        this.Root.AddChild(bulletSpawner);
+        var bulletSpawner = BuildBulletSpawner(spriteSheet, _collisionService);
+        this.ObjectsGraph.Root.AddChild(bulletSpawner);
 
         var scale = 0.65f;
 
-        AddAliens(spriteSheet, bulletSpawner, collisionService, scale);
+        AddAliens(spriteSheet, bulletSpawner, _collisionService, scale);
 
-        AddPlayer(spriteSheet, collisionService, scale, bulletSpawner);
+        AddPlayer(spriteSheet, _collisionService, scale, bulletSpawner);
     }
 
     private void AddPlayer(SpriteSheet spriteSheet, BoundingBoxCollisionService collisionService, float scale, Spawner bulletSpawner)
@@ -76,7 +87,7 @@ public class PlayScene : Scene
         weapon.BulletsDirection = 0f;
         weapon.Offset = 0f;
 
-        Root.AddChild(player);
+        ObjectsGraph.Root.AddChild(player);
     }
 
     private Spawner BuildBulletSpawner(SpriteSheet spriteSheet, BoundingBoxCollisionService collisionService)
@@ -142,9 +153,7 @@ public class PlayScene : Scene
         var startX = (Game.GraphicsDevice.Viewport.Width - (cols * alienWidth * scale + cols * offsetX * .5f)) * .5f;
         var startY = 50;
 
-        var bus = GameServicesManager.Instance.GetRequired<MessageBus>();
-
-        var setDirectionTopic = bus.GetTopic<SetDirection>();
+        var setDirectionTopic = _messageBus.GetTopic<SetDirection>();
         var firingAliensMap = new Dictionary<int, LinkedList<GameObject>>();
 
         for (int i = 0; i < rows; i++)
@@ -188,7 +197,7 @@ public class PlayScene : Scene
             lastBulletFiredTime = gameTime.TotalGameTime.TotalMilliseconds;
             aliens.Last!.Value.Components.Get<Weapon>().Shoot(gameTime);
         };
-        this.Root.AddChild(aliensController);
+        this.ObjectsGraph.Root.AddChild(aliensController);
     }
 
     private GameObject AddAlien(
@@ -229,7 +238,7 @@ public class PlayScene : Scene
             })
             .ToArray();
 
-        var spriteSheetTexture = Game.Content.Load<Texture2D>(spriteSheet.ImagePath);
+        var spriteSheetTexture = Game.Content.Load<Texture2D>(spriteSheet.Name);
         var animation = new AnimatedSpriteSheet(alienName, spriteSheetTexture, fps, frames);
 
         var renderer = alien.Components.Add<AnimatedSpriteSheetRenderer>();
@@ -279,13 +288,13 @@ public class PlayScene : Scene
         weapon.BulletsDirection = MathHelper.Pi;
         weapon.Offset = -bboxSize.Y;
 
-        this.Root.AddChild(alien);
+        this.ObjectsGraph.Root.AddChild(alien);
 
         return alien;
     }
 
     private void OnGameOver()
     {
-        GameServicesManager.Instance.GetRequired<SceneManager>().SetCurrentScene(SceneNames.MainTitle);
+        SceneManager.Instance.SetScene(SceneNames.MainTitle);
     }
 }

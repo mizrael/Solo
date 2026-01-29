@@ -1,85 +1,88 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Solo.Services.Rendering;
 
 namespace Solo.Services;
 
-public class RenderService : IGameService
+public sealed class RenderService : IGameService
 {
-    public readonly GraphicsDeviceManager Graphics;
-    public readonly GameWindow Window;
+    private readonly RenderPipeline _defaultPipeline;
+    private RenderPipeline _pipeline;
+    private RenderContext _context;
 
-    private readonly SpriteBatch _spriteBatch;
-    private SceneManager _sceneManager;
-    private SortedList<int, IList<IRenderable>> _layers = new();
-    private Dictionary<int, RenderLayerConfig> _layerConfigs = new();
-
-    public RenderService(GraphicsDeviceManager graphics, GameWindow window)
+    public RenderService(GraphicsDevice graphicsDevice)
     {
-        Graphics = graphics ?? throw new System.ArgumentNullException(nameof(graphics));
-        Window = window ?? throw new ArgumentNullException(nameof(window));
+        ArgumentNullException.ThrowIfNull(graphicsDevice);
 
-        window.ClientSizeChanged += (sender, args) =>
+        _context = new RenderContext
         {
-            Graphics.PreferredBackBufferWidth = window.ClientBounds.Width;
-            Graphics.PreferredBackBufferHeight = window.ClientBounds.Height;
-            Graphics.ApplyChanges();
+            Graphics = graphicsDevice,
+            SpriteBatch = new SpriteBatch(graphicsDevice),
+            Layers = new SortedList<int, IList<IRenderable>>(),
+            LayerConfigs = new Dictionary<int, RenderLayerConfig>(),
+            CurrentLayerIndex = 0
         };
 
-        _spriteBatch = new SpriteBatch(Graphics.GraphicsDevice);
-    }
-
-    public void Initialize()
-    {
-        _sceneManager = GameServicesManager.Instance.GetRequired<SceneManager>();
+        _defaultPipeline = new RenderPipeline().Add(new RenderLayersStep());
+        _pipeline = _defaultPipeline;
     }
 
     public void SetLayerConfig(int index, RenderLayerConfig? layerConfig)
     {
         if (layerConfig is null)
         {
-            if(_layerConfigs.ContainsKey(index))
-                _layerConfigs.Remove(index);
+            _context.LayerConfigs.Remove(index);
             return;
         }
 
-        _layerConfigs[index] = layerConfig!.Value;
+        _context.LayerConfigs[index] = layerConfig.Value;
     }
 
-    public void Step(GameTime gameTime)
+    public void SetPipeline(RenderPipeline? pipeline)
     {
-        foreach(var layerIndex in _layers.Keys)
-        {
-            var layer = _layers[layerIndex];
-            layer.Clear();
-        }
-
-        RebuildLayers(_sceneManager?.Current?.Root, _layers);
+        _pipeline = pipeline ?? _defaultPipeline;
     }
 
     public void Render()
     {
-        Graphics.GraphicsDevice.Clear(Color.Black);
-
-        for(int i=0;i!=_layers.Count;i++)
-        {
-            var layerIndex = _layers.Keys[i];
-            var layer = _layers[layerIndex];
-            
-            if(!_layerConfigs.TryGetValue(layerIndex, out var layerConfig))                
-                _spriteBatch.Begin();            
-            else
-                _spriteBatch.Begin(samplerState: layerConfig.SamplerState);
-
-            foreach (var renderable in layer)
-                renderable.Render(_spriteBatch);
-
-            _spriteBatch.End();
-        }                 
+        _context.CurrentLayerIndex = 0;
+        _pipeline.Execute(ref _context);
     }
 
-    private static void RebuildLayers(GameObject? node, SortedList<int, IList<IRenderable>> layers)
+    public void Update(GameTime gameTime)
     {
-        if (null == node || !node.Enabled)
+        var layers = _context.Layers;
+
+        foreach (var layerIndex in layers.Keys)
+            layers[layerIndex].Clear();
+
+        var currentScene = SceneManager.Instance.Current;
+        if (currentScene is null)
+            return;
+
+        RebuildSceneServicesLayers(currentScene, layers);
+        RebuildGameObjectsLayers(currentScene.ObjectsGraph.Root, layers);
+    }
+
+    private static void RebuildSceneServicesLayers(Scene currentScene, SortedList<int, IList<IRenderable>> layers)
+    {
+        foreach (var service in currentScene.Services)
+        {
+            if (service is IRenderable renderableService)
+            {
+                if (renderableService.Hidden)
+                    continue;
+
+                if (!layers.ContainsKey(renderableService.LayerIndex))
+                    layers.Add(renderableService.LayerIndex, new List<IRenderable>());
+                layers[renderableService.LayerIndex].Add(renderableService);
+            }
+        }
+    }
+
+    private static void RebuildGameObjectsLayers(GameObject? node, SortedList<int, IList<IRenderable>> layers)
+    {
+        if (node == null || !node.Enabled)
             return;
 
         foreach (var component in node.Components)
@@ -94,6 +97,6 @@ public class RenderService : IGameService
             }
 
         foreach (var child in node.Children)
-            RebuildLayers(child, layers);
+            RebuildGameObjectsLayers(child, layers);
     }
 }

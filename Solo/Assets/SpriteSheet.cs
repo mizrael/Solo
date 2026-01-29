@@ -7,16 +7,14 @@ public record SpriteSheet
     private readonly Dictionary<string, Sprite> _spritesByName = new();
     private readonly Sprite[] _sprites;
 
-    public SpriteSheet(string name, string imagePath, Texture2D texture, IEnumerable<Sprite> sprites)
+    public SpriteSheet(string name, Texture2D texture, IEnumerable<Sprite> sprites)
     {
         ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
-        ArgumentException.ThrowIfNullOrEmpty(imagePath, nameof(imagePath));
 
         if (sprites is null || !sprites.Any())
             throw new ArgumentNullException(nameof(sprites));
 
         this.Name = name;
-        this.ImagePath = imagePath;
         this.Texture = texture ?? throw new ArgumentNullException(nameof(texture));
 
         _sprites = sprites.ToArray();
@@ -38,6 +36,5 @@ public record SpriteSheet
     public IReadOnlyList<Sprite> Sprites => _sprites;
 
     public string Name { get; }
-    public string ImagePath { get; }
     public Texture2D Texture { get; }
 }

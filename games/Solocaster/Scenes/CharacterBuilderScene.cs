@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Solo;
 using Solo.Services;
 using Solocaster.Character;
 using Solocaster.State;
@@ -11,20 +10,24 @@ namespace Solocaster.Scenes;
 
 public class CharacterBuilderScene : Scene
 {
-    private UIService? _uiService;
     private SpriteFont? _font;
     private CharacterBuilderPanel? _builderPanel;
+
+    private UIService _uiService;
 
     public CharacterBuilderScene(Game game) : base(game)
     {
     }
 
-    protected override void EnterCore()
+    protected override void InitializeCore()
     {
-        _uiService = GameServicesManager.Instance.GetRequired<UIService>();
-        _uiService.ClearWidgets();
+        _uiService = new UIService();
+        Services.Add(_uiService);
 
-        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
+        RenderService.SetLayerConfig(RenderLayers.UI, new RenderLayerConfig
+        {
+            SamplerState = SamplerState.PointClamp
+        });
 
         _font = Game.Content.Load<SpriteFont>("Font");
 
@@ -35,8 +38,8 @@ public class CharacterBuilderScene : Scene
 
         _builderPanel = new CharacterBuilderPanel(_font, Game);
         _builderPanel.CenterOnScreen(
-            renderService.Graphics.GraphicsDevice.Viewport.Width,
-            renderService.Graphics.GraphicsDevice.Viewport.Height
+            Game.GraphicsDevice.Viewport.Width,
+            Game.GraphicsDevice.Viewport.Height
         );
         _builderPanel.OnStartGame += OnStartGame;
         _uiService.AddWidget(_builderPanel);
@@ -44,7 +47,6 @@ public class CharacterBuilderScene : Scene
 
     private void OnStartGame()
     {
-        var sceneManager = GameServicesManager.Instance.GetRequired<SceneManager>();
-        sceneManager.SetCurrentScene(SceneNames.Play);
+        SceneManager.Instance.SetScene(SceneNames.Play);
     }
 }

@@ -4,5 +4,5 @@ public interface IGameService
 {
     void Initialize() { }
 
-    void Step(Microsoft.Xna.Framework.GameTime gameTime) { }
+    void Update(Microsoft.Xna.Framework.GameTime gameTime) { }
 }

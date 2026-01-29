@@ -10,7 +10,7 @@ public class PreGameScene : Scene
 {
     private readonly string _text;
 
-    public PreGameScene(Game game, string text = "Snake!") : base(game)
+    public PreGameScene(Game game, string text) : base(game)
     {
         _text = text;
     }
@@ -23,6 +23,6 @@ public class PreGameScene : Scene
         textComponent.Text = _text;
         textComponent.Font = Game.Content.Load<SpriteFont>("Fonts/UI");
 
-        this.Root.AddChild(ui);
+        this.ObjectsGraph.Root.AddChild(ui);
     }
 }

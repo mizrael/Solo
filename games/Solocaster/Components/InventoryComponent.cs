@@ -1,5 +1,6 @@
 using Solo;
 using Solo.Components;
+using Solocaster.Character;
 using Solocaster.Inventory;
 using System;
 using System.Collections.Generic;
@@ -63,7 +64,7 @@ public class InventoryComponent : Component
     public float CurrentWeight => _backpack.Sum(i => i.TotalWeight) +
                                    _equipment.Values.Where(i => i != null).Sum(i => i!.TotalWeight);
 
-    public float MaxWeight => _stats?.GetTotalStat(StatType.MaxWeight) ?? 100f;
+    public float MaxWeight => _stats?.GetTotalStat(Stats.MaxWeight) ?? 100f;
 
     public AddItemResult AddItem(ItemInstance item)
     {

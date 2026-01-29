@@ -1,7 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Solocaster.Character;
 using Solocaster.Components;
-using Solocaster.Inventory;
 using Solocaster.UI.Widgets;
 
 namespace Solocaster.UI;
@@ -40,7 +40,6 @@ public class MetricsPanel : PanelWidget
     private readonly MetricRowWidget _distanceWalkedRow;
     private readonly MetricRowWidget _distanceRunRow;
     private readonly MetricRowWidget _timeSneakingRow;
-    private readonly MetricRowWidget _timeHidingRow;
 
     private readonly MetricRowWidget _npcInteractionsRow;
     private readonly MetricRowWidget _itemsBoughtRow;
@@ -79,11 +78,11 @@ public class MetricsPanel : PanelWidget
         AddChild(statHeader);
         y += 4;
 
-        _strengthRow = CreateStatProgressRow("Strength", StatType.Strength, contentWidth, ref y);
-        _agilityRow = CreateStatProgressRow("Agility", StatType.Agility, contentWidth, ref y);
-        _vitalityRow = CreateStatProgressRow("Vitality", StatType.Vitality, contentWidth, ref y);
-        _intelligenceRow = CreateStatProgressRow("Intelligence", StatType.Intelligence, contentWidth, ref y);
-        _wisdomRow = CreateStatProgressRow("Wisdom", StatType.Wisdom, contentWidth, ref y);
+        _strengthRow = CreateStatProgressRow("Strength", Stats.Strength, contentWidth, ref y);
+        _agilityRow = CreateStatProgressRow("Agility", Stats.Agility, contentWidth, ref y);
+        _vitalityRow = CreateStatProgressRow("Vitality", Stats.Vitality, contentWidth, ref y);
+        _intelligenceRow = CreateStatProgressRow("Intelligence", Stats.Intelligence, contentWidth, ref y);
+        _wisdomRow = CreateStatProgressRow("Wisdom", Stats.Wisdom, contentWidth, ref y);
 
         AddChild(_strengthRow);
         AddChild(_agilityRow);
@@ -141,12 +140,10 @@ public class MetricsPanel : PanelWidget
         _distanceWalkedRow = CreateMetricRow("Distance Walked", contentWidth, ref y);
         _distanceRunRow = CreateMetricRow("Distance Run", contentWidth, ref y);
         _timeSneakingRow = CreateMetricRow("Time Sneaking", contentWidth, ref y);
-        _timeHidingRow = CreateMetricRow("Time Hiding", contentWidth, ref y);
 
         AddChild(_distanceWalkedRow);
         AddChild(_distanceRunRow);
         AddChild(_timeSneakingRow);
-        AddChild(_timeHidingRow);
 
         y += SectionSpacing;
 
@@ -198,7 +195,7 @@ public class MetricsPanel : PanelWidget
         return label;
     }
 
-    private StatProgressRowWidget CreateStatProgressRow(string name, StatType statType, int width, ref float y)
+    private StatProgressRowWidget CreateStatProgressRow(string name, Stats statType, int width, ref float y)
     {
         var row = new StatProgressRowWidget
         {
@@ -225,13 +222,6 @@ public class MetricsPanel : PanelWidget
         return row;
     }
 
-    public void Toggle()
-    {
-        Visible = !Visible;
-        if (Visible)
-            ScrollOffset = 0;
-    }
-
     public void CenterOnScreen(int screenWidth, int screenHeight)
     {
         Position = new Vector2(
@@ -248,20 +238,20 @@ public class MetricsPanel : PanelWidget
             return;
 
         // Update stat progress rows
-        _strengthRow.StatValue = _stats.GetBaseStat(StatType.Strength);
-        _strengthRow.Progress = _stats.GetStatProgress(StatType.Strength);
+        _strengthRow.StatValue = _stats.GetBaseStat(Stats.Strength);
+        _strengthRow.Progress = _stats.GetStatProgress(Stats.Strength);
 
-        _agilityRow.StatValue = _stats.GetBaseStat(StatType.Agility);
-        _agilityRow.Progress = _stats.GetStatProgress(StatType.Agility);
+        _agilityRow.StatValue = _stats.GetBaseStat(Stats.Agility);
+        _agilityRow.Progress = _stats.GetStatProgress(Stats.Agility);
 
-        _vitalityRow.StatValue = _stats.GetBaseStat(StatType.Vitality);
-        _vitalityRow.Progress = _stats.GetStatProgress(StatType.Vitality);
+        _vitalityRow.StatValue = _stats.GetBaseStat(Stats.Vitality);
+        _vitalityRow.Progress = _stats.GetStatProgress(Stats.Vitality);
 
-        _intelligenceRow.StatValue = _stats.GetBaseStat(StatType.Intelligence);
-        _intelligenceRow.Progress = _stats.GetStatProgress(StatType.Intelligence);
+        _intelligenceRow.StatValue = _stats.GetBaseStat(Stats.Intelligence);
+        _intelligenceRow.Progress = _stats.GetStatProgress(Stats.Intelligence);
 
-        _wisdomRow.StatValue = _stats.GetBaseStat(StatType.Wisdom);
-        _wisdomRow.Progress = _stats.GetStatProgress(StatType.Wisdom);
+        _wisdomRow.StatValue = _stats.GetBaseStat(Stats.Wisdom);
+        _wisdomRow.Progress = _stats.GetStatProgress(Stats.Wisdom);
 
         // Update metric rows
         var metrics = _stats.Metrics;
@@ -282,7 +272,6 @@ public class MetricsPanel : PanelWidget
         _distanceWalkedRow.Value = $"{metrics.DistanceWalked:F1}";
         _distanceRunRow.Value = $"{metrics.DistanceRun:F1}";
         _timeSneakingRow.Value = $"{metrics.TimeSneaking:F1}s";
-        _timeHidingRow.Value = $"{metrics.TimeHiding:F1}s";
 
         _npcInteractionsRow.Value = metrics.NPCInteractions.ToString();
         _itemsBoughtRow.Value = metrics.ItemsBought.ToString();

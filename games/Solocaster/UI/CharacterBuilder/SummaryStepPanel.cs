@@ -3,7 +3,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Solo.Assets.Loaders;
 using Solocaster.Character;
-using Solocaster.Inventory;
 using Solocaster.State;
 using Solocaster.UI.Widgets;
 
@@ -95,7 +94,7 @@ public class SummaryStepPanel : Widget
         y += lineHeight + 5;
 
         // Calculate combined stats
-        var stats = new[] { StatType.Strength, StatType.Agility, StatType.Vitality, StatType.Intelligence, StatType.Wisdom };
+        var stats = new[] { Stats.Strength, Stats.Agility, Stats.Vitality, Stats.Intelligence, Stats.Wisdom };
 
         foreach (var stat in stats)
         {
@@ -126,15 +125,15 @@ public class SummaryStepPanel : Widget
         }
     }
 
-    private static string FormatStatName(StatType stat)
+    private static string FormatStatName(Stats stat)
     {
         return stat switch
         {
-            StatType.Strength => "STR",
-            StatType.Agility => "AGI",
-            StatType.Vitality => "VIT",
-            StatType.Intelligence => "INT",
-            StatType.Wisdom => "WIS",
+            Stats.Strength => "STR",
+            Stats.Agility => "AGI",
+            Stats.Vitality => "VIT",
+            Stats.Intelligence => "INT",
+            Stats.Wisdom => "WIS",
             _ => stat.ToString()
         };
     }

@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 using Solo.Services;
@@ -9,12 +8,11 @@ namespace Snake;
 public class SnakeGame : Game
 {
     private GraphicsDeviceManager _graphics;
-    private SceneManager _sceneManager;
-    private RenderService _renderService;
 
     public SnakeGame()
     {
-        _graphics = new GraphicsDeviceManager(this);
+        GraphicsDeviceManagerAccessor.Instance.Initialize(this);
+        _graphics = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager;
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
         Window.AllowUserResizing = true;
@@ -27,26 +25,16 @@ public class SnakeGame : Game
         _graphics.PreferredBackBufferHeight = 768;
         _graphics.ApplyChanges();
 
-        _renderService = new RenderService(_graphics, Window);
-        _renderService.SetLayerConfig((int)RenderLayers.Background, new RenderLayerConfig
-        {
-            SamplerState = SamplerState.LinearWrap
-        });
-        GameServicesManager.Instance.AddService(_renderService);
-
-        _sceneManager = new SceneManager();
-        GameServicesManager.Instance.AddService(_sceneManager);
-
         base.Initialize();
     }
 
     protected override void LoadContent()
     {
-        _sceneManager.AddScene(Scenes.SceneNames.PreGame, new Scenes.PreGameScene(this));
-        _sceneManager.AddScene(Scenes.SceneNames.Play, new Scenes.PlayScene(this));
-        _sceneManager.AddScene(Scenes.SceneNames.GameOver, new Scenes.PreGameScene(this, "Game Over!"));
+        SceneManager.Instance.AddScene(Scenes.SceneNames.PreGame, () => new Scenes.PreGameScene(this, "Snake!"));
+        SceneManager.Instance.AddScene<Scenes.PlayScene>(Scenes.SceneNames.Play, this);
+        SceneManager.Instance.AddScene(Scenes.SceneNames.GameOver, () => new Scenes.PreGameScene(this, "Game Over!"));
 
-        _sceneManager.SetCurrentScene(Scenes.SceneNames.PreGame);
+        SceneManager.Instance.SetScene(Scenes.SceneNames.PreGame);
     }
 
     protected override void Update(GameTime gameTime)
@@ -54,14 +42,14 @@ public class SnakeGame : Game
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
 
-        GameServicesManager.Instance.Step(gameTime);
+        SceneManager.Instance.Step(gameTime);
 
         base.Update(gameTime);
     }
 
     protected override void Draw(GameTime gameTime)
     {
-        _renderService.Render();
+        SceneManager.Instance.Render();
 
         base.Draw(gameTime);
     }

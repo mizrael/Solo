@@ -1,3 +1,4 @@
+using Solocaster.Character;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -57,7 +58,8 @@ public static class ItemTemplateLoader
                 Stackable = itemData.Stackable ?? false,
                 MaxStackSize = itemData.MaxStackSize ?? 1,
                 StatModifiers = ParseStatDictionary(itemData.StatModifiers),
-                Requirements = ParseStatDictionary(itemData.Requirements)
+                Requirements = ParseStatDictionary(itemData.Requirements),
+                AttackSpeed = itemData.AttackSpeed ?? 1.0f
             };
 
             _cache[template.Id] = template;
@@ -71,15 +73,15 @@ public static class ItemTemplateLoader
         return Enum.TryParse<T>(value, true, out var result) ? result : default;
     }
 
-    private static Dictionary<StatType, float> ParseStatDictionary(Dictionary<string, float>? source)
+    private static Dictionary<Stats, float> ParseStatDictionary(Dictionary<string, float>? source)
     {
-        var result = new Dictionary<StatType, float>();
+        var result = new Dictionary<Stats, float>();
         if (source == null)
             return result;
 
         foreach (var kvp in source)
         {
-            if (Enum.TryParse<StatType>(kvp.Key, true, out var statType))
+            if (Enum.TryParse<Stats>(kvp.Key, true, out var statType))
                 result[statType] = kvp.Value;
         }
 
@@ -126,5 +128,6 @@ public static class ItemTemplateLoader
         public int? MaxStackSize { get; set; }
         public Dictionary<string, float>? StatModifiers { get; set; }
         public Dictionary<string, float>? Requirements { get; set; }
+        public float? AttackSpeed { get; set; }
     }
 }

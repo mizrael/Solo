@@ -1,10 +1,11 @@
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+using Solo.Assets;
 
 namespace Solocaster.Components;
 
 public interface IFrameProvider
 {
-    Rectangle GetCurrentBounds();
-    Texture2D? GetTexture();
+    public Sprite? Sprite { get; }
+
+    public Rectangle Bounds { get; }
 }

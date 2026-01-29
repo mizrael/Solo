@@ -3,7 +3,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Solo.Assets.Loaders;
 using Solocaster.Character;
 using Solocaster.Components;
-using Solocaster.Inventory;
 using Solocaster.State;
 using Solocaster.UI.Widgets;
 
@@ -20,15 +19,28 @@ public class StatsPanel : PanelWidget
     private ImageWidget? _avatarImage;
     private LabelWidget? _nameLabel;
     private LabelWidget? _raceClassLabel;
+
+    // Primary stats
     private LabelWidget? _strengthLabel;
     private LabelWidget? _agilityLabel;
     private LabelWidget? _vitalityLabel;
     private LabelWidget? _intelligenceLabel;
     private LabelWidget? _wisdomLabel;
-    private LabelWidget? _healthLabel;
-    private LabelWidget? _manaLabel;
+
+    // Combat stats
     private LabelWidget? _damageLabel;
     private LabelWidget? _defenseLabel;
+    private LabelWidget? _attackSpeedLabel;
+    private LabelWidget? _critChanceLabel;
+
+    // Magic stats
+    private LabelWidget? _manaLabel;
+    private LabelWidget? _manaRegenLabel;
+    private LabelWidget? _spellPowerLabel;
+
+    // Resources
+    private LabelWidget? _healthLabel;
+    private LabelWidget? _maxWeightLabel;
 
     public StatsPanel(StatsComponent stats, SpriteFont font, Game game)
     {
@@ -50,12 +62,10 @@ public class StatsPanel : PanelWidget
     private void BuildLayout()
     {
         int padding = 16;
-        int lineHeight = 24;
+        int lineHeight = 22;
+        int sectionHeaderHeight = 20;
+        int sectionSpacing = 12;
         int width = 200;
-        // Match InventoryPanel height: padding*2 + 40 + 4*(64+8) + 8 + 30 = 398
-        int height = 398;
-
-        Size = new Vector2(width, height);
 
         int y = padding;
 
@@ -95,9 +105,12 @@ public class StatsPanel : PanelWidget
             CenterHorizontally = true
         };
         AddChild(_raceClassLabel);
-        y += lineHeight + 8;
+        y += lineHeight + sectionSpacing;
 
-        // Primary stats
+        // === PRIMARY STATS ===
+        AddChild(CreateSectionHeader("Primary", padding, y, width));
+        y += sectionHeaderHeight;
+
         _strengthLabel = CreateStatLabel(padding, y, width);
         AddChild(_strengthLabel);
         y += lineHeight;
@@ -116,16 +129,11 @@ public class StatsPanel : PanelWidget
 
         _wisdomLabel = CreateStatLabel(padding, y, width);
         AddChild(_wisdomLabel);
-        y += lineHeight + 8;
+        y += lineHeight + sectionSpacing;
 
-        // Derived stats
-        _healthLabel = CreateStatLabel(padding, y, width);
-        AddChild(_healthLabel);
-        y += lineHeight;
-
-        _manaLabel = CreateStatLabel(padding, y, width);
-        AddChild(_manaLabel);
-        y += lineHeight;
+        // === COMBAT ===
+        AddChild(CreateSectionHeader("Combat", padding, y, width));
+        y += sectionHeaderHeight;
 
         _damageLabel = CreateStatLabel(padding, y, width);
         AddChild(_damageLabel);
@@ -133,8 +141,61 @@ public class StatsPanel : PanelWidget
 
         _defenseLabel = CreateStatLabel(padding, y, width);
         AddChild(_defenseLabel);
+        y += lineHeight;
+
+        _attackSpeedLabel = CreateStatLabel(padding, y, width);
+        AddChild(_attackSpeedLabel);
+        y += lineHeight;
+
+        _critChanceLabel = CreateStatLabel(padding, y, width);
+        AddChild(_critChanceLabel);
+        y += lineHeight + sectionSpacing;
+
+        // === MAGIC ===
+        AddChild(CreateSectionHeader("Magic", padding, y, width));
+        y += sectionHeaderHeight;
+
+        _manaLabel = CreateStatLabel(padding, y, width);
+        AddChild(_manaLabel);
+        y += lineHeight;
+
+        _manaRegenLabel = CreateStatLabel(padding, y, width);
+        AddChild(_manaRegenLabel);
+        y += lineHeight;
+
+        _spellPowerLabel = CreateStatLabel(padding, y, width);
+        AddChild(_spellPowerLabel);
+        y += lineHeight + sectionSpacing;
+
+        // === RESOURCES ===
+        AddChild(CreateSectionHeader("Resources", padding, y, width));
+        y += sectionHeaderHeight;
+
+        _healthLabel = CreateStatLabel(padding, y, width);
+        AddChild(_healthLabel);
+        y += lineHeight;
+
+        _maxWeightLabel = CreateStatLabel(padding, y, width);
+        AddChild(_maxWeightLabel);
+        y += lineHeight;
+
+        // Set final panel size
+        int height = y + padding;
+        Size = new Vector2(width, height);
 
         RefreshStats();
+    }
+
+    private LabelWidget CreateSectionHeader(string text, int x, int y, int width)
+    {
+        return new LabelWidget
+        {
+            Text = text,
+            Font = _font,
+            TextColor = UITheme.Text.Muted,
+            Position = new Vector2(x, y),
+            Size = new Vector2(width - x * 2, 20)
+        };
     }
 
     private void LoadAvatar()
@@ -196,44 +257,75 @@ public class StatsPanel : PanelWidget
         if (_raceClassLabel != null)
             _raceClassLabel.Text = GetRaceClassName();
 
+        // Primary stats
         if (_strengthLabel != null)
-            _strengthLabel.Text = FormatStat("STR", StatType.Strength);
+            _strengthLabel.Text = FormatStat("STR", Stats.Strength);
 
         if (_agilityLabel != null)
-            _agilityLabel.Text = FormatStat("AGI", StatType.Agility);
+            _agilityLabel.Text = FormatStat("AGI", Stats.Agility);
 
         if (_vitalityLabel != null)
-            _vitalityLabel.Text = FormatStat("VIT", StatType.Vitality);
+            _vitalityLabel.Text = FormatStat("VIT", Stats.Vitality);
 
         if (_intelligenceLabel != null)
-            _intelligenceLabel.Text = FormatStat("INT", StatType.Intelligence);
+            _intelligenceLabel.Text = FormatStat("INT", Stats.Intelligence);
 
         if (_wisdomLabel != null)
-            _wisdomLabel.Text = FormatStat("WIS", StatType.Wisdom);
+            _wisdomLabel.Text = FormatStat("WIS", Stats.Wisdom);
 
-        if (_healthLabel != null)
-            _healthLabel.Text = $"Health: {_stats.GetTotalStat(StatType.MaxHealth):0}";
-
-        if (_manaLabel != null)
-            _manaLabel.Text = $"Mana: {_stats.GetTotalStat(StatType.MaxMana):0}";
-
+        // Combat stats
         if (_damageLabel != null)
         {
-            var damage = _stats.GetTotalStat(StatType.Damage);
+            var damage = _stats.GetTotalStat(Stats.Damage);
             _damageLabel.Text = damage > 0 ? $"Damage: +{damage:0}" : "Damage: 0";
         }
 
         if (_defenseLabel != null)
         {
-            var defense = _stats.GetTotalStat(StatType.Defense);
+            var defense = _stats.GetTotalStat(Stats.Defense);
             _defenseLabel.Text = defense > 0 ? $"Defense: +{defense:0}" : "Defense: 0";
         }
+
+        if (_attackSpeedLabel != null)
+        {
+            var attackSpeed = _stats.GetTotalStat(Stats.AttackSpeed);
+            _attackSpeedLabel.Text = $"Atk Speed: {attackSpeed:0.0}";
+        }
+
+        if (_critChanceLabel != null)
+        {
+            var critChance = _stats.GetTotalStat(Stats.CriticalChance);
+            _critChanceLabel.Text = $"Crit: {critChance:0}%";
+        }
+
+        // Magic stats
+        if (_manaLabel != null)
+            _manaLabel.Text = $"Mana: {_stats.GetTotalStat(Stats.MaxMana):0}";
+
+        if (_manaRegenLabel != null)
+        {
+            var manaRegen = _stats.GetTotalStat(Stats.ManaRegen);
+            _manaRegenLabel.Text = $"Mana Regen: {manaRegen:0.0}/s";
+        }
+
+        if (_spellPowerLabel != null)
+        {
+            var spellPower = _stats.GetTotalStat(Stats.SpellPower);
+            _spellPowerLabel.Text = spellPower > 0 ? $"Spell Power: +{spellPower:0}" : "Spell Power: 0";
+        }
+
+        // Resources
+        if (_healthLabel != null)
+            _healthLabel.Text = $"Health: {_stats.GetTotalStat(Stats.MaxHealth):0}";
+
+        if (_maxWeightLabel != null)
+            _maxWeightLabel.Text = $"Max Weight: {_stats.GetTotalStat(Stats.MaxWeight):0}";
 
         // Reload avatar in case race/class/sex changed
         LoadAvatar();
     }
 
-    private string FormatStat(string label, StatType stat)
+    private string FormatStat(string label, Stats stat)
     {
         var baseStat = _stats.GetBaseStat(stat);
         var bonus = _stats.GetEquipmentBonus(stat);

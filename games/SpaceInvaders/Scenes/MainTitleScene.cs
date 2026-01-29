@@ -22,14 +22,13 @@ public class MainTitleScene : Scene
         var spriteSheet = SpriteSheetLoader.Get("spritesheet", Game);
 
         var mainTitle = new GameObject();
-        
+
         var renderer = mainTitle.Components.Add<SpriteRenderComponent>();
         renderer.Sprite = spriteSheet.Get("main_title");
 
         var transform = mainTitle.Components.Add<TransformComponent>();
-        this.Root.AddChild(mainTitle);
+        this.ObjectsGraph.Root.AddChild(mainTitle);
 
-        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
         var refreshMainTitleTransform = new Action(() =>
         {
             transform.Local.Position = new Vector2(
@@ -39,15 +38,15 @@ public class MainTitleScene : Scene
             transform.Local.Scale = new Vector2(2f, 2f);
         });
         refreshMainTitleTransform();
-        renderService.Window.ClientSizeChanged += (s, e) => refreshMainTitleTransform();
+        SceneManager.Instance.Current?.Game?.Window.ClientSizeChanged += (s, e) => refreshMainTitleTransform();
     }
 
-    protected override void Update(GameTime gameTime)
+    protected override void UpdateCore(GameTime gameTime)
     {
         var keyboardState = Keyboard.GetState();
         var canStart = _prevKeyState.IsKeyDown(Keys.Enter) && keyboardState.IsKeyUp(Keys.Enter);
         if (canStart)
-            GameServicesManager.Instance.GetRequired<SceneManager>().SetCurrentScene(SceneNames.Play);
+            SceneManager.Instance.SetScene(SceneNames.Play);
         _prevKeyState = keyboardState;
     }
 }

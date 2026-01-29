@@ -25,7 +25,7 @@
 /processorParam:TextureFormat=Color
 /build:avatars.png
 
-#begin characters/skeleton/skeleton_attack_front.png
+#begin characters/blackknights_front.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -35,9 +35,9 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:characters/skeleton/skeleton_attack_front.png;characters/skeleton/skeleton_attack_front
+/build:characters/blackknights_front.png
 
-#begin characters/skeleton/skeleton_idle_front.png
+#begin characters/orcs_front.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -47,9 +47,9 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:characters/skeleton/skeleton_idle_front.png;characters/skeleton/skeleton_idle_front
+/build:characters/orcs_front.png
 
-#begin characters/skeleton/skeleton_walk_front.png
+#begin characters/skeletons_front.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -59,7 +59,19 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:characters/skeleton/skeleton_walk_front.png;characters/skeleton/skeleton_walk_front
+/build:characters/skeletons_front.png
+
+#begin characters/zombies_front.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:characters/zombies_front.png
 
 #begin dungeon_doors1.png
 /importer:TextureImporter
@@ -84,6 +96,24 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:dungeon1.png
+
+#begin Effects/Blur.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:Effects/Blur.fx
+
+#begin Effects/CRT.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:Effects/CRT.fx
+
+#begin Effects/TiltShift.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:Effects/TiltShift.fx
 
 #begin Font.spritefont
 /importer:FontDescriptionImporter
@@ -115,6 +145,66 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:misc_items2.png
+
+#begin player/hand_axe.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:player/hand_axe.png
+
+#begin player/hand_empty.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:player/hand_empty.png
+
+#begin player/hand_longsword.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:player/hand_longsword.png
+
+#begin player/hand_morningstar.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:player/hand_morningstar.png
+
+#begin player/hand_shield.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:player/hand_shield.png
 
 #begin wolfenstein.png
 /importer:TextureImporter

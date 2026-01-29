@@ -9,7 +9,8 @@
       "Bash(dotnet sln:*)",
       "Bash(dotnet --list-sdks:*)",
       "Bash(dotnet workload:*)",
-      "Bash(dotnet test:*)"
+      "Bash(dotnet test:*)",
+      "Bash(findstr:*)"
     ]
   }
 }

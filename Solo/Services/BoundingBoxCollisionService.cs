@@ -7,10 +7,8 @@ public class BoundingBoxCollisionService : IGameService
 {
     private BoundingBoxCollisionBucket[,] _buckets;
     private SceneManager _sceneManager;
-    private RenderService _renderService;
     private readonly Point _bucketSize;
     private readonly Dictionary<int, IList<BoundingBoxCollisionBucket>> _bucketsByCollider = new();
-
 
     public BoundingBoxCollisionService(Point bucketSize)
     {
@@ -19,11 +17,10 @@ public class BoundingBoxCollisionService : IGameService
 
     public void Initialize()
     {
-        _sceneManager = GameServicesManager.Instance.GetRequired<SceneManager>();
+        _sceneManager = SceneManager.Instance;
         _sceneManager.OnSceneChanged += OnSceneChanged;
 
-        _renderService = GameServicesManager.Instance.GetRequired<RenderService>();
-        _renderService.Graphics.DeviceReset += (s, e) => BuildBuckets();
+        GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.DeviceReset += (s, e) => BuildBuckets();
 
         BuildBuckets();
     }
@@ -32,8 +29,9 @@ public class BoundingBoxCollisionService : IGameService
 
     private void BuildBuckets()
     {
-        var rows = _renderService.Graphics.GraphicsDevice.Viewport.Height / _bucketSize.Y;
-        var cols = _renderService.Graphics.GraphicsDevice.Viewport.Width / _bucketSize.X;
+        var viewport = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice.Viewport;
+        var rows = viewport.Height / _bucketSize.Y;
+        var cols = viewport.Width / _bucketSize.X;
         _buckets = new BoundingBoxCollisionBucket[rows, cols];
 
         for (int row = 0; row < rows; row++)
@@ -60,7 +58,9 @@ public class BoundingBoxCollisionService : IGameService
     {
         RefreshColliderBuckets(bbox);
 
-        var buckets = _bucketsByCollider[bbox.Owner.Id];
+        if(!_bucketsByCollider.TryGetValue(bbox.Owner.Id, out var buckets))
+            return;
+        
         foreach (var bucket in buckets)
         {
             bucket.CheckCollisions(bbox);
@@ -69,13 +69,17 @@ public class BoundingBoxCollisionService : IGameService
 
     private void RefreshColliderBuckets(BoundingBoxComponent collider)
     {
+        if(collider is null || _buckets is null)
+            return;
+
         var rows = _buckets.GetLength(0);
         var cols = _buckets.GetLength(1);
-        var startX = (int)(cols * ((float)collider.Bounds.Left / _renderService.Graphics.GraphicsDevice.Viewport.Width));
-        var startY = (int)(rows * ((float)collider.Bounds.Top / _renderService.Graphics.GraphicsDevice.Viewport.Height));
+        var viewport = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice.Viewport;
+        var startX = (int)(cols * ((float)collider.Bounds.Left / viewport.Width));
+        var startY = (int)(rows * ((float)collider.Bounds.Top / viewport.Height));
 
-        var endX = (int)(cols * ((float)collider.Bounds.Right / _renderService.Graphics.GraphicsDevice.Viewport.Width));
-        var endY = (int)(rows * ((float)collider.Bounds.Bottom / _renderService.Graphics.GraphicsDevice.Viewport.Height));
+        var endX = (int)(cols * ((float)collider.Bounds.Right / viewport.Width));
+        var endY = (int)(rows * ((float)collider.Bounds.Bottom / viewport.Height));
 
         if (!_bucketsByCollider.ContainsKey(collider.Owner.Id))
             _bucketsByCollider[collider.Owner.Id] = new List<BoundingBoxCollisionBucket>();
@@ -110,12 +114,12 @@ public class BoundingBoxCollisionService : IGameService
     private IEnumerable<BoundingBoxComponent> FindAllColliders()
     {
         var scene = _sceneManager.Current;
-        if(scene?.Root is null)
+        if(scene?.ObjectsGraph.Root is null)
             return Enumerable.Empty<BoundingBoxComponent>();
 
         var colliders = new List<BoundingBoxComponent>();
 
-        FindAllColliders(scene.Root, colliders);
+        FindAllColliders(scene.ObjectsGraph.Root, colliders);
 
         return colliders;
     }

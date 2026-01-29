@@ -14,7 +14,6 @@ public class PlayerStatsUIComponent : Component, IRenderable
     private const int _rightOffset = 20;
 
     private Color _shieldColor = new (68, 68, 255);
-    private RenderService _renderService;
     private Texture2D _texture;
 
     private PlayerStatsUIComponent(GameObject owner) : base(owner)
@@ -23,9 +22,9 @@ public class PlayerStatsUIComponent : Component, IRenderable
 
     protected override void InitCore()
     {
-        _renderService = GameServicesManager.Instance.GetRequired<RenderService>();
-
-        _texture = Texture2DUtils.Generate(_renderService.Graphics.GraphicsDevice, 1, 1, Color.White);
+        var graphicsDevice = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice;
+        _texture = new Texture2D(graphicsDevice, 1, 1);
+        _texture.SetData(new[] { Color.White });
     }
 
     public void Render(SpriteBatch spriteBatch)
@@ -36,22 +35,24 @@ public class PlayerStatsUIComponent : Component, IRenderable
 
     private void RenderShield(SpriteBatch spriteBatch)
     {
+        var viewport = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice.Viewport;
         float ratio = (float)this.PlayerBrain.Stats.ShieldPower / this.PlayerBrain.Stats.ShieldMaxPower;
         int width = (int)(ratio * _maxWidth);
-        
-        int x = _renderService.Graphics.GraphicsDevice.Viewport.Width - width - _rightOffset;
-        int y = _renderService.Graphics.GraphicsDevice.Viewport.Height - _maxHeight - _bottomOffset - _maxHeight - 5;
+
+        int x = viewport.Width - width - _rightOffset;
+        int y = viewport.Height - _maxHeight - _bottomOffset - _maxHeight - 5;
 
         spriteBatch.Draw(_texture, new Rectangle(x, y, width, _maxHeight), _shieldColor);
     }
 
     private void RenderHealth(SpriteBatch spriteBatch)
     {
+        var viewport = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice.Viewport;
         float ratio = (float)this.PlayerBrain.Stats.Health / this.PlayerBrain.Stats.MaxHealth;
         int width = (int)(ratio * _maxWidth);
 
-        int x = _renderService.Graphics.GraphicsDevice.Viewport.Width - width - _rightOffset;
-        int y = _renderService.Graphics.GraphicsDevice.Viewport.Height - _maxHeight - _bottomOffset;
+        int x = viewport.Width - width - _rightOffset;
+        int y = viewport.Height - _maxHeight - _bottomOffset;
 
         var color = ratio > .5 ? Color.Green : Color.Red;
         spriteBatch.Draw(_texture, new Rectangle(x, y, width, _maxHeight), color);

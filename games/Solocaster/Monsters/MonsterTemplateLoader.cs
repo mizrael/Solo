@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Solocaster.Character;
 using Solocaster.Components;
-using Solocaster.Inventory;
 
 namespace Solocaster.Monsters;
 
@@ -48,7 +48,7 @@ public static class MonsterTemplateLoader
                 AttackRange = dto.Behavior?.AttackRange ?? 1.2f,
                 MoveSpeed = dto.Behavior?.MoveSpeed ?? 2.0f
             },
-            Animations = dto.Animations ?? new Dictionary<string, string>(),
+            SpritesheetBasePath = dto.SpritesheetBasePath ?? string.Empty,
             Scale = dto.Scale,
             Anchor = dto.Anchor
         };
@@ -71,15 +71,15 @@ public static class MonsterTemplateLoader
 
     public static IEnumerable<MonsterTemplate> GetAll() => _templates.Values;
 
-    private static Dictionary<StatType, float> ParseStats(Dictionary<string, float> stats)
+    private static Dictionary<Stats, float> ParseStats(Dictionary<string, float> stats)
     {
-        var result = new Dictionary<StatType, float>();
+        var result = new Dictionary<Stats, float>();
         if (stats == null)
             return result;
 
         foreach (var (key, value) in stats)
         {
-            if (Enum.TryParse<StatType>(key, true, out var statType))
+            if (Enum.TryParse<Stats>(key, true, out var statType))
                 result[statType] = value;
         }
 
@@ -92,7 +92,7 @@ public static class MonsterTemplateLoader
         public string Name { get; set; }
         public Dictionary<string, float> Stats { get; set; }
         public BehaviorDto Behavior { get; set; }
-        public Dictionary<string, string> Animations { get; set; }
+        public string SpritesheetBasePath { get; set; }
         public float Scale { get; set; } = 1.0f;
         public BillboardAnchor Anchor { get; set; } = BillboardAnchor.Bottom;
 

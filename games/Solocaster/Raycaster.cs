@@ -1,7 +1,8 @@
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Solo.Components;
 using Solo;
+using Solo.Assets;
+using Solo.Components;
+using Solo.Utils;
 using Solocaster.Components;
 using Solocaster.Entities;
 using System;
@@ -59,8 +60,21 @@ public unsafe class Raycaster : IDisposable
     private readonly int _frameHeight;
 
     private readonly float[] _zBuffer;
-    private readonly Dictionary<Texture2D, (Color[] data, GCHandle handle)> _spriteTextureCache;
+    private readonly Dictionary<Sprite, CachedRotatedSprite> _spriteTextureCache;
     private readonly SpatialGrid _spatialGrid;
+
+    private struct CachedRotatedSprite
+    {
+        public GCHandle Handle;
+        public int RotatedWidth;  // Original height becomes width after 90° rotation
+        public int RotatedHeight; // Original width becomes height after 90° rotation
+    }
+
+    // Pre-allocated projection buffer to avoid per-frame allocations
+    private SpriteProjection[] _projections = new SpriteProjection[512];
+    private int _projectionCount;
+    private static readonly Comparer<SpriteProjection> _distanceComparer =
+        Comparer<SpriteProjection>.Create((a, b) => b.Distance.CompareTo(a.Distance));
 
     public Raycaster(
         Level level,
@@ -76,7 +90,7 @@ public unsafe class Raycaster : IDisposable
 
         FrameBuffer = new Color[screenWidth * screenHeight];
         _zBuffer = new float[screenHeight];
-        _spriteTextureCache = new Dictionary<Texture2D, (Color[], GCHandle)>();
+        _spriteTextureCache = new Dictionary<Sprite, CachedRotatedSprite>();
 
         // Assume all sprites are the same size (first sprite's bounds)
         var wallSprites = level.WallSprites;
@@ -704,17 +718,31 @@ public unsafe class Raycaster : IDisposable
         return ((uint)a << 24) | ((uint)r << 16) | ((uint)g << 8) | b;
     }
 
-    private uint* GetOrCacheSpriteTexture(Texture2D texture)
+    private CachedRotatedSprite GetOrCacheRotatedSprite(Sprite sprite)
     {
-        if (!_spriteTextureCache.TryGetValue(texture, out var cached))
+        if (!_spriteTextureCache.TryGetValue(sprite, out var cached))
         {
-            var data = new Color[texture.Width * texture.Height];
-            texture.GetData(data);
-            var handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-            cached = (data, handle);
-            _spriteTextureCache[texture] = cached;
+            var bounds = sprite.Bounds;
+            var texture = sprite.Texture;
+
+            // Extract sprite region from texture
+            var spriteData = new Color[bounds.Width * bounds.Height];
+            texture.GetData(0, bounds, spriteData, 0, spriteData.Length);
+
+            // Rotate 90° counter-clockwise for linear column access
+            // After rotation: width becomes height, height becomes width
+            var rotatedData = spriteData.Rotate90(bounds.Width, bounds.Height);
+
+            var handle = GCHandle.Alloc(rotatedData, GCHandleType.Pinned);
+            cached = new CachedRotatedSprite
+            {
+                Handle = handle,
+                RotatedWidth = bounds.Height,  // Original height
+                RotatedHeight = bounds.Width   // Original width
+            };
+            _spriteTextureCache[sprite] = cached;
         }
-        return (uint*)cached.handle.AddrOfPinnedObject();
+        return cached;
     }
 
     private struct SpriteProjection
@@ -730,10 +758,11 @@ public unsafe class Raycaster : IDisposable
         public int DrawEndY;
         public int DrawStartX;
         public int DrawEndX;
-        public uint* TexturePtr;
-        public int TexWidth;
-        public int TexHeight;
-        public Rectangle SpriteBounds;
+        public uint* RotatedTexturePtr;
+        public int RotatedTexWidth;   // Original sprite height (after 90° rotation)
+        public int RotatedTexHeight;  // Original sprite width (after 90° rotation)
+        public int OriginalSpriteWidth;
+        public int OriginalSpriteHeight;
         public BillboardAnchor Anchor;
     }
 
@@ -742,7 +771,7 @@ public unsafe class Raycaster : IDisposable
 
     private void RenderBillboards(TransformComponent playerTransform, PlayerBrain playerBrain, uint* pixels)
     {
-        var projections = new List<SpriteProjection>();
+        _projectionCount = 0;
         HoveredEntity = null;
 
         var entities = _spatialGrid.Query(playerTransform.World.Position, 20f);
@@ -763,11 +792,9 @@ public unsafe class Raycaster : IDisposable
             var transformX = invDet * (playerTransform.World.Direction.Y * relX - playerTransform.World.Direction.X * relY);
             var transformY = invDet * (-playerBrain.Plane.Y * relX + playerBrain.Plane.X * relY);
 
-            // check if behind camera
+            // Check if behind camera
             if (transformY <= 0)
                 continue;
-
-            //TODO: check if it's completely occluded by walls
 
             var billboard = entity.Components.Get<BillboardComponent>();
             var frameProvider = billboard.FrameProvider;
@@ -782,9 +809,11 @@ public unsafe class Raycaster : IDisposable
             var drawStartY = Math.Max(0, screenY - spriteSizeY / 2);
             var drawEndY = Math.Min(_frameHeight - 1, screenY + spriteSizeY / 2);
 
+            // Early rejection: if sprite has no visible rows, skip
+            if (drawStartY >= drawEndY)
+                continue;
+
             // Apply anchor (rotated: X is vertical, _frameWidth/2 is horizon)
-            // Floor/ceiling positions depend on distance - a 1-unit wall at this distance
-            // spans from horizon-baseSpriteSize/2 to horizon+baseSpriteSize/2
             var floorPos = _frameWidth / 2 + baseSpriteSize / 2;
             var ceilingPos = _frameWidth / 2 - baseSpriteSize / 2;
 
@@ -792,18 +821,15 @@ public unsafe class Raycaster : IDisposable
             switch (billboard.Anchor)
             {
                 case BillboardAnchor.Bottom:
-                    // Sits on floor - bottom of sprite aligns with floor at this distance
                     drawStartX = floorPos - spriteSizeX;
                     drawEndX = floorPos;
                     break;
                 case BillboardAnchor.Top:
-                    // Hangs from ceiling - top of sprite aligns with ceiling at this distance
                     drawStartX = ceilingPos;
                     drawEndX = ceilingPos + spriteSizeX;
                     break;
                 case BillboardAnchor.Center:
                 default:
-                    // Centered at horizon
                     drawStartX = _frameWidth / 2 - spriteSizeX / 2;
                     drawEndX = _frameWidth / 2 + spriteSizeX / 2;
                     break;
@@ -811,14 +837,22 @@ public unsafe class Raycaster : IDisposable
             drawStartX = Math.Max(0, drawStartX);
             drawEndX = Math.Min(_frameWidth - 1, drawEndX);
 
-            var texture = frameProvider.GetTexture();
-            if (texture is null)
+            // Early rejection: if sprite has no visible columns, skip
+            if (drawStartX >= drawEndX)
                 continue;
 
-            var bounds = frameProvider.GetCurrentBounds();
-            var texturePtr = GetOrCacheSpriteTexture(texture);
+            var sprite = frameProvider.Sprite;
+            if (sprite is null)
+                continue;
 
-            projections.Add(new SpriteProjection
+            var bounds = sprite.Bounds;
+            var cachedSprite = GetOrCacheRotatedSprite(sprite);
+
+            // Grow array if needed
+            if (_projectionCount >= _projections.Length)
+                Array.Resize(ref _projections, _projections.Length * 2);
+
+            _projections[_projectionCount++] = new SpriteProjection
             {
                 Entity = entity,
                 IsPickupable = isPickupable,
@@ -831,31 +865,33 @@ public unsafe class Raycaster : IDisposable
                 DrawEndY = drawEndY,
                 DrawStartX = drawStartX,
                 DrawEndX = drawEndX,
-                TexturePtr = texturePtr,
-                TexWidth = texture.Width,
-                TexHeight = texture.Height,
-                SpriteBounds = bounds,
+                RotatedTexturePtr = (uint*)cachedSprite.Handle.AddrOfPinnedObject(),
+                RotatedTexWidth = cachedSprite.RotatedWidth,
+                RotatedTexHeight = cachedSprite.RotatedHeight,
+                OriginalSpriteWidth = bounds.Width,
+                OriginalSpriteHeight = bounds.Height,
                 Anchor = billboard.Anchor
-            });
+            };
         }
 
-        projections.Sort((a, b) => b.Distance.CompareTo(a.Distance));
+        // Sort only the active portion (back-to-front for correct overdraw)
+        Array.Sort(_projections, 0, _projectionCount, _distanceComparer);
 
-        // Detect which pickupable entity is under the mouse cursor
-        // Check front-to-back (reverse order since we sorted back-to-front)
+        // Use Span for bounds-check elimination
+        var activeProjections = _projections.AsSpan(0, _projectionCount);
+
+        // Detect which pickupable entity is under the mouse cursor (front-to-back)
         int mouseX = (int)_mouseFrameBufferPos.X;
         int mouseY = (int)_mouseFrameBufferPos.Y;
-        for (int i = projections.Count - 1; i >= 0; i--)
+        for (int i = _projectionCount - 1; i >= 0; i--)
         {
-            var proj = projections[i];
+            ref var proj = ref _projections[i];
             if (!proj.IsPickupable)
                 continue;
 
-            // Check if mouse is within billboard bounds
             if (mouseX >= proj.DrawStartX && mouseX <= proj.DrawEndX &&
                 mouseY >= proj.DrawStartY && mouseY <= proj.DrawEndY)
             {
-                // Also check z-buffer to ensure the billboard is visible at this point
                 if (proj.Distance < _zBuffer[mouseY])
                 {
                     HoveredEntity = proj.Entity;
@@ -869,35 +905,83 @@ public unsafe class Raycaster : IDisposable
         int* resultBuf = stackalloc int[8];
         int* alphaBuf = stackalloc int[8];
 
-        foreach (var proj in projections)
+        foreach (ref var proj in activeProjections)
         {
+            // Early visibility check: sample z-buffer at a few points to see if ANY part is visible
+            bool isAnyVisible = false;
+            int sampleStep = Math.Max(1, (proj.DrawEndY - proj.DrawStartY) / 4);
+            for (int sampleY = proj.DrawStartY; sampleY <= proj.DrawEndY; sampleY += sampleStep)
+            {
+                if (proj.Distance < _zBuffer[sampleY])
+                {
+                    isAnyVisible = true;
+                    break;
+                }
+            }
+            if (!isAnyVisible)
+                continue;
+
+            // Find actual visible row range by scanning from both ends
+            int visibleStartY = proj.DrawStartY;
+            int visibleEndY = proj.DrawEndY;
+
+            // Scan forward to find first visible row
+            while (visibleStartY < visibleEndY && proj.Distance >= _zBuffer[visibleStartY])
+                visibleStartY++;
+
+            // Scan backward to find last visible row
+            while (visibleEndY > visibleStartY && proj.Distance >= _zBuffer[visibleEndY])
+                visibleEndY--;
+
+            // Skip if no visible rows after scanning
+            if (visibleStartY >= visibleEndY)
+                continue;
+
             bool isHovered = proj.Entity == HoveredEntity;
 
             // Pre-compute fixed-point shading factor (8.8 format)
             uint shadingFixed = (uint)(proj.ShadingFactor * 256);
 
             // Pre-compute texture stepping values (16.16 fixed-point)
-            int texStepY = (proj.SpriteBounds.Height << 16) / Math.Max(1, proj.SpriteSizeX);
-            int texStepX = (proj.SpriteBounds.Width << 16) / Math.Max(1, proj.SpriteSizeY);
+            // texStepY maps screen X to original sprite height (which is now rotatedWidth)
+            // texStepX maps screen Y to original sprite width
+            int texStepY = (proj.OriginalSpriteHeight << 16) / Math.Max(1, proj.SpriteSizeX);
+            int texStepX = (proj.OriginalSpriteWidth << 16) / Math.Max(1, proj.SpriteSizeY);
 
-            int baseTexYStart = proj.SpriteBounds.Y * proj.TexWidth;
+            // Cache frequently accessed values to avoid repeated struct field access
+            int projScreenY = proj.ScreenY;
+            int projSpriteSizeY = proj.SpriteSizeY;
+            int projDrawStartX = proj.DrawStartX;
+            int projDrawEndX = proj.DrawEndX;
+            int originalSpriteWidth = proj.OriginalSpriteWidth;
+            int originalSpriteHeight = proj.OriginalSpriteHeight;
+            int rotatedTexWidth = proj.RotatedTexWidth;   // = originalSpriteHeight
+            uint* rotatedTexturePtr = proj.RotatedTexturePtr;
+            float projDistance = proj.Distance;
 
-            for (int y = proj.DrawStartY; y < proj.DrawEndY; y++)
+            for (int y = visibleStartY; y < visibleEndY; y++)
             {
-                if (proj.Distance >= _zBuffer[y])
+                // Z-buffer check still needed for rows in the middle that might be occluded
+                if (projDistance >= _zBuffer[y])
                     continue;
 
                 uint* rowPtr = pixels + y * _frameWidth;
 
-                // Calculate texX using fixed-point
-                int localTexXFixed = (y - proj.ScreenY + proj.SpriteSizeY / 2) * texStepX;
+                // Calculate localTexX (in original sprite coords) using fixed-point
+                int localTexXFixed = (y - projScreenY + projSpriteSizeY / 2) * texStepX;
                 int localTexX = localTexXFixed >> 16;
-                if (localTexX < 0 || localTexX >= proj.SpriteBounds.Width) continue;
-                int texX = proj.SpriteBounds.X + localTexX;
+                if (localTexX < 0 || localTexX >= originalSpriteWidth)
+                    continue;
 
-                int x = proj.DrawStartX;
-                int endX = proj.DrawEndX;
-                int texYFixed = 0; // Starting texture Y in 16.16 fixed-point
+                // For rotated texture (CCW 90°): original (x,y) → rotated (y, width-1-x)
+                // So original localTexX maps to rotatedY = originalSpriteWidth - 1 - localTexX
+                // Base offset for this column in rotated texture (constant for inner loop)
+                int rotatedY = originalSpriteWidth - 1 - localTexX;
+                int baseOffset = rotatedY * rotatedTexWidth;
+
+                int x = projDrawStartX;
+                int endX = projDrawEndX;
+                int texYFixed = 0;
 
                 // AVX2 path: process 8 pixels at a time (skip for hovered entities to show highlight)
                 if (Avx2.IsSupported && endX - x >= 8 && !isHovered)
@@ -908,42 +992,38 @@ public unsafe class Raycaster : IDisposable
                     Vector256<int> vAlphaMask = Vector256.Create(unchecked((int)0xFF000000));
                     Vector256<int> vZero = Vector256<int>.Zero;
                     Vector256<int> v255 = Vector256.Create(255);
+                    Vector256<int> vBaseOffset = Vector256.Create(baseOffset);
 
                     for (; x <= endX - 8; x += 8)
                     {
+                        // Compute 8 consecutive texture offsets (linear access pattern)
                         for (int i = 0; i < 8; i++)
                         {
-                            int localTexY = texYFixed >> 16;
-                            texYCoords[i] = proj.SpriteBounds.Y + Math.Clamp(localTexY, 0, proj.SpriteBounds.Height - 1);
-                            texOffsets[i] = texYCoords[i] * proj.TexWidth + texX;
+                            // localTexY in original coords = rotatedX in rotated coords
+                            int localTexY = Math.Clamp(texYFixed >> 16, 0, originalSpriteHeight - 1);
+                            texOffsets[i] = baseOffset + localTexY;  // Linear: baseOffset + rotatedX
                             texYFixed += texStepY;
                         }
 
-                        // Gather 8 colors
                         Vector256<int> vOffsets = Avx.LoadVector256(texOffsets);
-                        Vector256<int> vColors = Avx2.GatherVector256((int*)proj.TexturePtr, vOffsets, 4);
+                        Vector256<int> vColors = Avx2.GatherVector256((int*)rotatedTexturePtr, vOffsets, 4);
 
-                        // Check alpha (skip if all transparent)
                         Vector256<int> vAlpha = Avx2.And(vColors, vAlphaMask);
                         if (Avx2.MoveMask(Avx2.CompareEqual(vAlpha, vZero).AsByte()) == -1)
                             continue;
 
-                        // Extract and shade RGB channels
                         Vector256<int> vR = Avx2.And(Avx2.ShiftRightLogical(vColors, 16), v255);
                         Vector256<int> vG = Avx2.And(Avx2.ShiftRightLogical(vColors, 8), v255);
                         Vector256<int> vB = Avx2.And(vColors, v255);
 
-                        // Apply shading (fixed-point multiply, then shift)
                         vR = Avx2.ShiftRightLogical(Avx2.MultiplyLow(vR, vShadingR), 8);
                         vG = Avx2.ShiftRightLogical(Avx2.MultiplyLow(vG, vShadingG), 8);
                         vB = Avx2.ShiftRightLogical(Avx2.MultiplyLow(vB, vShadingB), 8);
 
-                        // Recombine
                         Vector256<int> vResult = Avx2.Or(Avx2.Or(
                             Avx2.Or(vAlpha, Avx2.ShiftLeftLogical(vR, 16)),
                             Avx2.ShiftLeftLogical(vG, 8)), vB);
 
-                        // Store with alpha check per pixel
                         Avx.Store(resultBuf, vResult);
                         Avx.Store(alphaBuf, vAlpha);
 
@@ -955,23 +1035,23 @@ public unsafe class Raycaster : IDisposable
                     }
                 }
 
-                // Scalar fallback with loop unrolling (4 pixels)
+                // Scalar fallback with loop unrolling (4 pixels) - linear access
                 for (; x <= endX - 4; x += 4)
                 {
-                    uint c0, c1, c2, c3;
-                    int ty0 = proj.SpriteBounds.Y + Math.Clamp(texYFixed >> 16, 0, proj.SpriteBounds.Height - 1);
+                    int ty0 = Math.Clamp(texYFixed >> 16, 0, originalSpriteHeight - 1);
                     texYFixed += texStepY;
-                    int ty1 = proj.SpriteBounds.Y + Math.Clamp(texYFixed >> 16, 0, proj.SpriteBounds.Height - 1);
+                    int ty1 = Math.Clamp(texYFixed >> 16, 0, originalSpriteHeight - 1);
                     texYFixed += texStepY;
-                    int ty2 = proj.SpriteBounds.Y + Math.Clamp(texYFixed >> 16, 0, proj.SpriteBounds.Height - 1);
+                    int ty2 = Math.Clamp(texYFixed >> 16, 0, originalSpriteHeight - 1);
                     texYFixed += texStepY;
-                    int ty3 = proj.SpriteBounds.Y + Math.Clamp(texYFixed >> 16, 0, proj.SpriteBounds.Height - 1);
+                    int ty3 = Math.Clamp(texYFixed >> 16, 0, originalSpriteHeight - 1);
                     texYFixed += texStepY;
 
-                    c0 = proj.TexturePtr[ty0 * proj.TexWidth + texX];
-                    c1 = proj.TexturePtr[ty1 * proj.TexWidth + texX];
-                    c2 = proj.TexturePtr[ty2 * proj.TexWidth + texX];
-                    c3 = proj.TexturePtr[ty3 * proj.TexWidth + texX];
+                    // Linear access: baseOffset + localTexY (consecutive in memory for consecutive localTexY)
+                    uint c0 = rotatedTexturePtr[baseOffset + ty0];
+                    uint c1 = rotatedTexturePtr[baseOffset + ty1];
+                    uint c2 = rotatedTexturePtr[baseOffset + ty2];
+                    uint c3 = rotatedTexturePtr[baseOffset + ty3];
 
                     if ((c0 & 0xFF000000) != 0) rowPtr[x] = isHovered ? ApplyHighlight(c0, shadingFixed) : ApplyShadingFixed(c0, shadingFixed);
                     if ((c1 & 0xFF000000) != 0) rowPtr[x + 1] = isHovered ? ApplyHighlight(c1, shadingFixed) : ApplyShadingFixed(c1, shadingFixed);
@@ -979,14 +1059,13 @@ public unsafe class Raycaster : IDisposable
                     if ((c3 & 0xFF000000) != 0) rowPtr[x + 3] = isHovered ? ApplyHighlight(c3, shadingFixed) : ApplyShadingFixed(c3, shadingFixed);
                 }
 
-                // Handle remaining pixels
+                // Handle remaining pixels - linear access
                 for (; x < endX; x++)
                 {
                     int localTexY = texYFixed >> 16;
-                    if (localTexY >= 0 && localTexY < proj.SpriteBounds.Height)
+                    if (localTexY >= 0 && localTexY < originalSpriteHeight)
                     {
-                        int texY = proj.SpriteBounds.Y + localTexY;
-                        uint color = proj.TexturePtr[texY * proj.TexWidth + texX];
+                        uint color = rotatedTexturePtr[baseOffset + localTexY];
                         if ((color & 0xFF000000) != 0)
                         {
                             rowPtr[x] = isHovered ? ApplyHighlight(color, shadingFixed) : ApplyShadingFixed(color, shadingFixed);
@@ -1051,10 +1130,10 @@ public unsafe class Raycaster : IDisposable
         if (_ceilingShadingHandle.IsAllocated)
             _ceilingShadingHandle.Free();
 
-        foreach (var (_, handle) in _spriteTextureCache.Values)
+        foreach (var cached in _spriteTextureCache.Values)
         {
-            if (handle.IsAllocated)
-                handle.Free();
+            if (cached.Handle.IsAllocated)
+                cached.Handle.Free();
         }
     }
 }

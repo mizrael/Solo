@@ -9,6 +9,7 @@ using Solocaster.Entities;
 
 namespace Solocaster;
 
+//TODO: Handle screen resize
 public class MapRenderer : Component, IRenderable
 {
     private readonly GameObject _player;
@@ -30,15 +31,17 @@ public class MapRenderer : Component, IRenderable
 
     public MapRenderer(GameObject owner,
                       GameObject player, 
-                      Map map, Raycaster raycaster, Texture2D frameTexture) : base(owner)
+                      Map map, 
+                      Raycaster raycaster, 
+                      Texture2D frameTexture) : base(owner)
     {
         _player = player;
         _map = map;
         _raycaster = raycaster;
 
-        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
-        _screenWidth = renderService.Graphics.GraphicsDevice.Viewport.Width;
-        _screenHeight = renderService.Graphics.GraphicsDevice.Viewport.Height;
+        var viewport = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice.Viewport;
+        _screenWidth = viewport.Width;
+        _screenHeight = viewport.Height;
 
         _frameTexture = frameTexture;
         _frameBufferWidth = frameTexture.Width;
@@ -72,8 +75,8 @@ public class MapRenderer : Component, IRenderable
     }
 
     /// <summary>
-    /// Converts screen coordinates to framebuffer coordinates, accounting for
-    /// the 90° CCW rotation and scaling applied during rendering.
+    /// Converts screen coordinates to framebuffer coordinates, accounting for the 90° CCW rotation and scaling applied
+    /// during rendering.
     /// </summary>
     private Vector2 ScreenToFrameBuffer(int screenX, int screenY)
     {

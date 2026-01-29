@@ -8,7 +8,6 @@ namespace SpaceInvaders.Logic;
 
 public class PlayerBrain : Component
 {
-    private RenderService _renderService;
     private TransformComponent _transform;
     private float _velocity = 0f;
     private Weapon _weapon;
@@ -20,7 +19,6 @@ public class PlayerBrain : Component
     protected override void InitCore()
     {
         _transform = Owner.Components.Get<TransformComponent>();
-        _renderService = GameServicesManager.Instance.GetRequired<RenderService>();
         _weapon = Owner.Components.Get<Weapon>();
         base.InitCore();
     }
@@ -40,9 +38,10 @@ public class PlayerBrain : Component
 
     private void HandleMovement(GameTime gameTime, KeyboardState keyboard)
     {
+        var viewport = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice.Viewport;
         if (_transform.World.Position.X < 0)
-            _transform.Local.Position.X = _renderService.Graphics.GraphicsDevice.Viewport.Width;
-        else if (_transform.World.Position.X >= _renderService.Graphics.GraphicsDevice.Viewport.Width)
+            _transform.Local.Position.X = viewport.Width;
+        else if (_transform.World.Position.X >= viewport.Width)
             _transform.Local.Position.X = 0;
 
         var thrust = 0f;

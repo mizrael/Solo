@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Solo.Services;
 using Solocaster.Character;
 using Solocaster.State;
 using Solocaster.UI.Widgets;
@@ -23,8 +23,9 @@ public class CharacterBuilderPanel : PanelWidget
     private readonly ButtonWidget _nextButton;
     private readonly PanelWidget _contentPanel;
 
-    private readonly List<string> _stepNames = new() { "Race", "Class", "Sex", "Avatar", "Name", "Summary" };
-    private int _currentStep;
+    private enum StepType { Race, Class, Skills, Sex, Avatar, Name, Summary }
+    private readonly List<StepType> _activeSteps = new();
+    private int _currentStepIndex;
     private readonly HashSet<int> _completedSteps = new();
 
     private Widget? _currentStepContent;
@@ -45,10 +46,13 @@ public class CharacterBuilderPanel : PanelWidget
 
         Size = new Vector2(PanelWidth, PanelHeight);
 
+        // Build initial step list (Skills step will be added/removed based on race)
+        RebuildStepList();
+
         // Step indicator at top
         _stepIndicator = new StepIndicatorWidget
         {
-            Steps = _stepNames,
+            Steps = GetStepNames(),
             CurrentStep = 0,
             Font = font,
             Position = new Vector2(0, 16),
@@ -94,6 +98,37 @@ public class CharacterBuilderPanel : PanelWidget
         LoadStep(0);
     }
 
+    private void RebuildStepList()
+    {
+        _activeSteps.Clear();
+        _activeSteps.Add(StepType.Race);
+        _activeSteps.Add(StepType.Class);
+
+        // Add Skills step if current race has skill points
+        var character = GameState.CurrentCharacter;
+        if (character != null && CharacterTemplateLoader.TryGetRace(character.RaceId, out var race) && race?.SkillPoints > 0)
+        {
+            _activeSteps.Add(StepType.Skills);
+        }
+
+        _activeSteps.Add(StepType.Sex);
+        _activeSteps.Add(StepType.Avatar);
+        _activeSteps.Add(StepType.Name);
+        _activeSteps.Add(StepType.Summary);
+    }
+
+    private List<string> GetStepNames()
+    {
+        return _activeSteps.Select(s => s.ToString()).ToList();
+    }
+
+    private void UpdateStepIndicator()
+    {
+        _stepIndicator.Steps = GetStepNames();
+        _stepIndicator.CurrentStep = _currentStepIndex;
+        _stepIndicator.CompletedSteps = _completedSteps;
+    }
+
     public void CenterOnScreen(int screenWidth, int screenHeight)
     {
         Position = new Vector2(
@@ -110,30 +145,50 @@ public class CharacterBuilderPanel : PanelWidget
 
     private void OnBackClicked()
     {
-        if (_currentStep > 0)
-            LoadStep(_currentStep - 1);
+        if (_currentStepIndex > 0)
+            LoadStep(_currentStepIndex - 1);
     }
 
     private void OnNextClicked()
     {
-        if (_currentStep == 5) // Summary step
+        var currentStepType = _activeSteps[_currentStepIndex];
+
+        if (currentStepType == StepType.Summary)
         {
             OnStartGame?.Invoke();
             return;
         }
 
-        _completedSteps.Add(_currentStep);
-        LoadStep(_currentStep + 1);
+        _completedSteps.Add(_currentStepIndex);
+
+        // After Race step, rebuild step list in case Skills step needs to be added/removed
+        if (currentStepType == StepType.Race)
+        {
+            var oldHasSkills = _activeSteps.Contains(StepType.Skills);
+            RebuildStepList();
+            var newHasSkills = _activeSteps.Contains(StepType.Skills);
+
+            // Clear completed steps after Race if Skills step changed
+            if (oldHasSkills != newHasSkills)
+            {
+                _completedSteps.Clear();
+                _completedSteps.Add(0); // Race is still completed
+            }
+
+            UpdateStepIndicator();
+        }
+
+        LoadStep(_currentStepIndex + 1);
     }
 
-    private void LoadStep(int step)
+    private void LoadStep(int stepIndex)
     {
-        _currentStep = step;
-        _stepIndicator.CurrentStep = step;
-        _stepIndicator.CompletedSteps = _completedSteps;
+        _currentStepIndex = stepIndex;
+        UpdateStepIndicator();
 
-        _backButton.Enabled = step > 0;
-        _nextButton.Text = step == 5 ? "Start Game" : "Next";
+        var isLastStep = _activeSteps[stepIndex] == StepType.Summary;
+        _backButton.Enabled = stepIndex > 0;
+        _nextButton.Text = isLastStep ? "Start Game" : "Next";
 
         // Clear previous content
         if (_currentStepContent != null)
@@ -143,7 +198,7 @@ public class CharacterBuilderPanel : PanelWidget
         }
 
         // Load new step content
-        _currentStepContent = CreateStepContent(step);
+        _currentStepContent = CreateStepContent(_activeSteps[stepIndex]);
         if (_currentStepContent != null)
         {
             _contentPanel.AddChild(_currentStepContent);
@@ -152,20 +207,30 @@ public class CharacterBuilderPanel : PanelWidget
         UpdateNextButtonState();
     }
 
-    private Widget? CreateStepContent(int step)
+    private Widget? CreateStepContent(StepType stepType)
     {
         var contentSize = _contentPanel.Size;
 
-        return step switch
+        return stepType switch
         {
-            0 => new RaceStepPanel(_font, contentSize, OnSelectionChanged),
-            1 => new ClassStepPanel(_font, contentSize, OnSelectionChanged),
-            2 => new SexStepPanel(_font, _game, contentSize, OnSelectionChanged),
-            3 => new AvatarStepPanel(_font, _game, contentSize, OnSelectionChanged),
-            4 => new NameStepPanel(_font, contentSize, OnSelectionChanged),
-            5 => new SummaryStepPanel(_font, _game, contentSize),
+            StepType.Race => new RaceStepPanel(_font, contentSize, OnSelectionChanged),
+            StepType.Class => new ClassStepPanel(_font, contentSize, OnSelectionChanged),
+            StepType.Skills => CreateSkillsPanel(contentSize),
+            StepType.Sex => new SexStepPanel(_font, _game, contentSize, OnSelectionChanged),
+            StepType.Avatar => new AvatarStepPanel(_font, _game, contentSize, OnSelectionChanged),
+            StepType.Name => new NameStepPanel(_font, contentSize, OnSelectionChanged),
+            StepType.Summary => new SummaryStepPanel(_font, _game, contentSize),
             _ => null
         };
+    }
+
+    private Widget? CreateSkillsPanel(Vector2 contentSize)
+    {
+        var character = GameState.CurrentCharacter!;
+        if (!CharacterTemplateLoader.TryGetRace(character.RaceId, out var race) || race == null)
+            return null;
+
+        return new SkillsStepPanel(_font, contentSize, OnSelectionChanged, race.SkillPoints, race.PointBonus);
     }
 
     private void OnSelectionChanged()
@@ -173,18 +238,36 @@ public class CharacterBuilderPanel : PanelWidget
         UpdateNextButtonState();
     }
 
+    private bool AreAllSkillPointsSpent()
+    {
+        var character = GameState.CurrentCharacter!;
+        if (!CharacterTemplateLoader.TryGetRace(character.RaceId, out var race) || race == null)
+            return true;
+
+        int totalPoints = race.SkillPoints;
+        int spentPoints = 0;
+        foreach (var kvp in character.SkillPointAllocations)
+        {
+            spentPoints += kvp.Value;
+        }
+
+        return spentPoints >= totalPoints;
+    }
+
     private void UpdateNextButtonState()
     {
         var character = GameState.CurrentCharacter!;
+        var currentStepType = _activeSteps[_currentStepIndex];
 
-        bool canProceed = _currentStep switch
+        bool canProceed = currentStepType switch
         {
-            0 => !string.IsNullOrEmpty(character.RaceId),
-            1 => !string.IsNullOrEmpty(character.ClassId),
-            2 => true, // Sex always has a value
-            3 => !string.IsNullOrEmpty(character.AvatarSpriteName),
-            4 => !string.IsNullOrEmpty(character.Name) && character.Name.Length >= 2,
-            5 => true, // Summary always allows proceeding
+            StepType.Race => !string.IsNullOrEmpty(character.RaceId),
+            StepType.Class => !string.IsNullOrEmpty(character.ClassId),
+            StepType.Skills => AreAllSkillPointsSpent(),
+            StepType.Sex => true, // Sex always has a value
+            StepType.Avatar => !string.IsNullOrEmpty(character.AvatarSpriteName),
+            StepType.Name => !string.IsNullOrEmpty(character.Name) && character.Name.Length >= 2,
+            StepType.Summary => true, // Summary always allows proceeding
             _ => false
         };
 
@@ -208,7 +291,8 @@ public class CharacterBuilderPanel : PanelWidget
         if (keyboardState.IsKeyDown(Keys.Back) && !_previousKeyboardState.IsKeyDown(Keys.Back))
         {
             // Only go back if we're not on the name step (Backspace is used for text input there)
-            if (_currentStep != 4 && _currentStep > 0)
+            var currentStepType = _activeSteps[_currentStepIndex];
+            if (currentStepType != StepType.Name && _currentStepIndex > 0)
                 OnBackClicked();
         }
 

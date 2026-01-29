@@ -29,7 +29,7 @@ public record InkyIntercept : Chase
         _playerTransform = Target.Components.Get<TransformComponent>();
         _mapLogic = Map.Components.Get<MapLogicComponent>();
 
-        var blinky = _playScene.Root.FindFirst(o => o.HasTag(GhostTypes.Blinky.ToString().ToLower()));
+        var blinky = _playScene.ObjectsGraph.Root.FindFirst(o => o.HasTag(GhostTypes.Blinky.ToString().ToLower()));
         if(blinky is null)
             throw new InvalidOperationException("Blinky ghost not found in the scene.");
         _blinkyTransform = blinky.Components.Get<TransformComponent>();           

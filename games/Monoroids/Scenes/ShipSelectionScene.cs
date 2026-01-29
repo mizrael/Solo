@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Solo;
@@ -32,13 +32,13 @@ public class ShipSelectionScene : Scene
     protected override void EnterCore()
     {
         var background = BuildBackground();
-        this.Root.AddChild(background);
+        ObjectsGraph.Root.AddChild(background);
 
         SpriteSheetLoader.BasePath = "./meta";
         var spriteSheet = SpriteSheetLoader.Get("sheet", Game);
-                     
+
         BuildShips(spriteSheet);
-        
+
         BuildUI();
 
         SelectShip(0);
@@ -49,7 +49,7 @@ public class ShipSelectionScene : Scene
         _ui = new GameObject();
 
         var textComponent = _ui.Components.Add<ShipSelectionUIComponent>();
-        textComponent.LayerIndex = (int)RenderLayers.UI;        
+        textComponent.LayerIndex = (int)RenderLayers.UI;
         textComponent.Font = Game.Content.Load<SpriteFont>("Fonts/UI");
 
         KeyboardState prevKeyState = new();
@@ -58,7 +58,7 @@ public class ShipSelectionScene : Scene
         {
             var keyboardState = Keyboard.GetState();
 
-            if(prevKeyState.IsKeyDown(Keys.Left) && keyboardState.IsKeyUp(Keys.Left))
+            if (prevKeyState.IsKeyDown(Keys.Left) && keyboardState.IsKeyUp(Keys.Left))
             {
                 SelectShip(_selectedShipIndex - 1);
             }
@@ -69,14 +69,14 @@ public class ShipSelectionScene : Scene
             else if (prevKeyState.IsKeyDown(Keys.Enter) && keyboardState.IsKeyUp(Keys.Enter))
             {
                 GameState.Instance.ShipTemplate = _shipTemplates[_selectedShipIndex];
-                
-                GameServicesManager.Instance.GetRequired<SceneManager>().SetCurrentScene(SceneNames.Play);
+
+                SceneManager.Instance.SetScene(SceneNames.Play);
             }
 
             prevKeyState = keyboardState;
         };
 
-        this.Root.AddChild(_ui);
+        ObjectsGraph.Root.AddChild(_ui);
     }
 
     private void SelectShip(int index)
@@ -94,17 +94,18 @@ public class ShipSelectionScene : Scene
     {
         var shipsContainer = new GameObject();
 
-        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
+        var graphicsDevice = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice;
 
-        var shipPosition = new Vector2((float)renderService.Graphics.GraphicsDevice.Viewport.Width * .75f,
-                                       renderService.Graphics.GraphicsDevice.Viewport.Height * .5f);
+        var shipPosition = new Vector2((float)graphicsDevice.Viewport.Width * .75f,
+                                       graphicsDevice.Viewport.Height * .5f);
         var radius = 25f;
         var speed = 0.005f;
 
-        renderService.Graphics.DeviceReset += (s, e) =>
+        graphicsDevice.DeviceReset += (s, e) =>
         {
-            shipPosition = new Vector2((float)renderService.Graphics.GraphicsDevice.Viewport.Width * .75f,
-                                       renderService.Graphics.GraphicsDevice.Viewport.Height * .5f);
+            var gd = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice;
+            shipPosition = new Vector2((float)gd.Viewport.Width * .75f,
+                                       gd.Viewport.Height * .5f);
         };
 
         _ships = _shipTemplates.Select(s =>
@@ -112,10 +113,10 @@ public class ShipSelectionScene : Scene
             var shipObj = new GameObject();
 
             var playerTransform = shipObj.Components.Add<TransformComponent>();
-            
-            var renderer = shipObj.Components.Add<SpriteRenderComponent>();            
+
+            var renderer = shipObj.Components.Add<SpriteRenderComponent>();
             renderer.Sprite = spriteSheet.Get(s.Asset);
-            renderer.LayerIndex = (int)RenderLayers.Player;            
+            renderer.LayerIndex = (int)RenderLayers.Player;
 
             var brain = shipObj.Components.Add<LambdaComponent>();
             brain.OnUpdate = (owner, gameTime) =>
@@ -131,12 +132,12 @@ public class ShipSelectionScene : Scene
             return shipObj;
         }).ToArray();
 
-        this.Root.AddChild(shipsContainer);
+        ObjectsGraph.Root.AddChild(shipsContainer);
     }
 
     private GameObject BuildBackground()
     {
-        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
+        var graphicsDevice = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice;
 
         var background = new GameObject();
         background.Components.Add<TransformComponent>();
@@ -144,13 +145,14 @@ public class ShipSelectionScene : Scene
         var sprite = Sprite.FromTexture("Backgrounds/blue", Game.Content);
         var setBackgroundSize = new Action(() =>
         {
+            var gd = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice;
             sprite.Bounds = new Rectangle(0, 0,
-                               (int)(renderService.Graphics.GraphicsDevice.Viewport.Width * 1.5),
-                                (int)(renderService.Graphics.GraphicsDevice.Viewport.Height * 1.5));
+                               (int)(gd.Viewport.Width * 1.5),
+                                (int)(gd.Viewport.Height * 1.5));
         });
         setBackgroundSize();
 
-        renderService.Graphics.DeviceReset += (s, e) => setBackgroundSize();
+        graphicsDevice.DeviceReset += (s, e) => setBackgroundSize();
 
         var renderer = background.Components.Add<SpriteRenderComponent>();
         renderer.Sprite = sprite;

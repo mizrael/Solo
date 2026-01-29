@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Solo;
@@ -10,7 +10,6 @@ namespace Monoroids.Components;
 
 public class PreGameUIComponent : Component, IRenderable
 {
-    private RenderService _renderService;
     private KeyboardState _prevKeyState = new();
 
     private PreGameUIComponent(GameObject owner) : base(owner)
@@ -19,17 +18,18 @@ public class PreGameUIComponent : Component, IRenderable
 
     protected override void InitCore()
     {
-        _renderService = GameServicesManager.Instance.GetRequired<RenderService>();
     }
 
     public void Render(SpriteBatch spriteBatch)
     {
+        var viewport = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice.Viewport;
+
         var scale = 2f;
         var size = this.Font.MeasureString(this.Text) * scale * .5f;
 
         var pos = new Vector2(
-            (float)_renderService.Graphics.GraphicsDevice.Viewport.Width * .5f - size.X,
-            (float)_renderService.Graphics.GraphicsDevice.Viewport.Height * .5f - size.Y);
+            (float)viewport.Width * .5f - size.X,
+            (float)viewport.Height * .5f - size.Y);
 
         spriteBatch.DrawString(this.Font, this.Text, pos, Color.White,
                                0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
@@ -38,7 +38,7 @@ public class PreGameUIComponent : Component, IRenderable
         pos.Y += size.Y * 2;
         scale = 1.5f;
         size = this.Font.MeasureString(text) * scale * .5f;
-        pos.X = (float)_renderService.Graphics.GraphicsDevice.Viewport.Width * .5f - size.X;
+        pos.X = (float)viewport.Width * .5f - size.X;
         spriteBatch.DrawString(this.Font, text, pos, Color.White,
                                0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
     }
@@ -48,7 +48,7 @@ public class PreGameUIComponent : Component, IRenderable
         var keyboardState = Keyboard.GetState();
         var canStart = _prevKeyState.IsKeyDown(Keys.Enter) && keyboardState.IsKeyUp(Keys.Enter);
         if (canStart)
-            GameServicesManager.Instance.GetRequired<SceneManager>().SetCurrentScene(SceneNames.ShipSelection);
+            SceneManager.Instance.SetScene(SceneNames.ShipSelection);
         _prevKeyState = keyboardState;
     }
 

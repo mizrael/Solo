@@ -8,6 +8,8 @@ public class StateMachine
     private readonly State _startState;
     private State? _currState;
 
+    public State? CurrentState => _currState;
+
     public StateMachine( State startState)
     {
         _transitionsByState = new ();

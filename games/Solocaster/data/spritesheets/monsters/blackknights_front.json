@@ -1,0 +1,20 @@
+{
+  "spriteSheetName": "spritesheet",
+  "sprites": [
+    {
+      "name": "blackknight1_front",
+      "x": 0,
+      "y": 0,
+      "width": 837,
+      "height": 1200
+    },
+    {
+      "name": "blackknight2_front",
+      "x": 0,
+      "y": 1200,
+      "width": 1092,
+      "height": 1200
+    }
+  ],
+  "animations": []
+}

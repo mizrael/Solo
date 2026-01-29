@@ -17,9 +17,9 @@ public class SnakeRenderer : Component, IRenderable
 
     protected override void InitCore()
     {
-        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
-        
-        _texture = renderService.CreateTexture(1, 1, Color.White);
+        var graphicsDevice = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice;
+
+        _texture = graphicsDevice.Generate(1, 1, Color.White);
 
         base.InitCore();
     }
