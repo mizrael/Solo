@@ -250,6 +250,10 @@ public class StatsComponent : Component
             StatType.MaxMana => CalculateMaxMana(),
             StatType.Damage => CalculateDamage(),
             StatType.Defense => CalculateDefense(),
+            StatType.AttackSpeed => CalculateAttackSpeed(),
+            StatType.CriticalChance => CalculateCriticalChance(),
+            StatType.ManaRegen => CalculateManaRegen(),
+            StatType.SpellPower => CalculateSpellPower(),
             _ => GetBaseStat(stat) + GetEquipmentBonus(stat)
         };
     }
@@ -290,6 +294,38 @@ public class StatsComponent : Component
         float agility = GetBaseStat(StatType.Agility) + GetEquipmentBonus(StatType.Agility);
         float bonusDefense = GetEquipmentBonus(StatType.Defense);
         return agility * 0.3f + bonusDefense;
+    }
+
+    private float CalculateAttackSpeed()
+    {
+        float agility = GetBaseStat(StatType.Agility) + GetEquipmentBonus(StatType.Agility);
+        float bonusAttackSpeed = GetEquipmentBonus(StatType.AttackSpeed);
+        // Base 1.0 + 0.02 per Agility point
+        return 1.0f + agility * 0.02f + bonusAttackSpeed;
+    }
+
+    private float CalculateCriticalChance()
+    {
+        float agility = GetBaseStat(StatType.Agility) + GetEquipmentBonus(StatType.Agility);
+        float bonusCrit = GetEquipmentBonus(StatType.CriticalChance);
+        // Base 5% + 0.5% per Agility point
+        return 5f + agility * 0.5f + bonusCrit;
+    }
+
+    private float CalculateManaRegen()
+    {
+        float wisdom = GetBaseStat(StatType.Wisdom) + GetEquipmentBonus(StatType.Wisdom);
+        float bonusManaRegen = GetEquipmentBonus(StatType.ManaRegen);
+        // Base 1.0 + 0.2 per Wisdom point
+        return 1.0f + wisdom * 0.2f + bonusManaRegen;
+    }
+
+    private float CalculateSpellPower()
+    {
+        float intelligence = GetBaseStat(StatType.Intelligence) + GetEquipmentBonus(StatType.Intelligence);
+        float bonusSpellPower = GetEquipmentBonus(StatType.SpellPower);
+        // 0.5 per Intelligence point
+        return intelligence * 0.5f + bonusSpellPower;
     }
 
     public void OnItemEquipped(ItemInstance item)
