@@ -67,6 +67,9 @@ public class BoundingBoxCollisionService : IGameService
 
     private void RefreshColliderBuckets(BoundingBoxComponent collider)
     {
+        if(collider is null || _buckets is null)
+            return;
+
         var rows = _buckets.GetLength(0);
         var cols = _buckets.GetLength(1);
         var viewport = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice.Viewport;

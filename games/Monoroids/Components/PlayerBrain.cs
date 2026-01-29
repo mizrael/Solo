@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Solo;
 using Solo.Components;
@@ -11,7 +11,6 @@ public class PlayerBrain : Component
     private MovingBody _movingBody;
     private TransformComponent _transform;
     private SpriteRenderComponent _spriteRender;
-    private RenderService _renderService;
 
     private Weapon _weapon;
 
@@ -23,8 +22,6 @@ public class PlayerBrain : Component
 
     protected override void InitCore()
     {
-        _renderService = GameServicesManager.Instance.GetRequired<RenderService>();
-
         _movingBody = Owner.Components.Get<MovingBody>();
         _transform = Owner.Components.Get<TransformComponent>();
         _spriteRender = Owner.Components.Get<SpriteRenderComponent>();
@@ -67,14 +64,16 @@ public class PlayerBrain : Component
 
     private void HandleMovement(KeyboardState keyboard)
     {
+        var viewport = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice.Viewport;
+
         if (_transform.World.Position.X < -_spriteRender.Sprite.Bounds.Width)
-            _transform.Local.Position.X = _renderService.Graphics.GraphicsDevice.Viewport.Width + _spriteRender.Sprite.Center.X;
-        else if (_transform.World.Position.X > _renderService.Graphics.GraphicsDevice.Viewport.Width + _spriteRender.Sprite.Bounds.Width)
+            _transform.Local.Position.X = viewport.Width + _spriteRender.Sprite.Center.X;
+        else if (_transform.World.Position.X > viewport.Width + _spriteRender.Sprite.Bounds.Width)
             _transform.Local.Position.X = -_spriteRender.Sprite.Center.X;
 
         if (_transform.World.Position.Y < -_spriteRender.Sprite.Bounds.Height)
-            _transform.Local.Position.Y = _renderService.Graphics.GraphicsDevice.Viewport.Height + _spriteRender.Sprite.Center.Y;
-        else if (_transform.World.Position.Y > _renderService.Graphics.GraphicsDevice.Viewport.Height + _spriteRender.Sprite.Bounds.Height)
+            _transform.Local.Position.Y = viewport.Height + _spriteRender.Sprite.Center.Y;
+        else if (_transform.World.Position.Y > viewport.Height + _spriteRender.Sprite.Bounds.Height)
             _transform.Local.Position.Y = -_spriteRender.Sprite.Center.Y;
 
         if (keyboard.IsKeyDown(Keys.Right))

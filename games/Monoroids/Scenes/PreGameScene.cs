@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Solo;
 using Solo.Assets;
@@ -21,10 +21,10 @@ internal class PreGameScene : Scene
     protected override void EnterCore()
     {
         var ui = BuidUI();
-        this.Root.AddChild(ui);
+        ObjectsGraph.Root.AddChild(ui);
 
         var background = BuildBackground();
-        this.Root.AddChild(background);
+        ObjectsGraph.Root.AddChild(background);
     }
 
     private GameObject BuidUI()
@@ -41,7 +41,7 @@ internal class PreGameScene : Scene
 
     private GameObject BuildBackground()
     {
-        var renderService = GameServicesManager.Instance.GetRequired<RenderService>();
+        var graphicsDevice = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice;
         var background = new GameObject();
         background.Components.Add<TransformComponent>();
 
@@ -49,12 +49,12 @@ internal class PreGameScene : Scene
         var setBackgroundSize = new Action(() =>
         {
             sprite.Bounds = new Rectangle(0, 0,
-                               (int)(renderService.Graphics.GraphicsDevice.Viewport.Width * 1.5),
-                                (int)(renderService.Graphics.GraphicsDevice.Viewport.Height * 1.5));
+                               (int)(graphicsDevice.Viewport.Width * 1.5),
+                                (int)(graphicsDevice.Viewport.Height * 1.5));
         });
         setBackgroundSize();
 
-        renderService.Window.ClientSizeChanged += (s, e) => setBackgroundSize();
+        Game.Window.ClientSizeChanged += (s, e) => setBackgroundSize();
 
         var renderer = background.Components.Add<SpriteRenderComponent>();
         renderer.Sprite = sprite;
