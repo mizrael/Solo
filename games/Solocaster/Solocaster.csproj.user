@@ -1,4 +1,33 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup />
+  <ItemGroup>
+    <Compile Update="Components\BillboardComponent.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Components\DebugUIRenderer.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Components\InventoryComponent.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Components\MapRenderer.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Components\MiniMapRenderer.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Components\MonsterBrainComponent.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Components\PickupableComponent.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Components\PlayerBrain.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Components\StatsComponent.cs">
+      <SubType>Component</SubType>
+    </Compile>
+  </ItemGroup>
 </Project>
