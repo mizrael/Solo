@@ -35,7 +35,7 @@ public sealed class SceneManager
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(sceneFactory);
 
-        _scenes.Add(name, sceneFactory);
+        _scenes[name] = sceneFactory;
     }
 
     /// <summary>
