@@ -35,7 +35,9 @@ public class RenderLayersStep : PipelineStep
         if (!ctx.LayerConfigs.TryGetValue(layerIndex, out var config))
             ctx.SpriteBatch.Begin();
         else
-            ctx.SpriteBatch.Begin(samplerState: config.SamplerState);
+            ctx.SpriteBatch.Begin(
+                samplerState: config.SamplerState,
+                transformMatrix: config.TransformMatrix);
 
         foreach (var renderable in layer)
             renderable.Render(ctx.SpriteBatch);
