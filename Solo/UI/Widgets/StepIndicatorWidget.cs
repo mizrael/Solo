@@ -7,8 +7,6 @@ namespace Solo.UI.Widgets;
 
 public class StepIndicatorWidget : Widget
 {
-    private static Texture2D? _pixelTexture;
-
     public StepIndicatorWidget()
     {
     }
@@ -22,16 +20,6 @@ public class StepIndicatorWidget : Widget
     public Color SeparatorColor { get; set; } = UITheme.Text.Placeholder;
 
     public event Action<int>? OnStepClicked;
-
-    private static Texture2D GetPixelTexture(GraphicsDevice graphicsDevice)
-    {
-        if (_pixelTexture == null)
-        {
-            _pixelTexture = new Texture2D(graphicsDevice, 1, 1);
-            _pixelTexture.SetData(new[] { Color.White });
-        }
-        return _pixelTexture;
-    }
 
     protected override Vector2 MeasureCore(float availableWidth, float availableHeight)
     {
@@ -76,7 +64,7 @@ public class StepIndicatorWidget : Widget
             {
                 var dotX = startX + separatorWidth / 2 - 2;
                 var dotY = y + UITheme.Font.LineSpacing / 2 - 2;
-                var pixel = GetPixelTexture(spriteBatch.GraphicsDevice);
+                var pixel = UIResources.GetPixelTexture(spriteBatch.GraphicsDevice);
                 spriteBatch.Draw(pixel, new Rectangle((int)dotX, (int)dotY, 4, 4), SeparatorColor);
                 startX += separatorWidth;
             }

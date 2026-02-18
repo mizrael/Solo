@@ -7,7 +7,6 @@ namespace Solo.UI.Widgets;
 
 public class TextInputWidget : PanelWidget
 {
-    private static Texture2D? _pixelTexture;
     private double _cursorBlinkTimer;
     private bool _cursorVisible = true;
     private const double CursorBlinkRate = 0.5;
@@ -32,16 +31,6 @@ public class TextInputWidget : PanelWidget
     public int Padding { get; set; } = 8;
 
     public event Action<string>? OnTextChanged;
-
-    private static Texture2D GetInputPixelTexture(GraphicsDevice graphicsDevice)
-    {
-        if (_pixelTexture == null)
-        {
-            _pixelTexture = new Texture2D(graphicsDevice, 1, 1);
-            _pixelTexture.SetData(new[] { Color.White });
-        }
-        return _pixelTexture;
-    }
 
     protected override Vector2 MeasureCore(float availableWidth, float availableHeight)
     {
@@ -137,7 +126,7 @@ public class TextInputWidget : PanelWidget
     {
         base.RenderCore(spriteBatch);
 
-        var pixel = GetInputPixelTexture(spriteBatch.GraphicsDevice);
+        var pixel = UIResources.GetPixelTexture(spriteBatch.GraphicsDevice);
         var textY = ScreenPosition.Y + (Size.Y - UITheme.Font.LineSpacing) / 2;
         var textX = ScreenPosition.X + Padding;
 

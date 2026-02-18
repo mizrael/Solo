@@ -112,7 +112,7 @@ public class SliderWidget : Widget
 
     protected override void RenderCore(SpriteBatch spriteBatch)
     {
-        var pixel = GetPixelTexture(spriteBatch.GraphicsDevice);
+        var pixel = UIResources.GetPixelTexture(spriteBatch.GraphicsDevice);
 
         // Draw track
         float trackY = ScreenPosition.Y + (Size.Y - TrackHeight) / 2f;
@@ -128,17 +128,5 @@ public class SliderWidget : Widget
         var thumbRect = GetThumbRect();
         var thumbColor = _isDragging ? ThumbHoverColor : ThumbColor;
         spriteBatch.Draw(pixel, thumbRect, thumbColor);
-    }
-
-    private static Texture2D? _pixelTexture;
-
-    private static Texture2D GetPixelTexture(GraphicsDevice device)
-    {
-        if (_pixelTexture == null)
-        {
-            _pixelTexture = new Texture2D(device, 1, 1);
-            _pixelTexture.SetData(new[] { Color.White });
-        }
-        return _pixelTexture;
     }
 }

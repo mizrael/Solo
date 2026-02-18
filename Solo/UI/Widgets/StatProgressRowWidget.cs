@@ -5,7 +5,6 @@ namespace Solo.UI.Widgets;
 
 public class StatProgressRowWidget : Widget
 {
-    private static Texture2D? _pixelTexture;
     private const int ProgressBarWidth = 100;
     private const int ProgressBarHeight = 10;
 
@@ -19,16 +18,6 @@ public class StatProgressRowWidget : Widget
     public Color BarColor { get; set; } = UITheme.StatusBar.ProgressFill;
     public Color LabelColor { get; set; } = UITheme.Text.Secondary;
 
-    private static Texture2D GetPixelTexture(GraphicsDevice graphicsDevice)
-    {
-        if (_pixelTexture == null)
-        {
-            _pixelTexture = new Texture2D(graphicsDevice, 1, 1);
-            _pixelTexture.SetData(new[] { Color.White });
-        }
-        return _pixelTexture;
-    }
-
     protected override Vector2 MeasureCore(float availableWidth, float availableHeight)
     {
         return Size;
@@ -36,7 +25,7 @@ public class StatProgressRowWidget : Widget
 
     protected override void RenderCore(SpriteBatch spriteBatch)
     {
-        var pixel = GetPixelTexture(spriteBatch.GraphicsDevice);
+        var pixel = UIResources.GetPixelTexture(spriteBatch.GraphicsDevice);
         var pos = ScreenPosition;
 
         // Draw stat name and value

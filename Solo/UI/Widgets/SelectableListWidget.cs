@@ -8,7 +8,6 @@ namespace Solo.UI.Widgets;
 
 public class SelectableListWidget : PanelWidget
 {
-    private static Texture2D? _pixelTexture;
     private int _hoveredIndex = -1;
 
     public SelectableListWidget()
@@ -47,16 +46,6 @@ public class SelectableListWidget : PanelWidget
     protected override Vector2 MeasureCore(float availableWidth, float availableHeight)
     {
         return new Vector2(availableWidth, Items.Count * ItemHeight);
-    }
-
-    private static Texture2D GetListPixelTexture(GraphicsDevice graphicsDevice)
-    {
-        if (_pixelTexture == null)
-        {
-            _pixelTexture = new Texture2D(graphicsDevice, 1, 1);
-            _pixelTexture.SetData(new[] { Color.White });
-        }
-        return _pixelTexture;
     }
 
     public void SelectNext()
@@ -118,7 +107,7 @@ public class SelectableListWidget : PanelWidget
             return;
 
         // Render panel background/border
-        var pixel = GetListPixelTexture(spriteBatch.GraphicsDevice);
+        var pixel = UIResources.GetPixelTexture(spriteBatch.GraphicsDevice);
         spriteBatch.Draw(pixel, Bounds, BackgroundColor);
 
         if (BorderWidth > 0)

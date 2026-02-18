@@ -6,8 +6,6 @@ namespace Solo.UI.Widgets;
 
 public class ProgressBarWidget : Widget
 {
-    private static Texture2D? _pixelTexture;
-
     public ProgressBarWidget()
     {
     }
@@ -21,16 +19,6 @@ public class ProgressBarWidget : Widget
     public Color TextColor { get; set; } = UITheme.Text.Primary;
     public Color TextShadowColor { get; set; } = UITheme.Text.Shadow;
 
-    private static Texture2D GetPixelTexture(GraphicsDevice graphicsDevice)
-    {
-        if (_pixelTexture == null)
-        {
-            _pixelTexture = new Texture2D(graphicsDevice, 1, 1);
-            _pixelTexture.SetData(new[] { Color.White });
-        }
-        return _pixelTexture;
-    }
-
     protected override Vector2 MeasureCore(float availableWidth, float availableHeight)
     {
         return Size;
@@ -38,7 +26,7 @@ public class ProgressBarWidget : Widget
 
     protected override void RenderCore(SpriteBatch spriteBatch)
     {
-        var pixel = GetPixelTexture(spriteBatch.GraphicsDevice);
+        var pixel = UIResources.GetPixelTexture(spriteBatch.GraphicsDevice);
         var bounds = Bounds;
 
         // Background

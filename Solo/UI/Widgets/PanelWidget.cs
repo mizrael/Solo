@@ -12,8 +12,6 @@ public class PanelWidget : Widget
     private const int ScrollbarWidth = 6;
     private const int ScrollSpeed = 30;
 
-    private static Texture2D? _pixelTexture;
-
     private float _scrollOffset;
     private int _previousScrollWheelValue;
 
@@ -153,16 +151,6 @@ public class PanelWidget : Widget
         }
     }
 
-    protected static Texture2D GetPixelTexture(GraphicsDevice graphicsDevice)
-    {
-        if (_pixelTexture == null)
-        {
-            _pixelTexture = new Texture2D(graphicsDevice, 1, 1);
-            _pixelTexture.SetData(new[] { Color.White });
-        }
-        return _pixelTexture;
-    }
-
     protected override void UpdateCore(GameTime gameTime, MouseState mouseState, MouseState previousMouseState)
     {
         base.UpdateCore(gameTime, mouseState, previousMouseState);
@@ -210,7 +198,7 @@ public class PanelWidget : Widget
 
     private void RenderScrollableChildren(SpriteBatch spriteBatch)
     {
-        var pixel = GetPixelTexture(spriteBatch.GraphicsDevice);
+        var pixel = UIResources.GetPixelTexture(spriteBatch.GraphicsDevice);
         var contentBounds = ContentBounds;
 
         // End current batch to flush state, then save
@@ -286,7 +274,7 @@ public class PanelWidget : Widget
 
     protected override void RenderCore(SpriteBatch spriteBatch)
     {
-        var pixel = GetPixelTexture(spriteBatch.GraphicsDevice);
+        var pixel = UIResources.GetPixelTexture(spriteBatch.GraphicsDevice);
         var bounds = Bounds;
 
         // Draw background
