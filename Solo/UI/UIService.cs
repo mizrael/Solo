@@ -229,6 +229,17 @@ public class UIService : IGameService, IRenderable
         return null;
     }
 
+    public bool IsPointOverWidget(Point point)
+    {
+        for (int i = _rootWidgets.Count - 1; i >= 0; i--)
+        {
+            var widget = _rootWidgets[i];
+            if (widget.Visible && widget.ContainsPoint(point))
+                return true;
+        }
+        return false;
+    }
+
     public bool HasVisibleWidgets()
     {
         foreach (var widget in _rootWidgets)
