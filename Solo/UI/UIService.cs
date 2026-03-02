@@ -240,6 +240,14 @@ public class UIService : IGameService, IRenderable
         return false;
     }
 
+    public bool IsScreenPointOverUI(Vector2 screenPos)
+    {
+        var scaledPoint = new Point(
+            (int)(screenPos.X / UITheme.UIScale),
+            (int)(screenPos.Y / UITheme.UIScale));
+        return IsPointOverWidget(scaledPoint);
+    }
+
     public bool HasVisibleWidgets()
     {
         foreach (var widget in _rootWidgets)
