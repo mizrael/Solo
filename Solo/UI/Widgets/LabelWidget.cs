@@ -41,7 +41,7 @@ public class LabelWidget : Widget
             return 0;
 
         if (!WordWrap)
-            return UITheme.Font.LineSpacing;
+            return UITheme.Font.MeasureString(Text).Y;
 
         var lines = WrapText(Text, Size.X);
         return lines.Length * UITheme.Font.LineSpacing;
@@ -56,7 +56,7 @@ public class LabelWidget : Widget
         {
             var textSize = UITheme.Font.MeasureString(Text);
             float width = CenterHorizontally ? availableWidth : textSize.X;
-            return new Vector2(width, UITheme.Font.LineSpacing);
+            return new Vector2(width, textSize.Y);
         }
 
         var wrappedLines = WrapText(Text, availableWidth);

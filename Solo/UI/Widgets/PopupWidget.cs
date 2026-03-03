@@ -64,6 +64,11 @@ public class PopupWidget : PanelWidget
         base.UpdateCore(gameTime, mouseState, previousMouseState);
     }
 
+    protected override void OnSizeChanged()
+    {
+        OnUpdatePosition?.Invoke();
+    }
+
     private void HandleClose()
     {
         var callback = _activeOnClosed;

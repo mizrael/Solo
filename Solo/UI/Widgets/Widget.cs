@@ -155,6 +155,12 @@ public abstract class Widget
 
         foreach (var child in _children)
             child.Update(gameTime, mouseState, previousMouseState);
+
+        if (_isMeasureDirty && Parent == null)
+        {
+            Measure(Size.X, Size.Y);
+            Arrange(DesiredSize);
+        }
     }
 
     protected virtual void UpdateCore(GameTime gameTime, MouseState mouseState, MouseState previousMouseState)
