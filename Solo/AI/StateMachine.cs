@@ -7,6 +7,7 @@ public class StateMachine
     private readonly Dictionary<int, List<IStateTransition>> _transitionsByState;
     private readonly State _startState;
     private State? _currState;
+    private bool _isStarting = true;
 
     public State? CurrentState => _currState;
 
@@ -33,19 +34,21 @@ public class StateMachine
     public void Reset()
     {
         _currState?.Exit();
-
-        _currState = _startState;
-        _currState?.Enter();
+        _currState = null;
+        _isStarting = true;
     }
 
     public void Update(GameTime gameTime)
     {
-        if (null == _currState)
+        if (_isStarting)
         {
             _currState = _startState;
-            _currState.Enter();
-            return;
+            _currState?.Enter();
+            _isStarting = false;
         }
+
+        if (null == _currState)
+            return;
 
         var transitions = _transitionsByState[_currState.Id];
         var validTransition = transitions.FirstOrDefault(t => t.CanTransition());
@@ -58,8 +61,13 @@ public class StateMachine
             _currState = validTransition.To;
             _currState.Enter();
         }
-
-        if (!_currState.IsCompleted)
+        
+        if (_currState.IsCompleted)
+        {
+            _currState.Exit();
+            return;
+        }
+        else
             _currState.Execute(gameTime);
     }
 }
