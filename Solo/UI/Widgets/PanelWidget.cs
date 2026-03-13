@@ -44,6 +44,9 @@ public class PanelWidget : Widget
         }
     }
 
+    protected override Rectangle? ChildInteractionClipBounds =>
+        Scrollable ? ContentBounds : null;
+
     protected Rectangle CloseButtonBounds
     {
         get
