@@ -55,6 +55,25 @@ public abstract class Widget
     /// </summary>
     protected virtual Vector2 ChildRenderOffset => Vector2.Zero;
 
+    /// <summary>
+    /// When set, constrains children's mouse interaction to this rectangle.
+    /// Used by scrollable panels to prevent clipped children from receiving events.
+    /// </summary>
+    protected virtual Rectangle? ChildInteractionClipBounds => null;
+
+    /// <summary>
+    /// Returns true if this widget's interaction area is clipped by an ancestor's clip bounds.
+    /// </summary>
+    public bool IsInteractionClipped(Point point)
+    {
+        if (Parent == null)
+            return false;
+        var clip = Parent.ChildInteractionClipBounds;
+        if (clip.HasValue && !clip.Value.Contains(point))
+            return true;
+        return Parent.IsInteractionClipped(point);
+    }
+
     public Rectangle Bounds => new(
         (int)ScreenPosition.X,
         (int)ScreenPosition.Y,
@@ -187,14 +206,15 @@ public abstract class Widget
         if (!Visible || !Enabled)
             return false;
 
-        // Check children first (in reverse order for proper z-ordering)
+        if (IsInteractionClipped(mousePosition))
+            return false;
+
         for (int i = _children.Count - 1; i >= 0; i--)
         {
             if (_children[i].HandleMouseClick(mousePosition))
                 return true;
         }
 
-        // Then check self
         if (Bounds.Contains(mousePosition))
         {
             OnMouseClick(mousePosition);
