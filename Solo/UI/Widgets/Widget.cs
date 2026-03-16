@@ -62,7 +62,8 @@ public abstract class Widget
     protected virtual Rectangle? ChildInteractionClipBounds => null;
 
     /// <summary>
-    /// Returns true if this widget's interaction area is clipped by an ancestor's clip bounds.
+    /// Returns true if the given point falls outside an ancestor's clip bounds,
+    /// meaning this widget should not respond to mouse interaction at that point.
     /// </summary>
     public bool IsInteractionClipped(Point point)
     {
