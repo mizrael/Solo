@@ -171,7 +171,7 @@ public class UIService : IGameService, IRenderable
 
     private static TooltipTableData? FindTooltipTableData(Widget widget, Point mousePoint)
     {
-        if (!widget.Visible)
+        if (!widget.Visible || widget.IsInteractionClipped(mousePoint))
             return null;
 
         for (int i = widget.Children.Count - 1; i >= 0; i--)
@@ -191,7 +191,7 @@ public class UIService : IGameService, IRenderable
 
     private static TooltipContent? FindTooltipContent(Widget widget, Point mousePoint)
     {
-        if (!widget.Visible)
+        if (!widget.Visible || widget.IsInteractionClipped(mousePoint))
             return null;
 
         for (int i = widget.Children.Count - 1; i >= 0; i--)
@@ -211,7 +211,7 @@ public class UIService : IGameService, IRenderable
 
     private static string? FindTooltipText(Widget widget, Point mousePoint)
     {
-        if (!widget.Visible)
+        if (!widget.Visible || widget.IsInteractionClipped(mousePoint))
             return null;
 
         for (int i = widget.Children.Count - 1; i >= 0; i--)
