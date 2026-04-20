@@ -1,7 +1,6 @@
 using Solo.UI.Tooltips;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
 using System.Collections.Generic;
 
 namespace Solo.UI.Widgets;
@@ -12,8 +11,7 @@ public class TooltipWidget : PanelWidget
     private const int ColumnGap = 16;
     private const int RowGap = 2;
 
-    private TooltipContent? _content;
-    private TooltipTableData? _tableData;
+    private IReadOnlyList<TooltipBlock>? _blocks;
 
     public TooltipWidget()
     {
@@ -27,18 +25,14 @@ public class TooltipWidget : PanelWidget
     public string Text { get; set; } = string.Empty;
     public Color TextColor { get; set; } = UITheme.Text.Primary;
 
-    public void SetContent(TooltipContent content)
+    /// <summary>
+    /// Sets the tooltip to render an ordered list of blocks (tables and/or
+    /// content sections), top-to-bottom. Replaces any previous block list or
+    /// plain-text content.
+    /// </summary>
+    public void SetBlocks(IReadOnlyList<TooltipBlock> blocks)
     {
-        _content = content;
-        _tableData = null;
-        Text = string.Empty;
-        UpdateSize();
-    }
-
-    public void SetTableContent(TooltipTableData table)
-    {
-        _tableData = table;
-        _content = null;
+        _blocks = blocks;
         Text = string.Empty;
         UpdateSize();
     }
@@ -46,8 +40,7 @@ public class TooltipWidget : PanelWidget
     public void SetText(string text)
     {
         Text = text;
-        _content = null;
-        _tableData = null;
+        _blocks = null;
         UpdateSize();
     }
 
@@ -60,11 +53,21 @@ public class TooltipWidget : PanelWidget
 
     protected override Vector2 MeasureCore(float availableWidth, float availableHeight)
     {
-        if (_tableData != null)
-            return CalculateTableSize();
+        if (_blocks != null && _blocks.Count > 0)
+        {
+            float maxWidth = 0;
+            float totalHeight = 0;
 
-        if (_content != null && _content.Lines.Count > 0)
-            return CalculateContentSize();
+            foreach (var block in _blocks)
+            {
+                var size = MeasureBlock(block);
+                if (size.X > maxWidth)
+                    maxWidth = size.X;
+                totalHeight += size.Y;
+            }
+
+            return new Vector2(maxWidth + Padding * 2, totalHeight + Padding * 2);
+        }
 
         if (!string.IsNullOrEmpty(Text))
         {
@@ -75,16 +78,23 @@ public class TooltipWidget : PanelWidget
         return Vector2.Zero;
     }
 
-    private Vector2 CalculateContentSize()
+    private static Vector2 MeasureBlock(TooltipBlock block) => block switch
     {
-        if (_content == null)
+        TooltipContentBlock content => MeasureContentBlock(content),
+        TooltipTableBlock table => MeasureTableBlock(table),
+        _ => Vector2.Zero,
+    };
+
+    private static Vector2 MeasureContentBlock(TooltipContentBlock content)
+    {
+        if (content.Lines.Count == 0)
             return Vector2.Zero;
 
         float maxWidth = 0;
         float totalHeight = 0;
         float lineHeight = UITheme.TooltipFont.LineSpacing;
 
-        foreach (var line in _content.Lines)
+        foreach (var line in content.Lines)
         {
             if (!string.IsNullOrEmpty(line.Text))
             {
@@ -95,16 +105,13 @@ public class TooltipWidget : PanelWidget
             totalHeight += lineHeight;
         }
 
-        return new Vector2(maxWidth + Padding * 2, totalHeight + Padding * 2);
+        return new Vector2(maxWidth, totalHeight);
     }
 
-    private Vector2 CalculateTableSize()
+    private static Vector2 MeasureTableBlock(TooltipTableBlock table)
     {
-        if (_tableData == null)
-            return Vector2.Zero;
-
-        var columnWidths = CalculateColumnWidths();
-        float totalWidth = Padding * 2;
+        var columnWidths = CalculateColumnWidths(table);
+        float totalWidth = 0;
         for (int i = 0; i < columnWidths.Length; i++)
         {
             totalWidth += columnWidths[i];
@@ -113,44 +120,20 @@ public class TooltipWidget : PanelWidget
         }
 
         float lineHeight = UITheme.TooltipFont.LineSpacing + RowGap;
-        int headerRows = HasSlotLabels() ? 2 : 1;
-        int totalRows = headerRows + _tableData.Rows.Count;
-        float totalHeight = Padding * 2 + totalRows * lineHeight;
-
-        if (_tableData.Footer != null && _tableData.Footer.Lines.Count > 0)
-        {
-            float footerHeight = 0;
-            float footerWidth = 0;
-            float footerLineHeight = UITheme.TooltipFont.LineSpacing;
-            foreach (var line in _tableData.Footer.Lines)
-            {
-                if (!string.IsNullOrEmpty(line.Text))
-                {
-                    var size = UITheme.TooltipFont.MeasureString(line.Text);
-                    if (size.X > footerWidth)
-                        footerWidth = size.X;
-                }
-                footerHeight += footerLineHeight;
-            }
-            totalHeight += footerHeight;
-            float footerTotalWidth = footerWidth + Padding * 2;
-            if (footerTotalWidth > totalWidth)
-                totalWidth = footerTotalWidth;
-        }
+        int headerRows = HasSlotLabels(table) ? 2 : 1;
+        int totalRows = headerRows + table.Rows.Count;
+        float totalHeight = totalRows * lineHeight;
 
         return new Vector2(totalWidth, totalHeight);
     }
 
-    private float[] CalculateColumnWidths()
+    private static float[] CalculateColumnWidths(TooltipTableBlock table)
     {
-        if (_tableData == null)
-            return [];
-
-        int columnCount = _tableData.Headers.Count + 1;
+        int columnCount = table.Headers.Count + 1;
         var widths = new float[columnCount];
 
         float statColumnWidth = 0;
-        foreach (var row in _tableData.Rows)
+        foreach (var row in table.Rows)
         {
             var width = UITheme.TooltipFont.MeasureString(row.StatName).X;
             if (width > statColumnWidth)
@@ -158,9 +141,9 @@ public class TooltipWidget : PanelWidget
         }
         widths[0] = statColumnWidth;
 
-        for (int i = 0; i < _tableData.Headers.Count; i++)
+        for (int i = 0; i < table.Headers.Count; i++)
         {
-            var header = _tableData.Headers[i];
+            var header = table.Headers[i];
             float maxWidth = UITheme.TooltipFont.MeasureString(header.ItemName).X;
 
             if (!string.IsNullOrEmpty(header.SlotLabel))
@@ -170,7 +153,7 @@ public class TooltipWidget : PanelWidget
                     maxWidth = labelWidth;
             }
 
-            foreach (var row in _tableData.Rows)
+            foreach (var row in table.Rows)
             {
                 if (i < row.Cells.Count)
                 {
@@ -186,12 +169,9 @@ public class TooltipWidget : PanelWidget
         return widths;
     }
 
-    private bool HasSlotLabels()
+    private static bool HasSlotLabels(TooltipTableBlock table)
     {
-        if (_tableData == null)
-            return false;
-
-        foreach (var header in _tableData.Headers)
+        foreach (var header in table.Headers)
         {
             if (!string.IsNullOrEmpty(header.SlotLabel))
                 return true;
@@ -201,21 +181,22 @@ public class TooltipWidget : PanelWidget
 
     protected override void RenderCore(SpriteBatch spriteBatch)
     {
-        bool hasContent = _tableData != null ||
-                          (_content != null && _content.Lines.Count > 0) ||
+        bool hasContent = (_blocks != null && _blocks.Count > 0) ||
                           !string.IsNullOrEmpty(Text);
         if (!hasContent)
             return;
 
         base.RenderCore(spriteBatch);
 
-        if (_tableData != null)
+        if (_blocks != null && _blocks.Count > 0)
         {
-            RenderTable(spriteBatch);
-        }
-        else if (_content != null && _content.Lines.Count > 0)
-        {
-            RenderColoredContent(spriteBatch);
+            var pos = ScreenPosition + new Vector2(Padding, Padding);
+            foreach (var block in _blocks)
+            {
+                var size = MeasureBlock(block);
+                RenderBlock(spriteBatch, block, pos);
+                pos.Y += size.Y;
+            }
         }
         else if (!string.IsNullOrEmpty(Text))
         {
@@ -224,15 +205,25 @@ public class TooltipWidget : PanelWidget
         }
     }
 
-    private void RenderColoredContent(SpriteBatch spriteBatch)
+    private static void RenderBlock(SpriteBatch spriteBatch, TooltipBlock block, Vector2 origin)
     {
-        if (_content == null)
-            return;
+        switch (block)
+        {
+            case TooltipContentBlock content:
+                RenderContentBlock(spriteBatch, content, origin);
+                break;
+            case TooltipTableBlock table:
+                RenderTableBlock(spriteBatch, table, origin);
+                break;
+        }
+    }
 
-        var pos = ScreenPosition + new Vector2(Padding, Padding);
+    private static void RenderContentBlock(SpriteBatch spriteBatch, TooltipContentBlock content, Vector2 origin)
+    {
+        var pos = origin;
         float lineHeight = UITheme.TooltipFont.LineSpacing;
 
-        foreach (var line in _content.Lines)
+        foreach (var line in content.Lines)
         {
             if (!string.IsNullOrEmpty(line.Text))
             {
@@ -242,27 +233,23 @@ public class TooltipWidget : PanelWidget
         }
     }
 
-    private void RenderTable(SpriteBatch spriteBatch)
+    private static void RenderTableBlock(SpriteBatch spriteBatch, TooltipTableBlock table, Vector2 origin)
     {
-        if (_tableData == null)
-            return;
-
-        var columnWidths = CalculateColumnWidths();
+        var columnWidths = CalculateColumnWidths(table);
         float lineHeight = UITheme.TooltipFont.LineSpacing + RowGap;
-        var basePos = ScreenPosition + new Vector2(Padding, Padding);
 
         float[] columnX = new float[columnWidths.Length];
-        columnX[0] = basePos.X;
+        columnX[0] = origin.X;
         for (int i = 1; i < columnWidths.Length; i++)
         {
             columnX[i] = columnX[i - 1] + columnWidths[i - 1] + ColumnGap;
         }
 
-        float y = basePos.Y;
+        float y = origin.Y;
 
-        for (int i = 0; i < _tableData.Headers.Count; i++)
+        for (int i = 0; i < table.Headers.Count; i++)
         {
-            var header = _tableData.Headers[i];
+            var header = table.Headers[i];
             var x = columnX[i + 1];
             var nameWidth = UITheme.TooltipFont.MeasureString(header.ItemName).X;
             var centeredX = x + (columnWidths[i + 1] - nameWidth) / 2;
@@ -270,11 +257,11 @@ public class TooltipWidget : PanelWidget
         }
         y += lineHeight;
 
-        if (HasSlotLabels())
+        if (HasSlotLabels(table))
         {
-            for (int i = 0; i < _tableData.Headers.Count; i++)
+            for (int i = 0; i < table.Headers.Count; i++)
             {
-                var header = _tableData.Headers[i];
+                var header = table.Headers[i];
                 if (!string.IsNullOrEmpty(header.SlotLabel))
                 {
                     var x = columnX[i + 1];
@@ -286,11 +273,11 @@ public class TooltipWidget : PanelWidget
             y += lineHeight;
         }
 
-        foreach (var row in _tableData.Rows)
+        foreach (var row in table.Rows)
         {
             spriteBatch.DrawString(UITheme.TooltipFont, row.StatName, new Vector2(columnX[0], y), UITheme.Text.Secondary);
 
-            for (int i = 0; i < row.Cells.Count && i < _tableData.Headers.Count; i++)
+            for (int i = 0; i < row.Cells.Count && i < table.Headers.Count; i++)
             {
                 var cell = row.Cells[i];
                 var x = columnX[i + 1];
@@ -300,19 +287,6 @@ public class TooltipWidget : PanelWidget
             }
 
             y += lineHeight;
-        }
-
-        if (_tableData.Footer != null && _tableData.Footer.Lines.Count > 0)
-        {
-            float footerLineHeight = UITheme.TooltipFont.LineSpacing;
-            foreach (var line in _tableData.Footer.Lines)
-            {
-                if (!string.IsNullOrEmpty(line.Text))
-                {
-                    spriteBatch.DrawString(UITheme.TooltipFont, line.Text, new Vector2(basePos.X, y), line.Color);
-                }
-                y += footerLineHeight;
-            }
         }
     }
 }

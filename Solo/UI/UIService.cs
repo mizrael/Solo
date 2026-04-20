@@ -102,8 +102,7 @@ public class UIService : IGameService, IRenderable
 
         var mousePoint = new Point(mouseState.X, mouseState.Y);
 
-        TooltipTableData? tableData = null;
-        TooltipContent? tooltipContent = null;
+        IReadOnlyList<TooltipBlock>? blocks = null;
         string? tooltipText = null;
 
         for (int i = _rootWidgets.Count - 1; i >= 0; i--)
@@ -111,12 +110,8 @@ public class UIService : IGameService, IRenderable
             var root = _rootWidgets[i];
             if (root.Visible)
             {
-                tableData = FindTooltipTableData(root, mousePoint);
-                if (tableData != null)
-                    break;
-
-                tooltipContent = FindTooltipContent(root, mousePoint);
-                if (tooltipContent != null)
+                blocks = FindTooltipBlocks(root, mousePoint);
+                if (blocks != null)
                     break;
 
                 tooltipText = FindTooltipText(root, mousePoint);
@@ -125,15 +120,9 @@ public class UIService : IGameService, IRenderable
             }
         }
 
-        if (tableData != null)
+        if (blocks != null)
         {
-            _tooltip.SetTableContent(tableData);
-            PositionTooltip(mouseState);
-            _tooltip.Visible = true;
-        }
-        else if (tooltipContent != null)
-        {
-            _tooltip.SetContent(tooltipContent);
+            _tooltip.SetBlocks(blocks);
             PositionTooltip(mouseState);
             _tooltip.Visible = true;
         }
@@ -169,41 +158,21 @@ public class UIService : IGameService, IRenderable
         _tooltip.Position = new Vector2(tooltipX, tooltipY);
     }
 
-    private static TooltipTableData? FindTooltipTableData(Widget widget, Point mousePoint)
+    private static IReadOnlyList<TooltipBlock>? FindTooltipBlocks(Widget widget, Point mousePoint)
     {
         if (!widget.Visible || widget.IsInteractionClipped(mousePoint))
             return null;
 
         for (int i = widget.Children.Count - 1; i >= 0; i--)
         {
-            var result = FindTooltipTableData(widget.Children[i], mousePoint);
+            var result = FindTooltipBlocks(widget.Children[i], mousePoint);
             if (result != null)
                 return result;
         }
 
         if (widget.Bounds.Contains(mousePoint))
         {
-            return widget.GetTooltipTableData();
-        }
-
-        return null;
-    }
-
-    private static TooltipContent? FindTooltipContent(Widget widget, Point mousePoint)
-    {
-        if (!widget.Visible || widget.IsInteractionClipped(mousePoint))
-            return null;
-
-        for (int i = widget.Children.Count - 1; i >= 0; i--)
-        {
-            var result = FindTooltipContent(widget.Children[i], mousePoint);
-            if (result != null)
-                return result;
-        }
-
-        if (widget.Bounds.Contains(mousePoint))
-        {
-            return widget.GetTooltipContent();
+            return widget.GetTooltipBlocks();
         }
 
         return null;

@@ -39,6 +39,13 @@ public class TooltipContent
         }
         return content;
     }
+
+    /// <summary>
+    /// Snapshots the accumulated lines into an immutable
+    /// <see cref="TooltipContentBlock"/> for use in
+    /// <see cref="Widgets.TooltipWidget.SetBlocks"/>.
+    /// </summary>
+    public TooltipContentBlock ToBlock() => new(_lines.ToArray());
 }
 
 public record TooltipColumnHeader(string ItemName, string? SlotLabel);
@@ -54,7 +61,6 @@ public class TooltipTableData
 
     public IReadOnlyList<TooltipColumnHeader> Headers => _headers;
     public IReadOnlyList<TooltipTableRow> Rows => _rows;
-    public TooltipContent? Footer { get; set; }
 
     public TooltipTableData AddHeader(string itemName, string? slotLabel = null)
     {
@@ -67,4 +73,11 @@ public class TooltipTableData
         _rows.Add(new TooltipTableRow(statName, cells));
         return this;
     }
+
+    /// <summary>
+    /// Snapshots the accumulated headers and rows into an immutable
+    /// <see cref="TooltipTableBlock"/> for use in
+    /// <see cref="Widgets.TooltipWidget.SetBlocks"/>.
+    /// </summary>
+    public TooltipTableBlock ToBlock() => new(_headers.ToArray(), _rows.ToArray());
 }

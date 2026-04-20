@@ -236,7 +236,11 @@ public abstract class Widget
 
     public virtual string? GetTooltipText() => null;
 
-    public virtual TooltipContent? GetTooltipContent() => null;
-
-    public virtual TooltipTableData? GetTooltipTableData() => null;
+    /// <summary>
+    /// Returns an ordered list of tooltip blocks (tables and/or content
+    /// sections) to render when the cursor hovers this widget, or null if
+    /// this widget has no rich tooltip. Plain-text tooltips can still use
+    /// <see cref="GetTooltipText"/>.
+    /// </summary>
+    public virtual System.Collections.Generic.IReadOnlyList<TooltipBlock>? GetTooltipBlocks() => null;
 }
