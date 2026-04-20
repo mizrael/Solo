@@ -54,6 +54,7 @@ public class TooltipTableData
 
     public IReadOnlyList<TooltipColumnHeader> Headers => _headers;
     public IReadOnlyList<TooltipTableRow> Rows => _rows;
+    public TooltipContent? Footer { get; set; }
 
     public TooltipTableData AddHeader(string itemName, string? slotLabel = null)
     {

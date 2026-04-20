@@ -117,6 +117,27 @@ public class TooltipWidget : PanelWidget
         int totalRows = headerRows + _tableData.Rows.Count;
         float totalHeight = Padding * 2 + totalRows * lineHeight;
 
+        if (_tableData.Footer != null && _tableData.Footer.Lines.Count > 0)
+        {
+            float footerHeight = 0;
+            float footerWidth = 0;
+            float footerLineHeight = UITheme.TooltipFont.LineSpacing;
+            foreach (var line in _tableData.Footer.Lines)
+            {
+                if (!string.IsNullOrEmpty(line.Text))
+                {
+                    var size = UITheme.TooltipFont.MeasureString(line.Text);
+                    if (size.X > footerWidth)
+                        footerWidth = size.X;
+                }
+                footerHeight += footerLineHeight;
+            }
+            totalHeight += footerHeight;
+            float footerTotalWidth = footerWidth + Padding * 2;
+            if (footerTotalWidth > totalWidth)
+                totalWidth = footerTotalWidth;
+        }
+
         return new Vector2(totalWidth, totalHeight);
     }
 
@@ -279,6 +300,19 @@ public class TooltipWidget : PanelWidget
             }
 
             y += lineHeight;
+        }
+
+        if (_tableData.Footer != null && _tableData.Footer.Lines.Count > 0)
+        {
+            float footerLineHeight = UITheme.TooltipFont.LineSpacing;
+            foreach (var line in _tableData.Footer.Lines)
+            {
+                if (!string.IsNullOrEmpty(line.Text))
+                {
+                    spriteBatch.DrawString(UITheme.TooltipFont, line.Text, new Vector2(basePos.X, y), line.Color);
+                }
+                y += footerLineHeight;
+            }
         }
     }
 }
