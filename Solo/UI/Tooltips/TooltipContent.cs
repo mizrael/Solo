@@ -1,9 +1,24 @@
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 
 namespace Solo.UI.Tooltips;
 
-public record TooltipLine(string Text, Color Color);
+public record TooltipLine(string Text, Color Color)
+{
+    /// <summary>
+    /// Optional icon rendered inline before <see cref="Text"/>. Sized to the
+    /// tooltip line height (square box). When set, a small gap separates it
+    /// from the text.
+    /// </summary>
+    public Texture2D? LeadingIcon { get; init; }
+
+    /// <summary>
+    /// Source rectangle within <see cref="LeadingIcon"/>. If null, the full
+    /// texture is used.
+    /// </summary>
+    public Rectangle? LeadingIconSource { get; init; }
+}
 
 public class TooltipContent
 {
@@ -20,6 +35,16 @@ public class TooltipContent
     public TooltipContent AddLine(string text)
     {
         _lines.Add(new TooltipLine(text, UITheme.Text.Primary));
+        return this;
+    }
+
+    public TooltipContent AddIconLine(Texture2D icon, Rectangle? iconSource, string text, Color color)
+    {
+        _lines.Add(new TooltipLine(text, color)
+        {
+            LeadingIcon = icon,
+            LeadingIconSource = iconSource
+        });
         return this;
     }
 
