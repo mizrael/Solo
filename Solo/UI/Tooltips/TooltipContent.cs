@@ -7,9 +7,9 @@ namespace Solo.UI.Tooltips;
 public record TooltipLine(string Text, Color Color)
 {
     /// <summary>
-    /// Optional icon rendered inline before <see cref="Text"/>. Sized to the
-    /// tooltip line height (square box). When set, a small gap separates it
-    /// from the text.
+    /// Optional icon rendered inline before <see cref="Text"/>. Scaled to the
+    /// tooltip line height while preserving the source aspect ratio. When set,
+    /// a small gap separates it from the text.
     /// </summary>
     public Texture2D? LeadingIcon { get; init; }
 

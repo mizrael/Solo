@@ -98,9 +98,14 @@ public class TooltipWidget : PanelWidget
         foreach (var line in content.Lines)
         {
             float lineWidth = 0;
+            bool hasText = !string.IsNullOrEmpty(line.Text);
             if (line.LeadingIcon != null)
-                lineWidth += MeasureLineIconWidth(line, lineHeight) + IconTextGap;
-            if (!string.IsNullOrEmpty(line.Text))
+            {
+                lineWidth += MeasureLineIconWidth(line, lineHeight);
+                if (hasText)
+                    lineWidth += IconTextGap;
+            }
+            if (hasText)
                 lineWidth += UITheme.TooltipFont.MeasureString(line.Text).X;
             if (lineWidth > maxWidth)
                 maxWidth = lineWidth;
@@ -115,9 +120,10 @@ public class TooltipWidget : PanelWidget
         if (line.LeadingIcon == null)
             return 0;
         var src = line.LeadingIconSource ?? new Rectangle(0, 0, line.LeadingIcon.Width, line.LeadingIcon.Height);
-        if (src.Height <= 0)
+        if (src.Width <= 0 || src.Height <= 0)
             return lineHeight;
-        return lineHeight * (src.Width / (float)src.Height);
+        var iconWidth = lineHeight * (src.Width / (float)src.Height);
+        return iconWidth < 1f ? 1f : iconWidth;
     }
 
     private static Vector2 MeasureTableBlock(TooltipTableBlock table)
@@ -241,8 +247,9 @@ public class TooltipWidget : PanelWidget
 
             if (line.LeadingIcon != null)
             {
-                float iconWidth = MeasureLineIconWidth(line, lineHeight);
-                var iconRect = new Rectangle((int)pos.X, (int)pos.Y, (int)iconWidth, (int)lineHeight);
+                int iconWidth = (int)System.Math.Round(MeasureLineIconWidth(line, lineHeight));
+                int iconHeight = (int)System.Math.Round(lineHeight);
+                var iconRect = new Rectangle((int)pos.X, (int)pos.Y, iconWidth, iconHeight);
                 spriteBatch.Draw(line.LeadingIcon, iconRect, line.LeadingIconSource, Color.White);
                 textOffset = iconWidth + IconTextGap;
             }
