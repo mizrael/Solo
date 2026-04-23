@@ -10,6 +10,7 @@ public class TooltipWidget : PanelWidget
     private const int Padding = 8;
     private const int ColumnGap = 16;
     private const int RowGap = 2;
+    private const int IconTextGap = 4;
 
     private IReadOnlyList<TooltipBlock>? _blocks;
 
@@ -96,16 +97,33 @@ public class TooltipWidget : PanelWidget
 
         foreach (var line in content.Lines)
         {
-            if (!string.IsNullOrEmpty(line.Text))
+            float lineWidth = 0;
+            bool hasText = !string.IsNullOrEmpty(line.Text);
+            if (line.LeadingIcon != null)
             {
-                var lineSize = UITheme.TooltipFont.MeasureString(line.Text);
-                if (lineSize.X > maxWidth)
-                    maxWidth = lineSize.X;
+                lineWidth += MeasureLineIconWidth(line, lineHeight);
+                if (hasText)
+                    lineWidth += IconTextGap;
             }
+            if (hasText)
+                lineWidth += UITheme.TooltipFont.MeasureString(line.Text).X;
+            if (lineWidth > maxWidth)
+                maxWidth = lineWidth;
             totalHeight += lineHeight;
         }
 
         return new Vector2(maxWidth, totalHeight);
+    }
+
+    private static float MeasureLineIconWidth(TooltipLine line, float lineHeight)
+    {
+        if (line.LeadingIcon == null)
+            return 0;
+        var src = line.LeadingIconSource ?? new Rectangle(0, 0, line.LeadingIcon.Width, line.LeadingIcon.Height);
+        if (src.Width <= 0 || src.Height <= 0)
+            return lineHeight;
+        var iconWidth = lineHeight * (src.Width / (float)src.Height);
+        return iconWidth < 1f ? 1f : iconWidth;
     }
 
     private static Vector2 MeasureTableBlock(TooltipTableBlock table)
@@ -225,9 +243,20 @@ public class TooltipWidget : PanelWidget
 
         foreach (var line in content.Lines)
         {
+            float textOffset = 0;
+
+            if (line.LeadingIcon != null)
+            {
+                int iconWidth = (int)System.Math.Round(MeasureLineIconWidth(line, lineHeight));
+                int iconHeight = (int)System.Math.Round(lineHeight);
+                var iconRect = new Rectangle((int)pos.X, (int)pos.Y, iconWidth, iconHeight);
+                spriteBatch.Draw(line.LeadingIcon, iconRect, line.LeadingIconSource, Color.White);
+                textOffset = iconWidth + IconTextGap;
+            }
+
             if (!string.IsNullOrEmpty(line.Text))
             {
-                spriteBatch.DrawString(UITheme.TooltipFont, line.Text, pos, line.Color);
+                spriteBatch.DrawString(UITheme.TooltipFont, line.Text, pos + new Vector2(textOffset, 0), line.Color);
             }
             pos.Y += lineHeight;
         }
