@@ -65,6 +65,10 @@ public class SliderWidget : Widget
 
     public event Action<int>? OnValueChanged;
 
+    /// <summary>
+    /// Fires once per commit (e.g., mouse-up after a drag) when the value differs from the baseline captured at first subscription.
+    /// The baseline advances on each successful commit and resets when all subscribers unsubscribe.
+    /// </summary>
     public event Action<int>? OnValueCommitted
     {
         add
@@ -76,7 +80,14 @@ public class SliderWidget : Widget
             }
             _onValueCommitted += value;
         }
-        remove => _onValueCommitted -= value;
+        remove
+        {
+            _onValueCommitted -= value;
+            if (_onValueCommitted == null)
+            {
+                _committedBaselineSet = false;
+            }
+        }
     }
 
     /// <summary>Test seam: simulates a mouse-release commit after a drag.</summary>
