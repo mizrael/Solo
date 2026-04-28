@@ -14,6 +14,15 @@ public class SliderWidget : Widget
     private bool _isDragging;
     private int _value;
     private int _step = 1;
+    private int _maxValue = 100;
+    private string? _label;
+    private Func<int, string>? _valueFormatter;
+
+    // Cached widths for label / value-readout text. Reserved space depends only on
+    // Label/ValueFormatter/MaxValue, so we recompute lazily and invalidate via setters
+    // instead of calling MeasureString every frame.
+    private float? _cachedLabelWidth;
+    private float? _cachedValueWidth;
 
     // Baseline for OnValueCommitted: captured lazily when the first subscriber
     // attaches, then advanced after every successful commit. This means
@@ -32,16 +41,52 @@ public class SliderWidget : Widget
     }
 
     public int MinValue { get; set; } = 0;
-    public int MaxValue { get; set; } = 100;
+
+    public int MaxValue
+    {
+        get => _maxValue;
+        set
+        {
+            if (_maxValue == value) return;
+            _maxValue = value;
+            _cachedValueWidth = null;
+        }
+    }
 
     public int Step
     {
         get => _step;
-        set => _step = value < 1 ? 1 : value;
+        set
+        {
+            var normalizedStep = value < 1 ? 1 : value;
+            if (_step == normalizedStep) return;
+            _step = normalizedStep;
+            // Re-snap current value so an out-of-step Value set before Step doesn't linger.
+            Value = _value;
+        }
     }
 
-    public string? Label { get; set; }
-    public Func<int, string>? ValueFormatter { get; set; }
+    public string? Label
+    {
+        get => _label;
+        set
+        {
+            if (_label == value) return;
+            _label = value;
+            _cachedLabelWidth = null;
+        }
+    }
+
+    public Func<int, string>? ValueFormatter
+    {
+        get => _valueFormatter;
+        set
+        {
+            if (ReferenceEquals(_valueFormatter, value)) return;
+            _valueFormatter = value;
+            _cachedValueWidth = null;
+        }
+    }
 
     public int Value
     {
@@ -90,8 +135,12 @@ public class SliderWidget : Widget
         }
     }
 
-    /// <summary>Test seam: simulates a mouse-release commit after a drag.</summary>
-    public void CommitForTesting() => CommitIfChanged();
+    /// <summary>
+    /// Forces an <see cref="OnValueCommitted"/> emission if the current value differs from the
+    /// last-committed baseline. The drag flow calls this on mouse-release; consumers (and tests)
+    /// can call it to commit programmatically.
+    /// </summary>
+    public void Commit() => CommitIfChanged();
 
     private int SnapToStep(int v)
     {
@@ -159,18 +208,17 @@ public class SliderWidget : Widget
         float left = ScreenPosition.X;
         float right = ScreenPosition.X + Size.X;
 
-        if (!string.IsNullOrEmpty(Label))
+        if (!string.IsNullOrEmpty(_label))
         {
-            var labelSize = UITheme.Font.MeasureString(Label);
-            left += labelSize.X + 8;
+            _cachedLabelWidth ??= UITheme.Font.MeasureString(_label).X;
+            left += _cachedLabelWidth.Value + 8;
         }
 
-        if (ValueFormatter != null)
+        if (_valueFormatter != null)
         {
             // Reserve space for the widest possible formatted value (use MaxValue as proxy).
-            var sample = ValueFormatter(MaxValue);
-            var sampleSize = UITheme.Font.MeasureString(sample);
-            right -= sampleSize.X + 8;
+            _cachedValueWidth ??= UITheme.Font.MeasureString(_valueFormatter(_maxValue)).X;
+            right -= _cachedValueWidth.Value + 8;
         }
 
         return (left, MathF.Max(0f, right - left));
@@ -198,7 +246,9 @@ public class SliderWidget : Widget
         var (trackLeft, trackWidth) = GetTrackHorizontalExtent();
         float trackStartX = trackLeft + ThumbWidth / 2f;
         float trackEndX = trackLeft + trackWidth - ThumbWidth / 2f;
-        float usableWidth = trackEndX - trackStartX;
+        // Clamp to 0 so a degenerate track (trackWidth < ThumbWidth) doesn't invert the thumb
+        // position. Mirrors the early-out in UpdateValueFromMouse for the same condition.
+        float usableWidth = MathF.Max(0f, trackEndX - trackStartX);
 
         int range = MaxValue - MinValue;
         float ratio = range > 0 ? (float)(_value - MinValue) / range : 0f;
