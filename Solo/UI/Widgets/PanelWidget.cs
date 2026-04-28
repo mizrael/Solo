@@ -12,6 +12,12 @@ public class PanelWidget : Widget
     private const int ScrollbarWidth = 6;
     private const int ScrollSpeed = 30;
 
+    /// <summary>Shared scissor-test-enabled rasterizer state for scrollable panels.
+    /// <see cref="RasterizerState"/> is a <see cref="GraphicsResource"/> with a finalizer +
+    /// driver-side allocation; sharing one across panels avoids per-frame GC + driver
+    /// resource churn (matches the engine's pattern with BlendState/SamplerState).</summary>
+    private static readonly RasterizerState ScissorEnabledRasterizer = new() { ScissorTestEnable = true };
+
     private float _scrollOffset;
     private int _previousScrollWheelValue;
 
@@ -210,24 +216,23 @@ public class PanelWidget : Widget
         var originalScissor = spriteBatch.GraphicsDevice.ScissorRectangle;
         var originalRasterizerState = spriteBatch.GraphicsDevice.RasterizerState;
 
-        // Set up scissor rectangle for clipping (scissor is in screen space, so scale it)
         var scale = UITheme.UIScale;
         var sampler = scale < 1f ? SamplerState.LinearClamp : SamplerState.PointClamp;
         var matrix = scale < 1f ? UITheme.UIScaleMatrix : (Matrix?)null;
-        var rasterizerState = new RasterizerState { ScissorTestEnable = true };
-        spriteBatch.GraphicsDevice.ScissorRectangle = new Rectangle(
+        var ourScissor = new Rectangle(
             (int)(contentBounds.X * scale),
             (int)(contentBounds.Y * scale),
             (int)(contentBounds.Width * scale),
             (int)(contentBounds.Height * scale)
         );
+        spriteBatch.GraphicsDevice.ScissorRectangle = Rectangle.Intersect(ourScissor, originalScissor);
 
         spriteBatch.Begin(
             SpriteSortMode.Deferred,
             BlendState.AlphaBlend,
             sampler,
             null,
-            rasterizerState,
+            ScissorEnabledRasterizer,
             null,
             matrix
         );
