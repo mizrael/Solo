@@ -8,6 +8,10 @@ namespace Solo.UI.Widgets;
 
 public class SelectableListWidget : PanelWidget
 {
+    /// <summary>Shared scissor-test-enabled rasterizer for list rendering. See
+    /// <see cref="PanelWidget"/> for the rationale.</summary>
+    private static readonly RasterizerState ScissorEnabledRasterizer = new() { ScissorTestEnable = true };
+
     private int _hoveredIndex = -1;
 
     public SelectableListWidget()
@@ -138,15 +142,15 @@ public class SelectableListWidget : PanelWidget
         var scale = UITheme.UIScale;
         var sampler = scale < 1f ? SamplerState.LinearClamp : SamplerState.PointClamp;
         var matrix = scale < 1f ? UITheme.UIScaleMatrix : (Matrix?)null;
-        var rasterizerState = new RasterizerState { ScissorTestEnable = true };
-        spriteBatch.GraphicsDevice.ScissorRectangle = new Rectangle(
+        var ourScissor = new Rectangle(
             (int)(contentBounds.X * scale),
             (int)(contentBounds.Y * scale),
             (int)(contentBounds.Width * scale),
             (int)(contentBounds.Height * scale)
         );
+        spriteBatch.GraphicsDevice.ScissorRectangle = Rectangle.Intersect(ourScissor, originalScissor);
 
-        spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, sampler, null, rasterizerState, null, matrix);
+        spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, sampler, null, ScissorEnabledRasterizer, null, matrix);
 
         float y = ScreenPosition.Y + BorderWidth - ScrollOffset;
 
