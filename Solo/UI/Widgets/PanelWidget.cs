@@ -9,7 +9,11 @@ public class PanelWidget : Widget
 {
     private const int CloseButtonSize = 20;
     private const int CloseButtonMargin = 6;
-    private const int ScrollbarWidth = 6;
+    /// <summary>Reserved width (in logical UI pixels) for the vertical scrollbar gutter
+    /// when <see cref="Scrollable"/> is true. Subclasses that lay out custom scrollable
+    /// content can read this constant to avoid duplicating the magic number — e.g. when
+    /// reserving column space inside the panel's <see cref="ContentBounds"/>.</summary>
+    public const int ScrollbarWidth = 6;
     private const int ScrollSpeed = 30;
 
     /// <summary>Shared scissor-test-enabled rasterizer state for scrollable panels.
