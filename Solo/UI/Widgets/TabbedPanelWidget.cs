@@ -16,6 +16,7 @@ namespace Solo.UI.Widgets;
 public class TabbedPanelWidget : Widget
 {
     private const int TabStripVerticalPadding = 6;
+    private const int TabStripHorizontalPadding = 12;
 
     private readonly IReadOnlyList<TabPage> _tabs;
     private int _activeIndex;
@@ -28,7 +29,21 @@ public class TabbedPanelWidget : Widget
         if (tabs == null) throw new ArgumentNullException(nameof(tabs));
         if (tabs.Count == 0) throw new ArgumentException("TabbedPanelWidget requires at least one tab.", nameof(tabs));
 
-        _tabs = tabs;
+        // Snapshot so subsequent mutations to a caller-owned List<TabPage> cannot
+        // desync our Children/visibility state from the public Tabs collection.
+        var snapshot = new TabPage[tabs.Count];
+        var seen = new HashSet<Widget>(ReferenceEqualityComparer.Instance);
+        for (int i = 0; i < tabs.Count; i++)
+        {
+            var tab = tabs[i];
+            if (!seen.Add(tab.Content))
+                throw new ArgumentException(
+                    "TabPage Content widgets must be distinct instances; AddChild reparents shared widgets and would leave tabs blank.",
+                    nameof(tabs));
+            snapshot[i] = tab;
+        }
+        _tabs = snapshot;
+
         for (int i = 0; i < _tabs.Count; i++)
         {
             var content = _tabs[i].Content;
@@ -86,7 +101,33 @@ public class TabbedPanelWidget : Widget
             maxW = Math.Max(maxW, tab.Content.DesiredSize.X);
             maxH = Math.Max(maxH, tab.Content.DesiredSize.Y);
         }
-        return new Vector2(maxW, maxH + TabStripHeight);
+
+        // Ensure the requested width is at least wide enough to fit every tab title in
+        // the strip; otherwise narrow content + long titles would clip/overlap labels.
+        float titleStripWidth = MeasureTabStripWidth();
+        float requestedWidth = Math.Max(maxW, titleStripWidth);
+
+        return new Vector2(requestedWidth, maxH + TabStripHeight);
+    }
+
+    private float MeasureTabStripWidth()
+    {
+        try
+        {
+            var font = UITheme.Font;
+            if (font == null)
+                return 0;
+            float maxTitle = 0;
+            foreach (var tab in _tabs)
+                maxTitle = Math.Max(maxTitle, font.MeasureString(tab.Title).X);
+            return (maxTitle + TabStripHorizontalPadding * 2) * _tabs.Count;
+        }
+        catch (NullReferenceException)
+        {
+            // Headless test contexts may not have a Font configured; fall back to
+            // letting content drive width. Real rendering paths always have a Font.
+            return 0;
+        }
     }
 
     protected override void ArrangeCore(Vector2 finalSize)
@@ -127,11 +168,16 @@ public class TabbedPanelWidget : Widget
         if (!tabAreaBounds.Contains(mouseX, mouseY))
             return null;
 
-        int tabWidth = (int)(Size.X / _tabs.Count);
-        if (tabWidth <= 0)
+        int totalWidth = (int)Size.X;
+        int baseTabWidth = totalWidth / _tabs.Count;
+        if (baseTabWidth <= 0)
             return null;
 
-        int index = (mouseX - tabAreaBounds.X) / tabWidth;
+        int relativeX = mouseX - tabAreaBounds.X;
+        // Last tab absorbs the remainder pixels (see RenderTabStrip), so any click
+        // beyond `baseTabWidth * (count - 1)` belongs to the last tab.
+        int lastTabStart = baseTabWidth * (_tabs.Count - 1);
+        int index = relativeX >= lastTabStart ? _tabs.Count - 1 : relativeX / baseTabWidth;
         return Math.Clamp(index, 0, _tabs.Count - 1);
     }
 
@@ -152,17 +198,18 @@ public class TabbedPanelWidget : Widget
         var font = UITheme.Font;
         var screenPos = ScreenPosition;
         int stripHeight = TabStripHeight;
-        int tabWidth = (int)(Size.X / _tabs.Count);
-        if (tabWidth <= 0)
+        int totalWidth = (int)Size.X;
+        int baseTabWidth = totalWidth / _tabs.Count;
+        if (baseTabWidth <= 0)
             return;
 
         for (int i = 0; i < _tabs.Count; i++)
         {
-            var tabBounds = new Rectangle(
-                (int)screenPos.X + i * tabWidth,
-                (int)screenPos.Y,
-                tabWidth,
-                stripHeight);
+            // Last tab absorbs the integer-truncation remainder so the strip paints
+            // edge-to-edge and matches HitTestTabStrip exactly (no gap, no dead zone).
+            int x = (int)screenPos.X + i * baseTabWidth;
+            int width = (i == _tabs.Count - 1) ? totalWidth - i * baseTabWidth : baseTabWidth;
+            var tabBounds = new Rectangle(x, (int)screenPos.Y, width, stripHeight);
 
             bool isActive = (i == _activeIndex);
             var bgColor = isActive ? UITheme.Selection.SelectedBackground : UITheme.Selection.HoverBackground;
