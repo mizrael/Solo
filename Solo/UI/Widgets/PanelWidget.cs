@@ -24,6 +24,7 @@ public class PanelWidget : Widget
 
     private float _scrollOffset;
     private int _previousScrollWheelValue;
+    private bool _scrollWheelInitialized;
 
     public PanelWidget()
     {
@@ -35,6 +36,19 @@ public class PanelWidget : Widget
     public bool ShowCloseButton { get; set; } = true;
     public bool Scrollable { get; set; }
     public int ContentPadding { get; set; } = 16;
+
+    /// <summary>
+    /// When true, child rendering is clipped (via GPU scissor test) to the panel's
+    /// <see cref="ContentBounds"/> regardless of whether the panel is
+    /// <see cref="Scrollable"/>. Use this on container panels that host children
+    /// whose intrinsic size may exceed the parent's content area, to guarantee
+    /// they cannot visually spill past the panel's border. <see cref="Scrollable"/>
+    /// already implies clipping; this flag is only needed for non-scrollable
+    /// panels that want the same hard clip without a scrollbar.
+    /// Children are also blocked from receiving input outside the clip region
+    /// (mirrors the existing scrollable behaviour).
+    /// </summary>
+    public bool ClipToContentBounds { get; set; }
 
     public float ScrollOffset
     {
@@ -55,7 +69,7 @@ public class PanelWidget : Widget
     }
 
     protected override Rectangle? ChildInteractionClipBounds =>
-        Scrollable ? ContentBounds : null;
+        (Scrollable || ClipToContentBounds) ? ContentBounds : null;
 
     protected Rectangle CloseButtonBounds
     {
@@ -110,8 +124,14 @@ public class PanelWidget : Widget
     protected override Vector2 MeasureCore(float availableWidth, float availableHeight)
     {
         float horizontalChrome = ContentPadding * 2 + BorderWidth * 2 + (Scrollable ? ScrollbarWidth : 0);
+        float topOffset = ShowCloseButton ? CloseButtonSize + CloseButtonMargin : ContentPadding;
+        // Vertical chrome includes the close-button strip (or top padding when no close
+        // button), the bottom inner padding, and both top/bottom borders. Children must
+        // measure against the actual visible content height so they don't compute
+        // intrinsic sizes that overflow the panel's bottom edge.
+        float verticalChrome = topOffset + ContentPadding + BorderWidth * 2;
         float childAvailableWidth = Math.Max(0, availableWidth - horizontalChrome);
-        float childAvailableHeight = Math.Max(0, availableHeight);
+        float childAvailableHeight = Math.Max(0, availableHeight - verticalChrome);
 
         float maxRight = 0;
         float maxBottom = 0;
@@ -132,7 +152,6 @@ public class PanelWidget : Widget
                 maxBottom = childBottom;
         }
 
-        float topOffset = ShowCloseButton ? CloseButtonSize + CloseButtonMargin : ContentPadding;
         float width = maxRight + horizontalChrome;
         float height = topOffset + maxBottom + ContentPadding + BorderWidth * 2;
 
@@ -179,8 +198,16 @@ public class PanelWidget : Widget
             }
         }
 
-        // Handle mouse wheel scrolling
-        if (Scrollable && Bounds.Contains(mouseState.X, mouseState.Y))
+        // Handle mouse wheel scrolling. Initialize the wheel value on the first frame
+        // so a pre-existing absolute scroll value from before the panel was opened
+        // doesn't translate into a huge spurious delta and snap the panel to the
+        // bottom on its first interaction.
+        if (!_scrollWheelInitialized)
+        {
+            _previousScrollWheelValue = mouseState.ScrollWheelValue;
+            _scrollWheelInitialized = true;
+        }
+        else if (Scrollable && Bounds.Contains(mouseState.X, mouseState.Y))
         {
             int scrollDelta = mouseState.ScrollWheelValue - _previousScrollWheelValue;
             if (scrollDelta != 0)
@@ -198,7 +225,7 @@ public class PanelWidget : Widget
 
         RenderCore(spriteBatch);
 
-        if (Scrollable)
+        if (Scrollable || ClipToContentBounds)
         {
             RenderScrollableChildren(spriteBatch);
         }
