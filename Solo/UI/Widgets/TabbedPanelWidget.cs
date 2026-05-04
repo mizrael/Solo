@@ -143,19 +143,12 @@ public class TabbedPanelWidget : Widget
     {
         get
         {
-            try
-            {
-                var font = UITheme.Font;
-                if (font == null)
-                    return TabStripVerticalPadding * 2;
-                return font.LineSpacing + TabStripVerticalPadding * 2;
-            }
-            catch (NullReferenceException)
-            {
-                // Headless test contexts may not have a Font configured. Real
-                // rendering paths always have a Font.
+            // Headless test contexts may not have a Font configured. Real
+            // rendering paths always have a Font.
+            var font = UITheme.Font;
+            if (font == null)
                 return TabStripVerticalPadding * 2;
-            }
+            return font.LineSpacing + TabStripVerticalPadding * 2;
         }
     }
 
@@ -235,7 +228,11 @@ public class TabbedPanelWidget : Widget
 
         // Scrollable: fill the parent area vertically (scrollbar handles overflow).
         // Non-scrollable: grow to fit the tallest tab.
-        float requestedHeight = Scrollable && availableHeight > 0
+        // float.MaxValue is the codebase convention for "unconstrained" height
+        // (e.g. TooltipWidget); reflecting it back as desired height would yield
+        // a nonsensical size, so fall back to content-driven sizing in that case.
+        bool hasBoundedHeight = availableHeight > 0 && availableHeight < float.MaxValue;
+        float requestedHeight = (Scrollable && hasBoundedHeight)
             ? availableHeight
             : maxH + verticalChrome;
 
@@ -244,22 +241,15 @@ public class TabbedPanelWidget : Widget
 
     private float MeasureTabStripWidth()
     {
-        try
-        {
-            var font = UITheme.Font;
-            if (font == null)
-                return 0;
-            float maxTitle = 0;
-            foreach (var tab in _tabs)
-                maxTitle = Math.Max(maxTitle, font.MeasureString(tab.Title).X);
-            return (maxTitle + TabStripHorizontalPadding * 2) * _tabs.Count;
-        }
-        catch (NullReferenceException)
-        {
-            // Headless test contexts may not have a Font configured; fall back to
-            // letting content drive width. Real rendering paths always have a Font.
+        // Headless test contexts may not have a Font configured; fall back to
+        // letting content drive width. Real rendering paths always have a Font.
+        var font = UITheme.Font;
+        if (font == null)
             return 0;
-        }
+        float maxTitle = 0;
+        foreach (var tab in _tabs)
+            maxTitle = Math.Max(maxTitle, font.MeasureString(tab.Title).X);
+        return (maxTitle + TabStripHorizontalPadding * 2) * _tabs.Count;
     }
 
     protected override void ArrangeCore(Vector2 finalSize)
@@ -415,17 +405,21 @@ public class TabbedPanelWidget : Widget
         if (MaxScrollOffset <= 0)
             return;
 
-        int scrollbarX = (int)ScreenPosition.X + (int)Size.X - PanelWidget.ScrollbarWidth;
         int scrollbarHeight = contentBounds.Height;
+        if (scrollbarHeight <= 0)
+            return;
+
+        int scrollbarX = (int)ScreenPosition.X + (int)Size.X - PanelWidget.ScrollbarWidth;
 
         // Track
         spriteBatch.Draw(pixel,
             new Rectangle(scrollbarX, contentBounds.Y, PanelWidget.ScrollbarWidth, scrollbarHeight),
             UITheme.Scrollbar.Track);
 
-        // Thumb
+        // Thumb. Clamp to scrollbarHeight so the minimum-height enforcement (20px)
+        // doesn't push the thumb above the track when the visible area is tiny.
         float thumbRatio = contentBounds.Height / (contentBounds.Height + MaxScrollOffset);
-        int thumbHeight = Math.Max(20, (int)(scrollbarHeight * thumbRatio));
+        int thumbHeight = Math.Min(scrollbarHeight, Math.Max(20, (int)(scrollbarHeight * thumbRatio)));
         float scrollRatio = MaxScrollOffset > 0 ? _scrollOffset / MaxScrollOffset : 0;
         int thumbY = contentBounds.Y + (int)((scrollbarHeight - thumbHeight) * scrollRatio);
 
