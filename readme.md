@@ -1,6 +1,6 @@
 ﻿# Solo
 
-Solo is a very simple game engine built on top of [Monogame](https://monogame.net/).
+Solo is a small game engine built on top of [Monogame](https://monogame.net/).
 
 It's based on the Components idea, more or less like Unity: each [GameObject](/Solo/GameObject.cs) has a collection of [Components](/Solo/Components/Component.cs) that define its behavior. Components can be anything: a renderer, a physics system, a "brain" and so on.
 
