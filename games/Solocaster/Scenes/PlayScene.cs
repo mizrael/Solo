@@ -10,6 +10,7 @@ using Solocaster.Inventory;
 using Solocaster.Monsters;
 using Solocaster.Persistence;
 using Solocaster.Services;
+using SolocasterInputService = Solocaster.Services.InputService;
 using Solocaster.State;
 using Solocaster.UI;
 
@@ -19,7 +20,7 @@ public class PlayScene : Scene
 {
     private const int FrameBufferScale = 2;
 
-    private InputService _inputService;
+    private SolocasterInputService _inputService;
     private UIService _uiService;
     private RenderTarget2D _sceneCapture;
     private RenderTarget2D _postProcess;
@@ -43,7 +44,7 @@ public class PlayScene : Scene
 
     protected override void InitializeCore()
     {
-        _inputService = new InputService();
+        _inputService = new SolocasterInputService();
         Services.Add(_inputService);
 
         _uiService = new UIService();

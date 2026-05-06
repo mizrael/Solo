@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -13,6 +14,9 @@ public class MetricRowWidget : Widget
     public string Value { get; set; } = string.Empty;
     public Color LabelColor { get; set; } = UITheme.Text.Secondary;
     public Color ValueColor { get; set; } = UITheme.Text.Primary;
+
+    internal static float CalculateValueX(float rowX, float rowWidth, float valueWidth) =>
+        rowX + Math.Max(0f, rowWidth - valueWidth);
 
     protected override Vector2 MeasureCore(float availableWidth, float availableHeight)
     {
@@ -30,7 +34,7 @@ public class MetricRowWidget : Widget
         if (!string.IsNullOrEmpty(Value))
         {
             var valueSize = UITheme.Font.MeasureString(Value);
-            float valueX = pos.X + Size.X - valueSize.X;
+            float valueX = CalculateValueX(pos.X, Size.X, valueSize.X);
             spriteBatch.DrawString(UITheme.Font, Value, new Vector2(valueX, pos.Y), ValueColor);
         }
     }

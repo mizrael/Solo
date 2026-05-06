@@ -10,4 +10,8 @@
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.4.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Solo.Tests" />
+  </ItemGroup>
+
 </Project>

@@ -4,17 +4,18 @@ using Solo.Components;
 using Solo.Services;
 using Solocaster.Scenes;
 using Solocaster.Services;
+using SolocasterInputService = Solocaster.Services.InputService;
 
 namespace Solocaster.Components;
 
 public class PlayerUIController : Component
 {
-    private readonly InputService _inputService;
+    private readonly SolocasterInputService _inputService;
 
     public GameObject? MiniMapEntity { get; set; }
     public GameObject? DebugUIEntity { get; set; }
 
-    public PlayerUIController(GameObject owner, InputService inputService) : base(owner)
+    public PlayerUIController(GameObject owner, SolocasterInputService inputService) : base(owner)
     {
         _inputService = inputService;
     }
