@@ -25,3 +25,10 @@ I have built a few sample games to show how to use the engine. Those are very si
 - [Snake](./games/Snake/)
 - [Tetris](./games/Tetris/)
 - [SpaceInvaders](./games/SpaceInvaders/)
+
+### Built with Solo
+Solo also powers a full game in active development:
+
+[**Chainwatch Descent**](https://chainwatchdescent.pages.dev/): a Wolfenstein-style raycaster RPG with procedurally generated dungeons.
+
+[![Chainwatch Descent gameplay](https://chainwatchdescent.pages.dev/images/game/2026-04-29-game.png)](https://chainwatchdescent.pages.dev/)
