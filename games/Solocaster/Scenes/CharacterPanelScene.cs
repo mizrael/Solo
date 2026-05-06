@@ -4,6 +4,7 @@ using Solo.Services;
 using Solo.Services.Rendering;
 using Solocaster.Components;
 using Solocaster.Services;
+using SolocasterInputService = Solocaster.Services.InputService;
 using Solocaster.UI;
 
 namespace Solocaster.Scenes;
@@ -14,7 +15,7 @@ public class CharacterPanelScene : Scene
     private readonly StatsComponent _stats;
     private readonly RenderTarget2D _sceneCapture;
 
-    private InputService _inputService;
+    private SolocasterInputService _inputService;
     private UIService _uiService;
     private RenderPipeline _pipeline;
 
@@ -27,7 +28,7 @@ public class CharacterPanelScene : Scene
 
     protected override void InitializeCore()
     {
-        _inputService = new InputService();
+        _inputService = new SolocasterInputService();
         Services.Add(_inputService);
 
         _uiService = new UIService();
