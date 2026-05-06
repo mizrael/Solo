@@ -29,10 +29,11 @@ public class StatProgressRowWidget : Widget
 
     internal static Rectangle CalculateProgressBarBounds(Vector2 rowPosition, Vector2 rowSize, float labelWidth, float? labelColumnWidth = null)
     {
-        int rowLeft = (int)MathF.Round(rowPosition.X);
-        int rowTop = (int)MathF.Round(rowPosition.Y);
-        int rowWidth = Math.Max(0, (int)MathF.Round(rowSize.X));
-        int rowHeight = Math.Max(0, (int)MathF.Round(rowSize.Y));
+        // Match Widget.Bounds pixel snapping (truncation) so the bar never extends past the widget's drawn bounds.
+        int rowLeft = (int)rowPosition.X;
+        int rowTop = (int)rowPosition.Y;
+        int rowWidth = Math.Max(0, (int)rowSize.X);
+        int rowHeight = Math.Max(0, (int)rowSize.Y);
         int rowRight = rowLeft + rowWidth;
         float resolvedLabelWidth = ResolveLabelColumnWidth(labelWidth, labelColumnWidth);
         int labelRight = rowLeft + Math.Max(0, (int)MathF.Ceiling(resolvedLabelWidth));
