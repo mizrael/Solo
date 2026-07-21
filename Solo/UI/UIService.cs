@@ -143,19 +143,35 @@ public class UIService : IGameService, IRenderable
         if (_tooltip == null)
             return;
 
-        var tooltipX = mouseState.X + 16;
-        var tooltipY = mouseState.Y + 16;
-
         var viewport = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice.Viewport;
         var screenWidth = (int)(viewport.Width / UITheme.UIScale);
         var screenHeight = (int)(viewport.Height / UITheme.UIScale);
 
-        if (tooltipX + _tooltip.Size.X > screenWidth)
-            tooltipX = mouseState.X - (int)_tooltip.Size.X - 8;
-        if (tooltipY + _tooltip.Size.Y > screenHeight)
-            tooltipY = mouseState.Y - (int)_tooltip.Size.Y - 8;
+        var (x, y) = ComputeTooltipPosition(
+            mouseState.X, mouseState.Y,
+            (int)_tooltip.Size.X, (int)_tooltip.Size.Y,
+            screenWidth, screenHeight);
 
-        _tooltip.Position = new Vector2(tooltipX, tooltipY);
+        _tooltip.Position = new Vector2(x, y);
+    }
+
+    internal static (int x, int y) ComputeTooltipPosition(
+        int mouseX, int mouseY,
+        int tooltipWidth, int tooltipHeight,
+        int screenWidth, int screenHeight)
+    {
+        var x = mouseX + 16;
+        var y = mouseY + 16;
+
+        if (x + tooltipWidth > screenWidth)
+            x = mouseX - tooltipWidth - 8;
+        if (y + tooltipHeight > screenHeight)
+            y = mouseY - tooltipHeight - 8;
+
+        x = Math.Clamp(x, 0, Math.Max(0, screenWidth - tooltipWidth));
+        y = Math.Clamp(y, 0, Math.Max(0, screenHeight - tooltipHeight));
+
+        return (x, y);
     }
 
     private static IReadOnlyList<TooltipBlock>? FindTooltipBlocks(Widget widget, Point mousePoint)
