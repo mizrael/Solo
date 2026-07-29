@@ -19,7 +19,7 @@ public class UIService : IGameService, IRenderable
 
     public void Initialize()
     {
-        _previousMouseState = Mouse.GetState();
+        _previousMouseState = PointerSource.GetState();
         _tooltip = new TooltipWidget();
 
         var viewport = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice.Viewport;
@@ -52,7 +52,7 @@ public class UIService : IGameService, IRenderable
             UITheme.UpdateUIScale(viewport.Height);
         }
 
-        var rawMouseState = Mouse.GetState();
+        var rawMouseState = PointerSource.GetState();
         var mouseState = ScaleMouseState(rawMouseState);
         var previousMouseState = _previousMouseState;
 

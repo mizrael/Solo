@@ -297,9 +297,7 @@ public class TabbedPanelWidget : Widget
         if (IsInteractionClipped(mousePoint))
             return;
 
-        int? hit = HitTestTabStrip(mouseState.X, mouseState.Y);
-        if (hit.HasValue)
-            ActiveIndex = hit.Value;
+        SetActiveTabFromPoint(mouseState.X, mouseState.Y);
     }
 
     private int? HitTestTabStrip(int mouseX, int mouseY)
@@ -324,6 +322,39 @@ public class TabbedPanelWidget : Widget
         int lastTabStart = baseTabWidth * (_tabs.Count - 1);
         int index = relativeX >= lastTabStart ? _tabs.Count - 1 : relativeX / baseTabWidth;
         return Math.Clamp(index, 0, _tabs.Count - 1);
+    }
+
+    /// <summary>
+    /// Returns the screen-space rectangle of a tab header, in UI coordinates. Exposed so
+    /// scripted pointers can aim at a tab the same way a player would.
+    /// </summary>
+    public Rectangle GetTabHeaderBounds(int index)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _tabs.Count);
+
+        var screenPos = ScreenPosition;
+        int totalWidth = (int)Size.X;
+        int baseTabWidth = totalWidth / _tabs.Count;
+        int x = (int)screenPos.X + (baseTabWidth * index);
+        bool isLast = index == _tabs.Count - 1;
+        int width = isLast ? totalWidth - (baseTabWidth * index) : baseTabWidth;
+
+        return new Rectangle(x, (int)screenPos.Y, width, TabStripHeight);
+    }
+
+    /// <summary>
+    /// Activates whichever tab header contains the supplied UI-space point, if any.
+    /// Returns <see langword="true"/> when a tab was hit.
+    /// </summary>
+    public bool SetActiveTabFromPoint(int x, int y)
+    {
+        int? hit = HitTestTabStrip(x, y);
+        if (!hit.HasValue)
+            return false;
+
+        ActiveIndex = hit.Value;
+        return true;
     }
 
     public override void Render(SpriteBatch spriteBatch)
