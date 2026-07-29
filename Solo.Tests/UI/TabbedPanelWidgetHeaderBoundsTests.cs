@@ -54,4 +54,20 @@ public class TabbedPanelWidgetHeaderBoundsTests
         var panel = CreatePanel(tabCount: 3, width: 300f);
         Assert.Throws<ArgumentOutOfRangeException>(() => panel.GetTabHeaderBounds(3));
     }
+
+    [Fact]
+    public void GetTabHeaderBounds_WithNonDivisibleWidth_LastTabAbsorbsRemainder()
+    {
+        // 602 / 6 = 100 remainder 2. Tabs 0-4 are 100px wide. Tab 5 is 102px wide.
+        var panel = CreatePanel(tabCount: 6, width: 602f);
+
+        var last = panel.GetTabHeaderBounds(5);
+
+        Assert.Equal(500, last.X);
+        Assert.Equal(602, last.Right);  // absorbs the 2 remainder pixels
+
+        // A point in the remainder region (x=601) must still select the last tab.
+        panel.SetActiveTabFromPoint(601, last.Y + last.Height / 2);
+        Assert.Equal(5, panel.ActiveIndex);
+    }
 }

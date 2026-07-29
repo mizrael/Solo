@@ -77,7 +77,7 @@ public class UIService : IGameService, IRenderable
         _previousMouseState = mouseState;
     }
 
-    private static MouseState ScaleMouseState(MouseState mouseState)
+    internal static MouseState ScaleMouseState(MouseState mouseState)
     {
         float scale = UITheme.UIScale;
         if (scale >= 1f)

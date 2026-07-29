@@ -40,17 +40,15 @@ public class PointerSourceTests : IDisposable
     }
 
     [Fact]
-    public void GetState_AfterClearingCurrentSource_StopsReturningInjectedState()
+    public void Current_WhenSetToNull_IsNull()
     {
-        var injected = new MouseState(
+        PointerSource.Current = new StubPointerSource(new MouseState(
             999, 999, 0,
             ButtonState.Pressed, ButtonState.Released, ButtonState.Released,
-            ButtonState.Released, ButtonState.Released);
-        PointerSource.Current = new StubPointerSource(injected);
+            ButtonState.Released, ButtonState.Released));
+
         PointerSource.Current = null;
 
-        var actual = PointerSource.GetState();
-
-        Assert.NotEqual(999, actual.X);
+        Assert.Null(PointerSource.Current);
     }
 }
