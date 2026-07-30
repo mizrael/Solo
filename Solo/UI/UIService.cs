@@ -19,12 +19,16 @@ public class UIService : IGameService, IRenderable
 
     public void Initialize()
     {
-        _previousMouseState = PointerSource.GetState();
         _tooltip = new TooltipWidget();
 
         var viewport = GraphicsDeviceManagerAccessor.Instance.GraphicsDeviceManager.GraphicsDevice.Viewport;
         _lastViewportHeight = viewport.Height;
         UITheme.UpdateUIScale(viewport.Height);
+
+        // Captured after the scale is known, and scaled on the way in, because every other
+        // write to this field stores a scaled state. Capturing raw here would hand widgets a
+        // previous position in a different coordinate space to the current one on frame one.
+        _previousMouseState = ScaleMouseState(PointerSource.GetState());
     }
 
     public void AddWidget(Widget widget)

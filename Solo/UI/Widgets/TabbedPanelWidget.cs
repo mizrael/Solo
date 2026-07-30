@@ -325,9 +325,15 @@ public class TabbedPanelWidget : Widget
     }
 
     /// <summary>
-    /// Returns the screen-space rectangle of a tab header, in UI coordinates. Exposed so
-    /// scripted pointers can aim at a tab the same way a player would.
+    /// Returns the bounds of a tab header in UI space, the same coordinate space used by
+    /// <see cref="SetActiveTabFromPoint"/> and by widget hit-testing. Callers rendering to
+    /// raw screen pixels must apply the UI scale themselves. Exposed so scripted pointers
+    /// can aim at a tab the same way a player would.
     /// </summary>
+    /// <returns>
+    /// The tab header bounds, or <see cref="Rectangle.Empty"/> when the strip is too narrow
+    /// to lay out, which is the same point at which rendering and hit-testing both bail out.
+    /// </returns>
     public Rectangle GetTabHeaderBounds(int index)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index);
@@ -336,6 +342,9 @@ public class TabbedPanelWidget : Widget
         var screenPos = ScreenPosition;
         int totalWidth = (int)Size.X;
         int baseTabWidth = totalWidth / _tabs.Count;
+        if (baseTabWidth <= 0)
+            return Rectangle.Empty;
+
         int x = (int)screenPos.X + (baseTabWidth * index);
         bool isLast = index == _tabs.Count - 1;
         int width = isLast ? totalWidth - (baseTabWidth * index) : baseTabWidth;

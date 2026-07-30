@@ -6,7 +6,7 @@ namespace Solo.Tests.UI;
 
 public class TabbedPanelWidgetHeaderBoundsTests
 {
-    private static TabbedPanelWidget CreatePanel(int tabCount, float width)
+    private static TabbedPanelWidget CreatePanel(int tabCount, float width, Vector2? position = null)
     {
         var tabs = new List<TabPage>();
         for (int i = 0; i < tabCount; i++)
@@ -14,7 +14,7 @@ public class TabbedPanelWidgetHeaderBoundsTests
 
         return new TabbedPanelWidget(tabs)
         {
-            Position = Vector2.Zero,
+            Position = position ?? Vector2.Zero,
             Size = new Vector2(width, 400),
         };
     }
@@ -69,5 +69,29 @@ public class TabbedPanelWidgetHeaderBoundsTests
         // A point in the remainder region (x=601) must still select the last tab.
         panel.SetActiveTabFromPoint(601, last.Y + last.Height / 2);
         Assert.Equal(5, panel.ActiveIndex);
+    }
+
+    [Fact]
+    public void GetTabHeaderBounds_WhenStripIsTooNarrowToLayOut_ReturnsEmptyForEveryTab()
+    {
+        // 4px across 6 tabs truncates to 0px per tab. Rendering and hit-testing both bail
+        // out at exactly this point, so bounds must report "nothing to aim at" rather than a
+        // degenerate slice that a scripted pointer would silently click straight through.
+        // The panel sits at a non-zero origin so a degenerate slice is distinguishable from
+        // Rectangle.Empty rather than coincidentally equal to it.
+        var panel = CreatePanel(tabCount: 6, width: 4f, position: new Vector2(50f, 30f));
+
+        for (int i = 0; i < 6; i++)
+            Assert.Equal(Rectangle.Empty, panel.GetTabHeaderBounds(i));
+    }
+
+    [Fact]
+    public void GetTabHeaderBounds_WhenStripIsTooNarrowToLayOut_AgreesWithHitTesting()
+    {
+        var panel = CreatePanel(tabCount: 6, width: 4f, position: new Vector2(50f, 30f));
+
+        // Inside the strip rectangle horizontally and vertically, yet still un-hittable,
+        // which is the behaviour the empty bounds are promising the caller.
+        Assert.False(panel.SetActiveTabFromPoint(52, 36));
     }
 }
