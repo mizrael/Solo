@@ -80,19 +80,47 @@ public class ButtonWidget : PanelWidget
         }
     }
 
+    /// <summary>
+    /// Computes the size a button needs. An authored size is treated as a floor rather
+    /// than a ceiling, so a label can never render wider than the button drawn around it.
+    /// </summary>
+    public static Vector2 ComputeButtonSize(
+        Vector2 textSize,
+        Vector2 authoredSize,
+        bool autoSize,
+        int contentPadding,
+        int borderWidth)
+    {
+        float chrome = contentPadding * 2f + borderWidth * 2f;
+        var fitted = new Vector2(textSize.X + chrome, textSize.Y + chrome);
+
+        if (autoSize)
+            return fitted;
+
+        // Width grows because that is the axis text overflows on in practice. Height
+        // stays as authored so fixed-height button rows keep their alignment, falling
+        // back to the fitted height only when no height was ever set.
+        float height = authoredSize.Y > 0 ? authoredSize.Y : fitted.Y;
+        return new Vector2(Math.Max(authoredSize.X, fitted.X), height);
+    }
+
     protected override Vector2 MeasureCore(float availableWidth, float availableHeight)
     {
-        if (AutoSize && !string.IsNullOrEmpty(_text))
-        {
-            var textSize = UITheme.Font.MeasureString(_text);
-            var padding = UITheme.Button.ContentPadding;
-            return new Vector2(
-                textSize.X + padding * 2f + BorderWidth * 2f,
-                textSize.Y + padding * 2f + BorderWidth * 2f
-            );
-        }
+        if (string.IsNullOrEmpty(_text))
+            return Size;
 
-        return Size;
+        // No font is loaded in headless contexts such as unit tests. Falling back to the
+        // authored size keeps measurement side-effect free there rather than throwing.
+        var font = UITheme.Font;
+        if (font == null)
+            return Size;
+
+        return ComputeButtonSize(
+            font.MeasureString(_text),
+            Size,
+            AutoSize,
+            UITheme.Button.ContentPadding,
+            BorderWidth);
     }
 
     private void FitToText()

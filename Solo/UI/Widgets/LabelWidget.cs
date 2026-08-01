@@ -47,20 +47,40 @@ public class LabelWidget : Widget
         return lines.Length * UITheme.Font.LineSpacing;
     }
 
+    /// <summary>
+    /// Computes the size a single-line label needs. The reported width never exceeds the
+    /// width offered, so a parent can trust it when allocating space. An offered width of
+    /// zero or less means unconstrained.
+    /// </summary>
+    public static Vector2 ComputeLabelSize(Vector2 textSize, float availableWidth, bool centerHorizontally)
+    {
+        if (availableWidth <= 0)
+            return textSize;
+
+        float width = centerHorizontally
+            ? availableWidth
+            : Math.Min(textSize.X, availableWidth);
+
+        return new Vector2(width, textSize.Y);
+    }
+
     protected override Vector2 MeasureCore(float availableWidth, float availableHeight)
     {
         if (string.IsNullOrEmpty(Text))
             return Vector2.Zero;
 
+        // No font is loaded in headless contexts such as unit tests.
+        var font = UITheme.Font;
+        if (font == null)
+            return Size;
+
         if (!WordWrap)
         {
-            var textSize = UITheme.Font.MeasureString(Text);
-            float width = CenterHorizontally ? availableWidth : textSize.X;
-            return new Vector2(width, textSize.Y);
+            return ComputeLabelSize(font.MeasureString(Text), availableWidth, CenterHorizontally);
         }
 
         var wrappedLines = WrapText(Text, availableWidth);
-        return new Vector2(availableWidth, wrappedLines.Length * UITheme.Font.LineSpacing);
+        return new Vector2(availableWidth, wrappedLines.Length * font.LineSpacing);
     }
 
     protected override void RenderCore(SpriteBatch spriteBatch)

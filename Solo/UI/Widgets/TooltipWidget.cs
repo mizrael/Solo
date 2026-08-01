@@ -7,7 +7,6 @@ namespace Solo.UI.Widgets;
 
 public class TooltipWidget : PanelWidget
 {
-    private const int Padding = 8;
     private const int ColumnGap = 16;
     private const int RowGap = 2;
     private const int IconTextGap = 4;
@@ -20,8 +19,19 @@ public class TooltipWidget : PanelWidget
         BackgroundColor = UITheme.Tooltip.BackgroundColor;
         BorderColor = UITheme.Tooltip.BorderColor;
         BorderWidth = UITheme.Tooltip.BorderWidth;
+        ContentPadding = UITheme.Tooltip.ContentPadding;
         Visible = false;
     }
+
+    /// <summary>
+    /// Distance from the tooltip's outer edge to its content. The border is painted on
+    /// that outer edge, so its width has to be added to the padding: otherwise the
+    /// border eats into the gap and the text looks glued to the frame.
+    /// </summary>
+    public static int ComputeContentInset(int contentPadding, int borderWidth) =>
+        contentPadding + borderWidth;
+
+    private int ContentInset => ComputeContentInset(ContentPadding, BorderWidth);
 
     public string Text { get; set; } = string.Empty;
     public Color TextColor { get; set; } = UITheme.Text.Primary;
@@ -67,13 +77,13 @@ public class TooltipWidget : PanelWidget
                 totalHeight += size.Y;
             }
 
-            return new Vector2(maxWidth + Padding * 2, totalHeight + Padding * 2);
+            return new Vector2(maxWidth + ContentInset * 2, totalHeight + ContentInset * 2);
         }
 
         if (!string.IsNullOrEmpty(Text))
         {
             var textSize = UITheme.TooltipFont.MeasureString(Text);
-            return new Vector2(textSize.X + Padding * 2, textSize.Y + Padding * 2);
+            return new Vector2(textSize.X + ContentInset * 2, textSize.Y + ContentInset * 2);
         }
 
         return Vector2.Zero;
@@ -208,7 +218,7 @@ public class TooltipWidget : PanelWidget
 
         if (_blocks != null && _blocks.Count > 0)
         {
-            var pos = ScreenPosition + new Vector2(Padding, Padding);
+            var pos = ScreenPosition + new Vector2(ContentInset, ContentInset);
             foreach (var block in _blocks)
             {
                 var size = MeasureBlock(block);
@@ -218,7 +228,7 @@ public class TooltipWidget : PanelWidget
         }
         else if (!string.IsNullOrEmpty(Text))
         {
-            var textPos = ScreenPosition + new Vector2(Padding, Padding);
+            var textPos = ScreenPosition + new Vector2(ContentInset, ContentInset);
             spriteBatch.DrawString(UITheme.TooltipFont, Text, textPos, TextColor);
         }
     }
