@@ -239,6 +239,72 @@ public class TabbedPanelWidget : Widget
         return new Vector2(requestedWidth, requestedHeight);
     }
 
+    /// <summary>
+    /// Splits a tab strip into per-tab widths, sharing the room in proportion to how
+    /// much each title needs so a short title never hoards space a long one is missing.
+    /// The widths always sum to <paramref name="totalWidth"/> exactly, so the strip
+    /// paints edge-to-edge with no gap and no dead zone.
+    /// </summary>
+    public static int[] ComputeTabWidths(IReadOnlyList<float> titleWidths, int horizontalPadding, int totalWidth)
+    {
+        int count = titleWidths.Count;
+        var widths = new int[count];
+        if (count == 0 || totalWidth <= 0)
+            return widths;
+
+        var natural = new float[count];
+        float naturalTotal = 0;
+        for (int i = 0; i < count; i++)
+        {
+            natural[i] = titleWidths[i] + horizontalPadding * 2;
+            naturalTotal += natural[i];
+        }
+
+        if (naturalTotal <= 0)
+        {
+            // No font, or every title measured empty: fall back to an even split.
+            for (int i = 0; i < count; i++)
+                natural[i] = 1;
+            naturalTotal = count;
+        }
+
+        float scale = totalWidth / naturalTotal;
+        int consumed = 0;
+        for (int i = 0; i < count - 1; i++)
+        {
+            widths[i] = (int)(natural[i] * scale);
+            consumed += widths[i];
+        }
+
+        // The last tab absorbs the rounding remainder so the strip fills exactly.
+        widths[count - 1] = totalWidth - consumed;
+        return widths;
+    }
+
+    /// <summary>
+    /// Turns per-tab widths into left offsets relative to the start of the strip.
+    /// </summary>
+    public static int[] ComputeTabOffsets(IReadOnlyList<int> tabWidths)
+    {
+        var offsets = new int[tabWidths.Count];
+        int x = 0;
+        for (int i = 0; i < tabWidths.Count; i++)
+        {
+            offsets[i] = x;
+            x += tabWidths[i];
+        }
+        return offsets;
+    }
+
+    private int[] CurrentTabWidths()
+    {
+        var font = UITheme.Font;
+        var titleWidths = new float[_tabs.Count];
+        for (int i = 0; i < _tabs.Count; i++)
+            titleWidths[i] = font?.MeasureString(_tabs[i].Title).X ?? 0;
+        return ComputeTabWidths(titleWidths, TabStripHorizontalPadding, (int)Size.X);
+    }
+
     private float MeasureTabStripWidth()
     {
         // Headless test contexts may not have a Font configured; fall back to
@@ -246,10 +312,10 @@ public class TabbedPanelWidget : Widget
         var font = UITheme.Font;
         if (font == null)
             return 0;
-        float maxTitle = 0;
+        float total = 0;
         foreach (var tab in _tabs)
-            maxTitle = Math.Max(maxTitle, font.MeasureString(tab.Title).X);
-        return (maxTitle + TabStripHorizontalPadding * 2) * _tabs.Count;
+            total += font.MeasureString(tab.Title).X + TabStripHorizontalPadding * 2;
+        return total;
     }
 
     protected override void ArrangeCore(Vector2 finalSize)
@@ -314,16 +380,18 @@ public class TabbedPanelWidget : Widget
             return null;
 
         int totalWidth = (int)Size.X;
-        int baseTabWidth = totalWidth / _tabs.Count;
-        if (baseTabWidth <= 0)
+        if (totalWidth <= 0 || _tabs.Count == 0)
             return null;
 
+        var tabWidths = CurrentTabWidths();
+        var offsets = ComputeTabOffsets(tabWidths);
         int relativeX = mouseX - tabAreaBounds.X;
-        // Last tab absorbs the remainder pixels (see RenderTabStrip), so any click
-        // beyond `baseTabWidth * (count - 1)` belongs to the last tab.
-        int lastTabStart = baseTabWidth * (_tabs.Count - 1);
-        int index = relativeX >= lastTabStart ? _tabs.Count - 1 : relativeX / baseTabWidth;
-        return Math.Clamp(index, 0, _tabs.Count - 1);
+        for (int i = _tabs.Count - 1; i >= 0; i--)
+        {
+            if (relativeX >= offsets[i])
+                return i;
+        }
+        return 0;
     }
 
     public override void Render(SpriteBatch spriteBatch)
@@ -435,17 +503,18 @@ public class TabbedPanelWidget : Widget
         var screenPos = ScreenPosition;
         int stripHeight = TabStripHeight;
         int totalWidth = (int)Size.X;
-        int baseTabWidth = totalWidth / _tabs.Count;
-        if (baseTabWidth <= 0)
+        if (totalWidth <= 0 || _tabs.Count == 0)
             return;
+
+        var tabWidths = CurrentTabWidths();
+        var offsets = ComputeTabOffsets(tabWidths);
 
         for (int i = 0; i < _tabs.Count; i++)
         {
-            // Last tab absorbs the integer-truncation remainder so the strip paints
-            // edge-to-edge and matches HitTestTabStrip exactly (no gap, no dead zone).
-            int x = (int)screenPos.X + i * baseTabWidth;
-            int width = (i == _tabs.Count - 1) ? totalWidth - i * baseTabWidth : baseTabWidth;
-            var tabBounds = new Rectangle(x, (int)screenPos.Y, width, stripHeight);
+            // Widths come from the same calculator HitTestTabStrip uses, so the painted
+            // strip and the clickable strip can never drift apart.
+            int x = (int)screenPos.X + offsets[i];
+            var tabBounds = new Rectangle(x, (int)screenPos.Y, tabWidths[i], stripHeight);
 
             bool isActive = (i == _activeIndex);
             var bgColor = isActive ? UITheme.Selection.SelectedBackground : UITheme.Selection.HoverBackground;
