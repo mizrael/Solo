@@ -54,6 +54,48 @@ public class TabbedPanelWidgetTests
     }
 
     [Fact]
+    public void ComputeTabWidths_GivesEveryTabAtLeastOnePixelSoHitTestingStaysUnambiguous()
+    {
+        // A 6px strip cannot honour any padding, but each tab must still own a
+        // distinct pixel or clicks land on a zero-width tab.
+        var widths = TabbedPanelWidget.ComputeTabWidths(new float[] { 40, 40, 40, 40 }, horizontalPadding: 12, totalWidth: 6);
+
+        Assert.All(widths, w => Assert.True(w >= 1, $"a tab collapsed to {w}px"));
+        Assert.Equal(6, widths.Sum());
+    }
+
+    [Fact]
+    public void ComputeTabWidths_GivesEveryTabAtLeastOnePixelEvenWhenOneTitleDominates()
+    {
+        // The long title would otherwise claim the whole strip and starve the rest.
+        var widths = TabbedPanelWidget.ComputeTabWidths(new float[] { 1, 1, 1, 400 }, horizontalPadding: 0, totalWidth: 5);
+
+        Assert.All(widths, w => Assert.True(w >= 1, $"a tab collapsed to {w}px"));
+        Assert.Equal(5, widths.Sum());
+    }
+
+    [Fact]
+    public void ComputeTabWidths_ReportsNothingWhenTheStripCannotAffordAPixelPerTab()
+    {
+        // Callers treat an all-zero result as "too narrow to draw", matching the
+        // behaviour of the guard this replaced.
+        var widths = TabbedPanelWidget.ComputeTabWidths(new float[] { 40, 40, 40, 40 }, horizontalPadding: 12, totalWidth: 3);
+
+        Assert.All(widths, w => Assert.Equal(0, w));
+    }
+
+    [Fact]
+    public void ComputeTabOffsets_StayDistinctWhenTheStripIsNarrow()
+    {
+        var widths = TabbedPanelWidget.ComputeTabWidths(new float[] { 40, 40, 40, 40 }, horizontalPadding: 12, totalWidth: 6);
+        var offsets = TabbedPanelWidget.ComputeTabOffsets(widths);
+
+        // Duplicate offsets make hit-testing ambiguous: a click would resolve to a
+        // tab that occupies no pixels.
+        Assert.Equal(offsets.Length, offsets.Distinct().Count());
+    }
+
+    [Fact]
     public void ComputeTabOffsets_PlacesEachTabAfterThePreviousOne()
     {
         var offsets = TabbedPanelWidget.ComputeTabOffsets(new[] { 100, 200, 50 });

@@ -249,7 +249,11 @@ public class TabbedPanelWidget : Widget
     {
         int count = titleWidths.Count;
         var widths = new int[count];
-        if (count == 0 || totalWidth <= 0)
+
+        // Below one pixel per tab the strip cannot give every tab a distinct column,
+        // which would leave zero-width tabs sharing an offset and make hit-testing
+        // ambiguous. Report nothing so callers skip the strip entirely.
+        if (count == 0 || totalWidth < count)
             return widths;
 
         var natural = new float[count];
@@ -268,15 +272,19 @@ public class TabbedPanelWidget : Widget
             naturalTotal = count;
         }
 
-        float scale = totalWidth / naturalTotal;
+        // Reserve a pixel for every tab first, then share what is left in proportion
+        // to what each title needs. This keeps every tab clickable however narrow the
+        // strip gets, and the widths still sum to totalWidth exactly.
+        int remaining = totalWidth - count;
         int consumed = 0;
         for (int i = 0; i < count - 1; i++)
         {
-            widths[i] = (int)(natural[i] * scale);
+            widths[i] = 1 + (int)(natural[i] / naturalTotal * remaining);
             consumed += widths[i];
         }
 
-        // The last tab absorbs the rounding remainder so the strip fills exactly.
+        // The last tab absorbs the rounding remainder. It cannot fall below one pixel:
+        // the tabs before it claim at most (count - 1) + remaining, or totalWidth - 1.
         widths[count - 1] = totalWidth - consumed;
         return widths;
     }
@@ -384,6 +392,9 @@ public class TabbedPanelWidget : Widget
             return null;
 
         var tabWidths = CurrentTabWidths();
+        if (tabWidths[0] == 0)
+            return null;
+
         var offsets = ComputeTabOffsets(tabWidths);
         int relativeX = mouseX - tabAreaBounds.X;
         for (int i = _tabs.Count - 1; i >= 0; i--)
@@ -507,6 +518,9 @@ public class TabbedPanelWidget : Widget
             return;
 
         var tabWidths = CurrentTabWidths();
+        if (tabWidths[0] == 0)
+            return;
+
         var offsets = ComputeTabOffsets(tabWidths);
 
         for (int i = 0; i < _tabs.Count; i++)
@@ -526,6 +540,11 @@ public class TabbedPanelWidget : Widget
                 var underline = new Rectangle(tabBounds.X, tabBounds.Bottom - 2, tabBounds.Width, 2);
                 spriteBatch.Draw(pixel, underline, UITheme.Selection.SelectionBorder);
             }
+
+            // Guard the font the way the measurement paths in this class already do,
+            // so a strip can still paint its tabs before a theme font is available.
+            if (font == null)
+                continue;
 
             var title = _tabs[i].Title;
             var titleSize = font.MeasureString(title);
