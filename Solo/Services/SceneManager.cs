@@ -7,12 +7,27 @@ public sealed class SceneManager
     private static readonly Lazy<SceneManager> _instance = new(() => new SceneManager());
     public static SceneManager Instance => _instance.Value;
 
-    private SceneManager() { }
+    internal SceneManager() { }
 
     private readonly Dictionary<string, Func<Scene>> _scenes = new();
     private readonly Stack<Scene> _sceneStack = new();
 
     public Scene? Current => _sceneStack.Count > 0 ? _sceneStack.Peek() : null;
+
+    /// <summary>
+    /// Gets the scenes from top to bottom, starting with the current scene.
+    /// </summary>
+    /// <remarks>
+    /// This read-only view is empty when the stack is empty and is not a snapshot.
+    /// </remarks>
+    public IEnumerable<Scene> Scenes
+    {
+        get
+        {
+            foreach (var scene in _sceneStack)
+                yield return scene;
+        }
+    }
 
     public void AddScene(string name, Scene scene)
     {
