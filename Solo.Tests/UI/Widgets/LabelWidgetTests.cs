@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Solo.UI.Widgets;
 using Xunit;
 
@@ -60,5 +61,16 @@ public sealed class LabelWidgetTests
             centerHorizontally: true);
 
         Assert.Equal(400, size.X);
+    }
+
+    [Fact]
+    public void Measure_WithOwnFont_UsesThatFont()
+    {
+        var font = new SpriteFont(null, [new Rectangle(0, 0, 10, 30)], [new Rectangle(0, 0, 10, 30)], ['a'], 30, 0, [new Vector3(0, 10, 0)], null);
+        var label = new LabelWidget { Text = "aaa", Font = font };
+
+        label.Measure(500, 500);
+
+        Assert.Equal(new Vector2(30, 30), label.DesiredSize);
     }
 }

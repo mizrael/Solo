@@ -14,12 +14,8 @@ public sealed class SceneManager
 
     public Scene? Current => _sceneStack.Count > 0 ? _sceneStack.Peek() : null;
 
-    /// <summary>
-    /// Gets the scenes from top to bottom, starting with the current scene.
-    /// </summary>
-    /// <remarks>
-    /// This read-only view is empty when the stack is empty and is not a snapshot.
-    /// </remarks>
+    /// <summary>Scenes from top (current) to bottom.</summary>
+    /// <remarks>Live read-only view, not a snapshot.</remarks>
     public IEnumerable<Scene> Scenes
     {
         get

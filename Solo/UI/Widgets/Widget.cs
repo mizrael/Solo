@@ -173,8 +173,12 @@ public abstract class Widget
 
         UpdateCore(gameTime, mouseState, previousMouseState);
 
-        foreach (var child in _children)
-            child.Update(gameTime, mouseState, previousMouseState);
+        foreach (var child in _children.ToArray())
+        {
+            // Handlers may rebuild this widget mid-loop; detached children must not act on stale state.
+            if (child.Parent == this)
+                child.Update(gameTime, mouseState, previousMouseState);
+        }
 
         if (_isMeasureDirty && Parent == null)
         {

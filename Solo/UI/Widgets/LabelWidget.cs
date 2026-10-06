@@ -34,6 +34,9 @@ public class LabelWidget : Widget
     public bool CenterHorizontally { get; set; } = false;
     public bool CenterVertically { get; set; } = false;
     public bool WordWrap { get; set; } = false;
+    public SpriteFont? Font { get; set; }
+
+    private SpriteFont ActiveFont => Font ?? UITheme.Font;
 
     public float MeasureTextHeight()
     {
@@ -41,10 +44,10 @@ public class LabelWidget : Widget
             return 0;
 
         if (!WordWrap)
-            return UITheme.Font.MeasureString(Text).Y;
+            return ActiveFont.MeasureString(Text).Y;
 
         var lines = WrapText(Text, Size.X);
-        return lines.Length * UITheme.Font.LineSpacing;
+        return lines.Length * ActiveFont.LineSpacing;
     }
 
     /// <summary>
@@ -70,7 +73,7 @@ public class LabelWidget : Widget
             return Vector2.Zero;
 
         // No font is loaded in headless contexts such as unit tests.
-        var font = UITheme.Font;
+        var font = ActiveFont;
         if (font == null)
             return Size;
 
@@ -100,7 +103,7 @@ public class LabelWidget : Widget
 
     private void RenderSingleLine(SpriteBatch spriteBatch)
     {
-        var textSize = UITheme.Font.MeasureString(Text);
+        var textSize = ActiveFont.MeasureString(Text);
         var position = ScreenPosition;
 
         if (CenterHorizontally)
@@ -109,7 +112,7 @@ public class LabelWidget : Widget
         if (CenterVertically)
             position.Y += (Size.Y - textSize.Y) / 2;
 
-        spriteBatch.DrawString(UITheme.Font, Text, position, TextColor);
+        spriteBatch.DrawString(ActiveFont, Text, position, TextColor);
     }
 
     private void RenderWrapped(SpriteBatch spriteBatch)
@@ -122,7 +125,7 @@ public class LabelWidget : Widget
         }
 
         var position = ScreenPosition;
-        float lineHeight = UITheme.Font.LineSpacing;
+        float lineHeight = ActiveFont.LineSpacing;
 
         if (CenterVertically)
         {
@@ -136,11 +139,11 @@ public class LabelWidget : Widget
 
             if (CenterHorizontally)
             {
-                var lineWidth = UITheme.Font.MeasureString(line).X;
+                var lineWidth = ActiveFont.MeasureString(line).X;
                 linePos.X += (Size.X - lineWidth) / 2;
             }
 
-            spriteBatch.DrawString(UITheme.Font, line, linePos, TextColor);
+            spriteBatch.DrawString(ActiveFont, line, linePos, TextColor);
             position.Y += lineHeight;
         }
     }
@@ -169,7 +172,7 @@ public class LabelWidget : Widget
                 if (currentLine.Length == 0)
                 {
                     // First word on line
-                    if (UITheme.Font.MeasureString(word).X > maxWidth)
+                    if (ActiveFont.MeasureString(word).X > maxWidth)
                     {
                         // Word is too long, just add it anyway
                         lines.Add(word);
@@ -182,7 +185,7 @@ public class LabelWidget : Widget
                 else
                 {
                     var testLine = currentLine + " " + word;
-                    if (UITheme.Font.MeasureString(testLine).X <= maxWidth)
+                    if (ActiveFont.MeasureString(testLine).X <= maxWidth)
                     {
                         currentLine.Append(' ');
                         currentLine.Append(word);
