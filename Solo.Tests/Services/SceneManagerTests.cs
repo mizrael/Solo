@@ -21,8 +21,8 @@ public sealed class SceneManagerTests
     public void Scenes_WhenScenesArePushed_EnumeratesTopToBottom()
     {
         var bottom = PushScene<TestScene>("bottom");
-        var middle = PushScene<OverlayScene>("middle");
-        var top = PushScene<OverlayScene>("top");
+        var middle = PushScene<StubOverlayScene>("middle");
+        var top = PushScene<StubOverlayScene>("top");
 
         Assert.Equal(new Scene[] { top, middle, bottom }, _manager.Scenes);
     }
@@ -31,8 +31,8 @@ public sealed class SceneManagerTests
     public void Scenes_WhenSceneIsBeneathOverlays_TypedLookupFindsIt()
     {
         var scene = PushScene<TestScene>("scene");
-        PushScene<OverlayScene>("first-overlay");
-        var top = PushScene<OverlayScene>("second-overlay");
+        PushScene<StubOverlayScene>("first-overlay");
+        var top = PushScene<StubOverlayScene>("second-overlay");
 
         var result = _manager.Scenes.OfType<TestScene>().FirstOrDefault();
 
@@ -46,7 +46,7 @@ public sealed class SceneManagerTests
     {
         PushScene<TestScene>("bottom");
         var topmostMatch = PushScene<TestScene>("middle");
-        PushScene<OverlayScene>("top");
+        PushScene<StubOverlayScene>("top");
 
         Assert.Same(topmostMatch, _manager.Scenes.OfType<TestScene>().FirstOrDefault());
     }
@@ -54,7 +54,7 @@ public sealed class SceneManagerTests
     [Fact]
     public void Scenes_WhenNoSceneMatches_TypedLookupReturnsNull()
     {
-        PushScene<OverlayScene>("overlay");
+        PushScene<StubOverlayScene>("overlay");
 
         Assert.Null(_manager.Scenes.OfType<TestScene>().FirstOrDefault());
     }
@@ -66,7 +66,7 @@ public sealed class SceneManagerTests
         Assert.Empty(scenes);
 
         var bottom = PushScene<TestScene>("bottom");
-        var top = PushScene<OverlayScene>("top");
+        var top = PushScene<StubOverlayScene>("top");
         Assert.Equal(new Scene[] { top, bottom }, scenes);
 
         _manager.PopScene();
@@ -92,7 +92,7 @@ public sealed class SceneManagerTests
         var bottom = PushScene<TestScene>("bottom");
         Assert.Same(bottom, _manager.Current);
 
-        var top = PushScene<OverlayScene>("top");
+        var top = PushScene<StubOverlayScene>("top");
         Assert.Same(top, _manager.Current);
 
         _manager.PopScene();
@@ -113,5 +113,5 @@ public sealed class SceneManagerTests
 
     private sealed class TestScene(Game game) : Scene(game);
 
-    private sealed class OverlayScene(Game game) : Scene(game);
+    private sealed class StubOverlayScene(Game game) : Scene(game);
 }
