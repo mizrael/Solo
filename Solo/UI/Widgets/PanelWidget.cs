@@ -25,6 +25,8 @@ public class PanelWidget : Widget
     private float _scrollOffset;
     private int _previousScrollWheelValue;
     private bool _scrollWheelInitialized;
+    private Vector2 _minSize;
+    private Vector2 _maxSize;
 
     public PanelWidget()
     {
@@ -88,7 +90,7 @@ public class PanelWidget : Widget
     /// <summary>
     /// The area where scrollable content is rendered (excludes close button area and padding).
     /// </summary>
-    protected Rectangle ContentBounds
+    public Rectangle ContentBounds
     {
         get
         {
@@ -121,8 +123,43 @@ public class PanelWidget : Widget
         }
     }
 
+    /// <summary>
+    /// Lower bound for the content-fitted size; a zero component means no bound.
+    /// </summary>
+    public Vector2 MinSize
+    {
+        get => _minSize;
+        set
+        {
+            if (_minSize == value)
+                return;
+            _minSize = value;
+            InvalidateMeasure();
+        }
+    }
+
+    /// <summary>
+    /// Upper bound for the content-fitted size; a zero component means no bound. Children
+    /// measure against it, so wrapping text wraps inside it. On a root panel it replaces the
+    /// panel's previous size as the layout constraint, so the panel can grow back after shrinking.
+    /// </summary>
+    public Vector2 MaxSize
+    {
+        get => _maxSize;
+        set
+        {
+            if (_maxSize == value)
+                return;
+            _maxSize = value;
+            InvalidateMeasure();
+        }
+    }
+
     protected override Vector2 MeasureCore(float availableWidth, float availableHeight)
     {
+        availableWidth = ApplyMaxConstraint(availableWidth, _maxSize.X);
+        availableHeight = ApplyMaxConstraint(availableHeight, _maxSize.Y);
+
         float horizontalChrome = ContentPadding * 2 + BorderWidth * 2 + (Scrollable ? ScrollbarWidth : 0);
         float topOffset = ShowCloseButton ? CloseButtonSize + CloseButtonMargin : ContentPadding;
         // Vertical chrome includes the close-button strip (or top padding when no close
@@ -141,7 +178,7 @@ public class PanelWidget : Widget
             if (!child.Visible)
                 continue;
 
-            child.Measure(childAvailableWidth, childAvailableHeight);
+            child.Measure(RemainingWidth(childAvailableWidth, child.Position.X), childAvailableHeight);
 
             float childRight = child.Position.X + child.DesiredSize.X;
             float childBottom = child.Position.Y + child.DesiredSize.Y;
@@ -155,7 +192,34 @@ public class PanelWidget : Widget
         float width = maxRight + horizontalChrome;
         float height = topOffset + maxBottom + ContentPadding + BorderWidth * 2;
 
-        return new Vector2(width, height);
+        return new Vector2(Clamp(width, _minSize.X, _maxSize.X), Clamp(height, _minSize.Y, _maxSize.Y));
+    }
+
+    // An offset child only has the width right of its offset; a result of zero would read as unconstrained.
+    private static float RemainingWidth(float contentWidth, float offsetX)
+    {
+        if (contentWidth <= 0 || offsetX <= 0)
+            return contentWidth;
+        return Math.Max(1, contentWidth - offsetX);
+    }
+
+    private float ApplyMaxConstraint(float available, float max)
+    {
+        if (max <= 0)
+            return available;
+        // A root panel is offered its own previous size, which must not cap a fit-to-content panel.
+        if (Parent == null || available <= 0)
+            return max;
+        return Math.Min(available, max);
+    }
+
+    private static float Clamp(float value, float min, float max)
+    {
+        if (min > 0)
+            value = Math.Max(value, min);
+        if (max > 0)
+            value = Math.Min(value, max);
+        return value;
     }
 
     protected override void ArrangeCore(Vector2 finalSize)

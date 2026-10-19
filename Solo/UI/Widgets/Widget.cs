@@ -152,24 +152,44 @@ public abstract class Widget
         Parent?.InvalidateMeasure();
     }
 
+    /// <summary>
+    /// Measures and arranges this widget's tree from its root if anything changed. Runs
+    /// automatically in <see cref="Update"/>; call it directly to read sizes straight away,
+    /// e.g. in tests.
+    /// </summary>
+    public void UpdateLayout()
+    {
+        if (Parent != null)
+        {
+            Parent.UpdateLayout();
+            return;
+        }
+
+        if (_isMeasureDirty)
+            LayoutRoot();
+    }
+
+    private void LayoutRoot()
+    {
+        var prevSize = Size;
+        Measure(Size.X, Size.Y);
+        Arrange(DesiredSize);
+
+        if (prevSize != Size)
+        {
+            _isMeasureDirty = true;
+            Measure(Size.X, Size.Y);
+            Arrange(DesiredSize);
+        }
+    }
+
     public void Update(GameTime gameTime, MouseState mouseState, MouseState previousMouseState)
     {
         if (!Visible || !Enabled)
             return;
 
         if (_isMeasureDirty && Parent == null)
-        {
-            var prevSize = Size;
-            Measure(Size.X, Size.Y);
-            Arrange(DesiredSize);
-
-            if (prevSize != Size)
-            {
-                _isMeasureDirty = true;
-                Measure(Size.X, Size.Y);
-                Arrange(DesiredSize);
-            }
-        }
+            LayoutRoot();
 
         UpdateCore(gameTime, mouseState, previousMouseState);
 
