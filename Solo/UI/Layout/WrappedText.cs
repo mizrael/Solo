@@ -4,8 +4,7 @@ using System.Text;
 namespace Solo.UI.Layout;
 
 /// <summary>
-/// Word-wraps text into cached lines. Re-wraps only when the text, width, line limit or
-/// measurer changes, so it is safe to call <see cref="Update"/> every layout pass.
+/// Word-wraps text into cached lines; <see cref="Update"/> re-wraps only when an input changes.
 /// </summary>
 public sealed class WrappedText
 {

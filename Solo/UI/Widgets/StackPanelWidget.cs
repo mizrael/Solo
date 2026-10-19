@@ -3,9 +3,8 @@ using Microsoft.Xna.Framework;
 namespace Solo.UI.Widgets;
 
 /// <summary>
-/// Lays out visible children in a row or column with <see cref="Spacing"/> between them and
-/// sizes itself to fit them. A vertical stack offers its full available width to each child,
-/// so wrapping labels wrap to the stack's width.
+/// Stacks visible children in a row or column and sizes to fit them. A vertical stack
+/// offers each child its full width, so wrapping labels wrap to it.
 /// </summary>
 public class StackPanelWidget : Widget
 {

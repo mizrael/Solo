@@ -140,8 +140,7 @@ public class PanelWidget : Widget
 
     /// <summary>
     /// Upper bound for the content-fitted size; a zero component means no bound. Children
-    /// measure against it, so wrapping text wraps inside it. On a root panel it replaces the
-    /// panel's previous size as the layout constraint, so the panel can grow back after shrinking.
+    /// wrap within it; on a root panel it replaces the previous size as the constraint.
     /// </summary>
     public Vector2 MaxSize
     {

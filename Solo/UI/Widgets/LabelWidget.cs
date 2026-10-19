@@ -51,8 +51,7 @@ public class LabelWidget : Widget
     }
 
     /// <summary>
-    /// Size of the text as drawn at the current <see cref="Widget.Size"/>, which can exceed the
-    /// label's bounds. Measures on every call, so use it for diagnostics, not per frame.
+    /// Drawn text size, which can exceed the label's bounds. Measures each call; diagnostics only.
     /// </summary>
     public Vector2 MeasureRenderedText()
     {

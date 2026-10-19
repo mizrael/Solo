@@ -4,9 +4,8 @@ using Solo.UI.Widgets;
 namespace Solo.UI.Layout;
 
 /// <summary>
-/// Finds visible widgets that spill out of their parent's content area, or whose text is
-/// larger than the widget. Intended for tests and debug checks after layout has run.
-/// Vertical overflow inside a scrollable panel is expected and not reported.
+/// Finds visible widgets outside their parent's content area or with text larger than
+/// themselves. Run after layout. Vertical overflow in scrollable panels is not reported.
 /// </summary>
 public static class LayoutOverflowChecker
 {

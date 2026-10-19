@@ -153,9 +153,8 @@ public abstract class Widget
     }
 
     /// <summary>
-    /// Measures and arranges this widget's tree from its root if anything changed. Runs
-    /// automatically in <see cref="Update"/>; call it directly to read sizes straight away,
-    /// e.g. in tests.
+    /// Lays out the tree from its root if dirty. <see cref="Update"/> calls it; call directly
+    /// to read sizes immediately.
     /// </summary>
     public void UpdateLayout()
     {

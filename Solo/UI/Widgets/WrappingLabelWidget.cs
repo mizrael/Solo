@@ -5,9 +5,8 @@ using Solo.UI.Layout;
 namespace Solo.UI.Widgets;
 
 /// <summary>
-/// A label that word-wraps to the narrower of <see cref="MaxWidth"/> and the width its parent
-/// offers, and sizes itself to the wrapped text. Wrapping is cached and redone only when the
-/// text, font or width changes.
+/// Label that wraps to the narrower of <see cref="MaxWidth"/> and the parent's offered width,
+/// sizing itself to the wrapped text.
 /// </summary>
 public class WrappingLabelWidget : Widget
 {
