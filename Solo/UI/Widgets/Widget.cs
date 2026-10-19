@@ -152,24 +152,43 @@ public abstract class Widget
         Parent?.InvalidateMeasure();
     }
 
+    /// <summary>
+    /// Lays out the tree from its root if dirty. <see cref="Update"/> calls it; call directly
+    /// to read sizes immediately.
+    /// </summary>
+    public void UpdateLayout()
+    {
+        if (Parent != null)
+        {
+            Parent.UpdateLayout();
+            return;
+        }
+
+        if (_isMeasureDirty)
+            LayoutRoot();
+    }
+
+    private void LayoutRoot()
+    {
+        var prevSize = Size;
+        Measure(Size.X, Size.Y);
+        Arrange(DesiredSize);
+
+        if (prevSize != Size)
+        {
+            _isMeasureDirty = true;
+            Measure(Size.X, Size.Y);
+            Arrange(DesiredSize);
+        }
+    }
+
     public void Update(GameTime gameTime, MouseState mouseState, MouseState previousMouseState)
     {
         if (!Visible || !Enabled)
             return;
 
         if (_isMeasureDirty && Parent == null)
-        {
-            var prevSize = Size;
-            Measure(Size.X, Size.Y);
-            Arrange(DesiredSize);
-
-            if (prevSize != Size)
-            {
-                _isMeasureDirty = true;
-                Measure(Size.X, Size.Y);
-                Arrange(DesiredSize);
-            }
-        }
+            LayoutRoot();
 
         UpdateCore(gameTime, mouseState, previousMouseState);
 

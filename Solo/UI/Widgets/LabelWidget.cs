@@ -51,6 +51,25 @@ public class LabelWidget : Widget
     }
 
     /// <summary>
+    /// Drawn text size, which can exceed the label's bounds. Measures each call; diagnostics only.
+    /// </summary>
+    public Vector2 MeasureRenderedText()
+    {
+        var font = ActiveFont;
+        if (string.IsNullOrEmpty(Text) || font == null)
+            return Vector2.Zero;
+
+        if (!WordWrap)
+            return font.MeasureString(Text);
+
+        var lines = WrapText(Text, Size.X);
+        float width = 0;
+        foreach (var line in lines)
+            width = Math.Max(width, font.MeasureString(line).X);
+        return new Vector2(width, lines.Length * font.LineSpacing);
+    }
+
+    /// <summary>
     /// Computes the size a single-line label needs. The reported width never exceeds the
     /// width offered, so a parent can trust it when allocating space. An offered width of
     /// zero or less means unconstrained.
