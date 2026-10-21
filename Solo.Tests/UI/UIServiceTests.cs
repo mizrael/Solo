@@ -1,3 +1,5 @@
+using Microsoft.Xna.Framework;
+using Solo.Tests.UI.Widgets;
 using Solo.UI;
 using Xunit;
 
@@ -96,5 +98,63 @@ public sealed class UIServiceTests
             screenWidth: 800, screenHeight: 600);
 
         Assert.Equal(0, y);
+    }
+
+    // ── Root widget updates ────────────────────────────────────────────────────
+
+    [Fact]
+    public void UpdateWidgets_WhenRootRemovesItself_LaterRootsStillUpdate()
+    {
+        var service = new UIService();
+        var self = new ProbeWidget();
+        self.OnUpdate = () => service.RemoveWidget(self);
+        var later = new ProbeWidget();
+        service.AddWidget(self);
+        service.AddWidget(later);
+
+        service.UpdateWidgets(new GameTime(), default, default);
+
+        Assert.Equal(1, self.UpdateCount);
+        Assert.Equal(1, later.UpdateCount);
+    }
+
+    [Fact]
+    public void UpdateWidgets_WhenRootRemovesLaterRoot_RemovedRootIsSkipped()
+    {
+        var service = new UIService();
+        var later = new ProbeWidget();
+        service.AddWidget(new ProbeWidget { OnUpdate = () => service.RemoveWidget(later) });
+        service.AddWidget(later);
+
+        service.UpdateWidgets(new GameTime(), default, default);
+
+        Assert.Equal(0, later.UpdateCount);
+    }
+
+    [Fact]
+    public void UpdateWidgets_WhenRootAddsRoot_NewRootWaitsUntilNextFrame()
+    {
+        var service = new UIService();
+        var added = new ProbeWidget();
+        service.AddWidget(new ProbeWidget { OnUpdate = () => service.AddWidget(added) });
+
+        service.UpdateWidgets(new GameTime(), default, default);
+        Assert.Equal(0, added.UpdateCount);
+
+        service.UpdateWidgets(new GameTime(), default, default);
+        Assert.Equal(1, added.UpdateCount);
+    }
+
+    [Fact]
+    public void UpdateWidgets_DoesNotAllocate()
+    {
+        var service = new UIService();
+        service.AddWidget(new ProbeWidget());
+        service.AddWidget(new ProbeWidget());
+        var gameTime = new GameTime();
+
+        long allocated = AllocationMeter.MeasureFrames(() => service.UpdateWidgets(gameTime, default, default));
+
+        Assert.Equal(0, allocated);
     }
 }

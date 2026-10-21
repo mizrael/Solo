@@ -9,6 +9,7 @@ namespace Solo.UI.Widgets;
 public abstract class Widget
 {
     private readonly List<Widget> _children = new();
+    private Widget[] _childrenSnapshot = Array.Empty<Widget>();
     private Vector2 _position;
     private Vector2 _size;
     private Vector2 _desiredSize;
@@ -191,19 +192,37 @@ public abstract class Widget
             LayoutRoot();
 
         UpdateCore(gameTime, mouseState, previousMouseState);
-
-        foreach (var child in _children.ToArray())
-        {
-            // Handlers may rebuild this widget mid-loop; detached children must not act on stale state.
-            if (child.Parent == this)
-                child.Update(gameTime, mouseState, previousMouseState);
-        }
+        UpdateChildren(gameTime, mouseState, previousMouseState);
 
         if (_isMeasureDirty && Parent == null)
         {
             Measure(Size.X, Size.Y);
             Arrange(DesiredSize);
         }
+    }
+
+    /// <summary>
+    /// Updates the children present after <see cref="UpdateCore"/>, in order. Children added
+    /// during the loop wait for the next frame; children detached during it are skipped.
+    /// </summary>
+    private void UpdateChildren(GameTime gameTime, MouseState mouseState, MouseState previousMouseState)
+    {
+        int count = _children.Count;
+        var snapshot = _childrenSnapshot.Length >= count ? _childrenSnapshot : new Widget[count];
+        // Detach the buffer so a re-entrant Update on this widget gets its own.
+        _childrenSnapshot = Array.Empty<Widget>();
+        _children.CopyTo(snapshot);
+
+        for (int i = 0; i < count; i++)
+        {
+            var child = snapshot[i];
+            // Handlers may rebuild this widget mid-loop; detached children must not act on stale state.
+            if (child.Parent == this)
+                child.Update(gameTime, mouseState, previousMouseState);
+        }
+
+        Array.Clear(snapshot, 0, count);
+        _childrenSnapshot = snapshot;
     }
 
     protected virtual void UpdateCore(GameTime gameTime, MouseState mouseState, MouseState previousMouseState)

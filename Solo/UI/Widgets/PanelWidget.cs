@@ -113,8 +113,9 @@ public class PanelWidget : Widget
         get
         {
             float maxY = 0;
-            foreach (var child in Children)
+            for (int i = 0; i < Children.Count; i++)
             {
+                var child = Children[i];
                 float childBottom = child.Position.Y + child.Size.Y;
                 if (childBottom > maxY)
                     maxY = childBottom;
@@ -172,8 +173,9 @@ public class PanelWidget : Widget
         float maxRight = 0;
         float maxBottom = 0;
 
-        foreach (var child in Children)
+        for (int i = 0; i < Children.Count; i++)
         {
+            var child = Children[i];
             if (!child.Visible)
                 continue;
 
@@ -223,8 +225,9 @@ public class PanelWidget : Widget
 
     protected override void ArrangeCore(Vector2 finalSize)
     {
-        foreach (var child in Children)
+        for (int i = 0; i < Children.Count; i++)
         {
+            var child = Children[i];
             if (!child.Visible)
                 continue;
 
@@ -294,8 +297,8 @@ public class PanelWidget : Widget
         }
         else
         {
-            foreach (var child in Children)
-                child.Render(spriteBatch);
+            for (int i = 0; i < Children.Count; i++)
+                Children[i].Render(spriteBatch);
         }
     }
 
@@ -332,8 +335,8 @@ public class PanelWidget : Widget
         );
 
         // Render children (they will use ChildRenderOffset for positioning)
-        foreach (var child in Children)
-            child.Render(spriteBatch);
+        for (int i = 0; i < Children.Count; i++)
+            Children[i].Render(spriteBatch);
 
         spriteBatch.End();
 

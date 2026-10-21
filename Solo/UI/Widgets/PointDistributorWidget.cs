@@ -91,8 +91,9 @@ public class PointDistributorWidget : Widget
         float maxRight = 0;
         float maxBottom = 0;
 
-        foreach (var child in Children)
+        for (int i = 0; i < Children.Count; i++)
         {
+            var child = Children[i];
             if (!child.Visible)
                 continue;
 

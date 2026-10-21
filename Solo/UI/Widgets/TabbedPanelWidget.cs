@@ -33,6 +33,10 @@ public class TabbedPanelWidget : Widget
     private float _scrollOffset;
     private int _previousScrollWheelValue;
     private bool _scrollWheelInitialized;
+    private int[]? _tabWidths;
+    private int[] _tabOffsets = Array.Empty<int>();
+    private int _tabStripLayoutWidth;
+    private SpriteFont? _tabStripLayoutFont;
 
     /// <summary>Raised after a successful tab switch with (previousIndex, newIndex).</summary>
     public event Action<int, int>? ActiveTabChanged;
@@ -304,13 +308,24 @@ public class TabbedPanelWidget : Widget
         return offsets;
     }
 
-    private int[] CurrentTabWidths()
+    /// <summary>
+    /// Recomputes the cached tab widths and offsets when the strip width or font changed.
+    /// Tabs and titles are immutable, so these are the only inputs.
+    /// </summary>
+    private void EnsureTabStripLayout()
     {
         var font = UITheme.Font;
+        int totalWidth = (int)Size.X;
+        if (_tabWidths != null && totalWidth == _tabStripLayoutWidth && ReferenceEquals(font, _tabStripLayoutFont))
+            return;
+
         var titleWidths = new float[_tabs.Count];
         for (int i = 0; i < _tabs.Count; i++)
             titleWidths[i] = font?.MeasureString(_tabs[i].Title).X ?? 0;
-        return ComputeTabWidths(titleWidths, TabStripHorizontalPadding, (int)Size.X);
+        _tabWidths = ComputeTabWidths(titleWidths, TabStripHorizontalPadding, totalWidth);
+        _tabOffsets = ComputeTabOffsets(_tabWidths);
+        _tabStripLayoutWidth = totalWidth;
+        _tabStripLayoutFont = font;
     }
 
     private float MeasureTabStripWidth()
@@ -391,11 +406,12 @@ public class TabbedPanelWidget : Widget
         if (totalWidth <= 0 || _tabs.Count == 0)
             return null;
 
-        var tabWidths = CurrentTabWidths();
+        EnsureTabStripLayout();
+        var tabWidths = _tabWidths!;
         if (tabWidths[0] == 0)
             return null;
 
-        var offsets = ComputeTabOffsets(tabWidths);
+        var offsets = _tabOffsets;
         int relativeX = mouseX - tabAreaBounds.X;
         for (int i = _tabs.Count - 1; i >= 0; i--)
         {
@@ -419,8 +435,8 @@ public class TabbedPanelWidget : Widget
         else
         {
             // Children render themselves; only the active tab's Content has Visible = true.
-            foreach (var child in Children)
-                child.Render(spriteBatch);
+            for (int i = 0; i < Children.Count; i++)
+                Children[i].Render(spriteBatch);
         }
     }
 
@@ -458,8 +474,8 @@ public class TabbedPanelWidget : Widget
         );
 
         // Children render at their (positions + ChildRenderOffset which subtracts scroll).
-        foreach (var child in Children)
-            child.Render(spriteBatch);
+        for (int i = 0; i < Children.Count; i++)
+            Children[i].Render(spriteBatch);
 
         spriteBatch.End();
 
@@ -517,11 +533,12 @@ public class TabbedPanelWidget : Widget
         if (totalWidth <= 0 || _tabs.Count == 0)
             return;
 
-        var tabWidths = CurrentTabWidths();
+        EnsureTabStripLayout();
+        var tabWidths = _tabWidths!;
         if (tabWidths[0] == 0)
             return;
 
-        var offsets = ComputeTabOffsets(tabWidths);
+        var offsets = _tabOffsets;
 
         for (int i = 0; i < _tabs.Count; i++)
         {
