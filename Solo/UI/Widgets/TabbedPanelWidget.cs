@@ -419,8 +419,8 @@ public class TabbedPanelWidget : Widget
         else
         {
             // Children render themselves; only the active tab's Content has Visible = true.
-            foreach (var child in Children)
-                child.Render(spriteBatch);
+            for (int i = 0; i < Children.Count; i++)
+                Children[i].Render(spriteBatch);
         }
     }
 
@@ -458,8 +458,8 @@ public class TabbedPanelWidget : Widget
         );
 
         // Children render at their (positions + ChildRenderOffset which subtracts scroll).
-        foreach (var child in Children)
-            child.Render(spriteBatch);
+        for (int i = 0; i < Children.Count; i++)
+            Children[i].Render(spriteBatch);
 
         spriteBatch.End();
 
