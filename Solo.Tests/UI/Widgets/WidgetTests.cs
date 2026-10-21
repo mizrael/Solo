@@ -8,9 +8,6 @@ namespace Solo.Tests.UI.Widgets;
 
 public sealed class WidgetTests
 {
-    private const int WarmupFrames = 10;
-    private const int MeasuredFrames = 100;
-
     [Fact]
     public void Update_WhenChildRebuildsParent_DoesNotThrowAndSkipsRemovedSiblings()
     {
@@ -31,7 +28,7 @@ public sealed class WidgetTests
         var root = BuildNestedTree();
         var gameTime = new GameTime();
 
-        long allocated = MeasureAllocatedBytes(() => root.Update(gameTime, default, default));
+        long allocated = AllocationMeter.MeasureFrames(() => root.Update(gameTime, default, default));
 
         Assert.Equal(0, allocated);
     }
@@ -42,7 +39,7 @@ public sealed class WidgetTests
         var root = BuildNestedTree();
         root.Update(new GameTime(), default, default);
 
-        long allocated = MeasureAllocatedBytes(() => root.Render(null!));
+        long allocated = AllocationMeter.MeasureFrames(() => root.Render(null!));
 
         Assert.Equal(0, allocated);
     }
@@ -186,32 +183,6 @@ public sealed class WidgetTests
         dialog.AddChild(new ProbeWidget());
         root.AddChild(dialog);
         return root;
-    }
-
-    private static long MeasureAllocatedBytes(Action frame)
-    {
-        for (int i = 0; i < WarmupFrames; i++)
-            frame();
-
-        long before = GC.GetAllocatedBytesForCurrentThread();
-        for (int i = 0; i < MeasuredFrames; i++)
-            frame();
-        return GC.GetAllocatedBytesForCurrentThread() - before;
-    }
-
-    private sealed class ProbeWidget : Widget
-    {
-        public string Name { get; init; } = string.Empty;
-        public List<string>? Log { get; init; }
-        public Action? OnUpdate { get; set; }
-        public int UpdateCount { get; private set; }
-
-        protected override void UpdateCore(GameTime gameTime, MouseState mouseState, MouseState previousMouseState)
-        {
-            UpdateCount++;
-            Log?.Add(Name);
-            OnUpdate?.Invoke();
-        }
     }
 
     private sealed class ChromelessPanel : PanelWidget

@@ -1,5 +1,8 @@
 using System;
 using System.Linq;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+using Solo.Tests.UI.Layout;
 using Solo.UI.Widgets;
 using Xunit;
 
@@ -102,4 +105,48 @@ public class TabbedPanelWidgetTests
 
         Assert.Equal(new[] { 0, 100, 300 }, offsets);
     }
+
+    [Fact]
+    public void Update_ClickingTabStripEveryFrame_DoesNotAllocate()
+    {
+        var (host, tabs) = BuildHostedTabs(width: 200);
+        var gameTime = new GameTime();
+        var pressed = ClickAt(150);
+
+        long allocated = AllocationMeter.MeasureFrames(() => host.Update(gameTime, pressed, default));
+
+        Assert.Equal(0, allocated);
+        Assert.Equal(1, tabs.ActiveIndex);
+    }
+
+    [Fact]
+    public void Update_AfterResize_HitTestsAgainstNewTabWidths()
+    {
+        var (host, tabs) = BuildHostedTabs(width: 200);
+        host.Update(new GameTime(), ClickAt(150), default);
+        Assert.Equal(1, tabs.ActiveIndex);
+
+        tabs.Size = new Vector2(400, tabs.Size.Y);
+        host.Update(new GameTime(), ClickAt(150), default);
+
+        Assert.Equal(0, tabs.ActiveIndex);
+    }
+
+    private static (Widget host, TabbedPanelWidget tabs) BuildHostedTabs(float width)
+    {
+        var tabs = new TabbedPanelWidget(new[]
+        {
+            new TabPage("A", new FixedSizeWidget(10, 10)),
+            new TabPage("B", new FixedSizeWidget(10, 10)),
+        });
+        // A non-root panel keeps the size we give it; root layout would refit it to content.
+        var host = new FixedSizeWidget(1000, 1000);
+        host.AddChild(tabs);
+        host.Update(new GameTime(), default, default);
+        tabs.Size = new Vector2(width, 100);
+        return (host, tabs);
+    }
+
+    private static MouseState ClickAt(int x) =>
+        new(x, 1, 0, ButtonState.Pressed, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
 }

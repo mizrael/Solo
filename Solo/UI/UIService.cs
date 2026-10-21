@@ -10,6 +10,7 @@ namespace Solo.UI;
 public class UIService : IGameService, IRenderable
 {
     private readonly List<Widget> _rootWidgets = new();
+    private Widget[] _rootSnapshot = Array.Empty<Widget>();
     private MouseState _previousMouseState;
     private TooltipWidget? _tooltip;
     private int _lastViewportHeight;
@@ -67,14 +68,33 @@ public class UIService : IGameService, IRenderable
             }
         }
 
-        foreach (var widget in _rootWidgets)
-        {
-            widget.Update(gameTime, mouseState, previousMouseState);
-        }
-
+        UpdateWidgets(gameTime, mouseState, previousMouseState);
         UpdateTooltip(mouseState);
 
         _previousMouseState = mouseState;
+    }
+
+    /// <summary>
+    /// Updates the roots present when the loop starts, in order. Roots added during the loop
+    /// wait for the next frame; roots removed during it are skipped.
+    /// </summary>
+    internal void UpdateWidgets(GameTime gameTime, MouseState mouseState, MouseState previousMouseState)
+    {
+        int count = _rootWidgets.Count;
+        var snapshot = _rootSnapshot.Length >= count ? _rootSnapshot : new Widget[count];
+        // Detach the buffer so a re-entrant update gets its own.
+        _rootSnapshot = Array.Empty<Widget>();
+        _rootWidgets.CopyTo(snapshot);
+
+        for (int i = 0; i < count; i++)
+        {
+            var widget = snapshot[i];
+            if (_rootWidgets.Contains(widget))
+                widget.Update(gameTime, mouseState, previousMouseState);
+        }
+
+        Array.Clear(snapshot, 0, count);
+        _rootSnapshot = snapshot;
     }
 
     private static MouseState ScaleMouseState(MouseState mouseState)
