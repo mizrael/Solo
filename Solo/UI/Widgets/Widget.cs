@@ -39,9 +39,8 @@ public abstract class Widget
     public bool Enabled { get; set; }
 
     /// <summary>
-    /// Whether a click inside this widget's bounds stops here. When false the click goes on to
-    /// the parent or the widget below; children are still offered it, and hover and tooltips
-    /// are unaffected. Defaults to true; display-only widgets such as labels and images opt out.
+    /// Whether a click inside the bounds stops here. When false it passes to the parent or the
+    /// widget below; children still get it, and hover and tooltips are unaffected.
     /// </summary>
     public bool ConsumesClicks { get; set; } = true;
     public Widget? Parent { get; private set; }
