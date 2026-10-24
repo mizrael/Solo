@@ -9,6 +9,7 @@ public class ImageWidget : Widget
 
     public ImageWidget()
     {
+        ConsumesClicks = false;
     }
 
     public Texture2D? Texture

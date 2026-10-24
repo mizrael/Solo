@@ -37,6 +37,13 @@ public abstract class Widget
 
     public bool Visible { get; set; }
     public bool Enabled { get; set; }
+
+    /// <summary>
+    /// Whether a click inside this widget's bounds stops here. When false the click goes on to
+    /// the parent or the widget below; children are still offered it, and hover and tooltips
+    /// are unaffected. Defaults to true; display-only widgets such as labels and images opt out.
+    /// </summary>
+    public bool ConsumesClicks { get; set; } = true;
     public Widget? Parent { get; private set; }
     public IReadOnlyList<Widget> Children => _children;
     public Vector2 DesiredSize => _desiredSize;
@@ -258,7 +265,7 @@ public abstract class Widget
                 return true;
         }
 
-        if (Bounds.Contains(mousePosition))
+        if (ConsumesClicks && Bounds.Contains(mousePosition))
         {
             OnMouseClick(mousePosition);
             return true;

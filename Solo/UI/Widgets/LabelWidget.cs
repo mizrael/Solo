@@ -14,6 +14,7 @@ public class LabelWidget : Widget
 
     public LabelWidget()
     {
+        ConsumesClicks = false;
     }
 
     public string Text

@@ -20,10 +20,11 @@ public class WrappingLabelWidget : Widget
 
     public WrappingLabelWidget()
     {
+        ConsumesClicks = false;
     }
 
     /// <summary>Measures with <paramref name="measurer"/> instead of the font, e.g. a fake in tests.</summary>
-    public WrappingLabelWidget(ITextMeasurer measurer)
+    public WrappingLabelWidget(ITextMeasurer measurer) : this()
     {
         _customMeasurer = measurer ?? throw new ArgumentNullException(nameof(measurer));
     }
