@@ -53,8 +53,8 @@ public sealed class RenderService : IGameService
     {
         var layers = _context.Layers;
 
-        foreach (var layerIndex in layers.Keys)
-            layers[layerIndex].Clear();
+        for (var i = 0; i < layers.Count; i++)
+            layers.GetValueAtIndex(i).Clear();
 
         var currentScene = SceneManager.Instance.Current;
         if (currentScene is null)
@@ -96,7 +96,8 @@ public sealed class RenderService : IGameService
                 layers[renderable.LayerIndex].Add(renderable);
             }
 
-        foreach (var child in node.Children)
-            RebuildGameObjectsLayers(child, layers);
+        var children = node.Children;
+        for (var i = 0; i < children.Count; i++)
+            RebuildGameObjectsLayers(children[i], layers);
     }
 }

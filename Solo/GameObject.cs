@@ -6,7 +6,7 @@ namespace Solo;
 
 public class GameObject
 {
-    private readonly IList<GameObject> _children;
+    private readonly List<GameObject> _children;
     private readonly Queue<GameObject> _childrenToRemove = new();
     private readonly Queue<GameObject> _childrenToAdd = new();
     private readonly HashSet<string> _tags = new();
@@ -44,7 +44,7 @@ public class GameObject
 
     public ComponentsCollection Components { get; }
 
-    public IEnumerable<GameObject> Children => _children;
+    public IReadOnlyList<GameObject> Children => _children;
     public GameObject? Parent { get; private set; }
 
     public OnDisabledHandler OnDisabled;
