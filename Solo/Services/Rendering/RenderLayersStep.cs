@@ -39,8 +39,8 @@ public class RenderLayersStep : PipelineStep
                 samplerState: config.SamplerState,
                 transformMatrix: config.TransformMatrix);
 
-        foreach (var renderable in layer)
-            renderable.Render(ctx.SpriteBatch);
+        for (var i = 0; i < layer.Count; i++)
+            layer[i].Render(ctx.SpriteBatch);
 
         ctx.SpriteBatch.End();
     }

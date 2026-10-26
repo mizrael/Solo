@@ -7,7 +7,7 @@ namespace Solo.Components;
 public class ComponentsCollection : IEnumerable<Component>
 {
     private readonly GameObject _owner;
-    private readonly IDictionary<Type, Component> _items;
+    private readonly Dictionary<Type, Component> _items;
 
     public ComponentsCollection(GameObject owner)
     {
@@ -58,10 +58,10 @@ public class ComponentsCollection : IEnumerable<Component>
 
     public bool Has<T>() where T : Component => _items.ContainsKey(typeof(T));
 
-    public IEnumerator<Component> GetEnumerator() => _items.Values.GetEnumerator();
+    // A struct enumerator, so foreach doesn't allocate every frame.
+    public Dictionary<Type, Component>.ValueCollection.Enumerator GetEnumerator() => _items.Values.GetEnumerator();
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
-    }
+    IEnumerator<Component> IEnumerable<Component>.GetEnumerator() => GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

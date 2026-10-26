@@ -46,11 +46,10 @@ public class GameServicesCollection : IEnumerable<IGameService>
             service.Update(gameTime);
     }
 
-    public IEnumerator<IGameService> GetEnumerator()
-    => _services.GetEnumerator();
+    // A struct enumerator, so foreach doesn't allocate every frame.
+    public List<IGameService>.Enumerator GetEnumerator() => _services.GetEnumerator();
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
-    }
+    IEnumerator<IGameService> IEnumerable<IGameService>.GetEnumerator() => GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
